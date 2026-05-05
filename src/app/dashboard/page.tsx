@@ -2,9 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import React from 'react'
-import { CalendarDays, ChevronRight, Bell, AlertCircle } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote } from 'lucide-react'
 import Link from 'next/link'
+import { quotes } from '@/lib/quotes'
 
 // Fetch athletes (is_deleted = false)
 async function fetchActiveAthletes() {
@@ -46,6 +47,13 @@ export default function DashboardPage() {
     queryKey: ['notices', 'recent'],
     queryFn: fetchRecentNotices,
   })
+
+  const [quote, setQuote] = useState<string>('')
+
+  useEffect(() => {
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
+    setQuote(randomQuote)
+  }, [])
 
   // Calculations for stats
   const total = athletes?.length || 0
@@ -160,6 +168,23 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Random Quote Widget */}
+      {quote && (
+        <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-[2px] shadow-sm">
+          <div className="bg-white rounded-[22px] p-6 md:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden h-full">
+            <div className="absolute top-4 left-6 text-indigo-100 opacity-50">
+              <Quote className="w-16 h-16" fill="currentColor" />
+            </div>
+            <p className="relative z-10 text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 leading-relaxed px-4 md:px-12 py-4">
+              "{quote}"
+            </p>
+            <p className="relative z-10 text-sm font-bold text-slate-400 mt-2 tracking-widest uppercase">
+              오늘의 명언
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
