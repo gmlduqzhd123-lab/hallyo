@@ -98,6 +98,9 @@ export default function LoginPage() {
           </div>
         </form>
       </div>
+      <div className="mt-8 text-center text-slate-400 text-sm font-medium tracking-wide">
+        made by. 엽쌤, 달디단쌤
+      </div>
     </div>
   )
 }
