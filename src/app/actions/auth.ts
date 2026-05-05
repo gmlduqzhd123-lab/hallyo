@@ -3,27 +3,35 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function login(data: { email: string; password: string }) {
+export async function login(data: { name: string; password: string }) {
   const supabase = await createClient()
+  const email = Buffer.from(data.name).toString('hex') + '@hallyoswim.com'
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: data.password,
+  })
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error('이름 또는 비밀번호가 올바르지 않습니다.')
   }
 
   revalidatePath('/', 'layout')
 }
 
-export async function signup(data: { email: string; password: string; name: string }) {
+export async function signup(data: { password: string; name: string }) {
   const supabase = await createClient()
+  const email = Buffer.from(data.name).toString('hex') + '@hallyoswim.com'
 
   const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: data.email,
+    email,
     password: data.password,
   })
 
   if (authError) {
+    if (authError.message.includes('already registered')) {
+      throw new Error('이미 가입된 이름입니다.')
+    }
     throw new Error(authError.message)
   }
 
@@ -33,14 +41,13 @@ export async function signup(data: { email: string; password: string; name: stri
       .from('users')
       .insert({
         id: authData.user.id,
-        email: data.email,
+        email: email,
         name: data.name,
         role: 'athlete',
         status: 'pending',
       })
 
     if (dbError) {
-      // In a real app we might want to clean up auth user if DB insert fails
       throw new Error(dbError.message)
     }
   }

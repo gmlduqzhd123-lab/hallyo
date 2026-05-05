@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const loginSchema = z.object({
-  email: z.string().min(1, '이메일을 입력해주세요.').email('올바른 이메일 형식이 아닙니다.'),
+  name: z.string().min(2, '이름을 입력해주세요.'),
   password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다.'),
 })
 
@@ -56,14 +56,14 @@ export default function LoginPage() {
 
         <form className="space-y-5 relative z-10" onSubmit={handleSubmit((data) => handleLogin(data))}>
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">이메일</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">이름</label>
             <input 
-              type="email" 
-              placeholder="hello@hallyoswim.com"
-              {...register('email')}
-              className={`w-full px-5 py-4 bg-slate-50 border-2 ${errors.email ? 'border-rose-400' : 'border-transparent focus:border-primary'} focus:bg-white rounded-2xl outline-none transition-all text-slate-800 placeholder-slate-400`}
+              type="text" 
+              placeholder="홍길동"
+              {...register('name')}
+              className={`w-full px-5 py-4 bg-slate-50 border-2 ${errors.name ? 'border-rose-400' : 'border-transparent focus:border-primary'} focus:bg-white rounded-2xl outline-none transition-all text-slate-800 placeholder-slate-400`}
             />
-            {errors.email && <p className="text-rose-500 text-xs font-bold mt-2 ml-1">{errors.email.message}</p>}
+            {errors.name && <p className="text-rose-500 text-xs font-bold mt-2 ml-1">{errors.name.message}</p>}
           </div>
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">비밀번호</label>
