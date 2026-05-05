@@ -110,24 +110,29 @@ export default function AthletesPage() {
           return ''
         }
 
+        const cleanVal = (val: any) => {
+          if (val === '-' || val === 'undefined' || val === 'null' || val === undefined || val === null) return ''
+          return val
+        }
+
         // Mapping Korean headers to English keys
         const mappedData = data.map((row) => ({
-          category: String(row['종별'] || row['category'] || ''),
-          gender: row['성별'] === '남' ? 'M' : row['성별'] === '여' ? 'F' : row['gender'],
-          name: String(row['이름'] || row['name'] || ''),
-          hanja_name: String(row['한자 이름'] || row['한자이름'] || ''),
-          is_registered: String(row['선수 등록 여부'] || row['선수등록'] || '').toUpperCase() === 'O',
-          birth_date: parseExcelDate(row['생년 월일'] || row['생년월일']),
-          attendance_start_date: parseExcelDate(row['재학 기간(시작)'] || row['재학 시작일']),
-          attendance_end_date: parseExcelDate(row['재학 기간(종료)'] || row['재학 종료일']),
-          join_date: parseExcelDate(row['입단 날짜'] || row['입단일']),
-          grade: Number(row['학년'] || row['grade'] || 0),
-          class_number: String(row['반'] || row['학급'] || row['class'] || ''),
-          student_number: Number(row['번호'] || row['student_number'] || 0),
-          homeroom_teacher: String(row['담임교사 성명'] || row['담임교사'] || row['담임선생님'] || ''),
-          student_phone: String(row['학생 연락처'] || row['학생연락처'] || ''),
-          parent_name: String(row['학부모 성함'] || row['학부모성함'] || ''),
-          parent_phone: String(row['학부모 연락처'] || row['학부모연락처'] || ''),
+          category: String(cleanVal(row['종별']) || cleanVal(row['category']) || ''),
+          gender: cleanVal(row['성별']) === '남' ? 'M' : cleanVal(row['성별']) === '여' ? 'F' : cleanVal(row['gender']),
+          name: String(cleanVal(row['이름']) || cleanVal(row['name']) || ''),
+          hanja_name: String(cleanVal(row['한자 이름']) || cleanVal(row['한자이름']) || ''),
+          is_registered: String(cleanVal(row['선수 등록 여부']) || cleanVal(row['선수등록']) || '').toUpperCase() === 'O',
+          birth_date: parseExcelDate(cleanVal(row['생년 월일']) || cleanVal(row['생년월일'])),
+          attendance_start_date: parseExcelDate(cleanVal(row['재학 기간 (시작일)']) || cleanVal(row['재학 기간(시작)']) || cleanVal(row['재학 시작일'])),
+          attendance_end_date: parseExcelDate(cleanVal(row['재학 기간 (종료일)']) || cleanVal(row['재학 기간(종료)']) || cleanVal(row['재학 종료일'])),
+          join_date: parseExcelDate(cleanVal(row['입단 날짜']) || cleanVal(row['입단일'])),
+          grade: Number(cleanVal(row['학년']) || cleanVal(row['grade']) || 0),
+          class_number: String(cleanVal(row['반']) || cleanVal(row['학급']) || cleanVal(row['class']) || ''),
+          student_number: Number(cleanVal(row['번호']) || cleanVal(row['student_number']) || 0),
+          homeroom_teacher: String(cleanVal(row['담임교사 성명']) || cleanVal(row['담임교사']) || cleanVal(row['담임선생님']) || ''),
+          student_phone: String(cleanVal(row['학생 연락처']) || cleanVal(row['학생연락처']) || ''),
+          parent_name: String(cleanVal(row['학부모 성함']) || cleanVal(row['학부모성함']) || ''),
+          parent_phone: String(cleanVal(row['학부모 연락처']) || cleanVal(row['학부모연락처']) || ''),
         }))
 
         bulkMutation.mutate(mappedData)
@@ -166,22 +171,22 @@ export default function AthletesPage() {
     }
 
     const exportData = athletes.map(a => ({
-      '종별': a.category || '-',
+      '종별': a.category || '',
       '성별': a.gender === 'M' ? '남' : '여',
       '이름': a.name,
-      '한자 이름': a.hanja_name || '-',
+      '한자 이름': a.hanja_name || '',
       '선수 등록 여부': a.is_registered ? 'O' : 'X',
-      '생년 월일': a.birth_date || '-',
-      '재학 기간 (시작일)': a.attendance_start_date || '-',
-      '재학 기간 (종료일)': a.attendance_end_date || '-',
-      '입단 날짜': a.join_date || '-',
-      '학년': a.grade || '-',
-      '반': a.class_number || '-',
-      '번호': a.student_number || '-',
-      '담임교사 성명': a.homeroom_teacher || '-',
-      '학생 연락처': a.student_phone || '-',
-      '학부모 성함': a.parent_name || '-',
-      '학부모 연락처': a.parent_phone || '-',
+      '생년 월일': a.birth_date || '',
+      '재학 기간 (시작일)': a.attendance_start_date || '',
+      '재학 기간 (종료일)': a.attendance_end_date || '',
+      '입단 날짜': a.join_date || '',
+      '학년': a.grade || '',
+      '반': a.class_number || '',
+      '번호': a.student_number || '',
+      '담임교사 성명': a.homeroom_teacher || '',
+      '학생 연락처': a.student_phone || '',
+      '학부모 성함': a.parent_name || '',
+      '학부모 연락처': a.parent_phone || '',
       '등록일': new Date(a.created_at).toLocaleDateString()
     }))
 
