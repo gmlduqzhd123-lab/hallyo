@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Settings, UserCheck, Activity, CheckCircle, Clock } from 'lucide-react'
-import { approveUser } from '@/app/actions/admin'
+import { Settings, UserCheck, Users, CheckCircle, Clock, Trash2, Edit2 } from 'lucide-react'
+import { approveUser, deleteUser, updateUserRole } from '@/app/actions/admin'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'approval' | 'audit'>('approval')
+  const [activeTab, setActiveTab] = useState<'approval' | 'users'>('approval')
   const supabase = createClient()
   const queryClient = useQueryClient()
 
@@ -26,18 +26,14 @@ export default function SettingsPage() {
     }
   })
 
-  // Fetch audit logs
-  const { data: auditLogs, isPending: isLoadingAudit } = useQuery({
-    queryKey: ['audit_logs'],
+  // Fetch all users
+  const { data: allUsers, isPending: isLoadingAllUsers } = useQuery({
+    queryKey: ['all_users'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('audit_logs')
-        .select(`
-          id, action, target_table, details, created_at,
-          users ( name, email )
-        `)
+        .from('users')
+        .select('*')
         .order('created_at', { ascending: false })
-        .limit(50)
       if (error) throw error
       return data
     }
@@ -52,7 +48,37 @@ export default function SettingsPage() {
     onSuccess: () => {
       toast.success('사용자 가입이 승인되었습니다.', { style: { background: '#0047AB', color: 'white' } })
       queryClient.invalidateQueries({ queryKey: ['pending_users'] })
-      queryClient.invalidateQueries({ queryKey: ['audit_logs'] })
+      queryClient.invalidateQueries({ queryKey: ['all_users'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const result = await deleteUser(userId)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('사용자가 삭제되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['all_users'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({ userId, role }: { userId: string, role: string }) => {
+      const result = await updateUserRole(userId, role)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('사용자 권한이 변경되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['all_users'] })
     },
     onError: (err: Error) => {
       toast.error(err.message)
@@ -86,10 +112,10 @@ export default function SettingsPage() {
             )}
           </button>
           <button
-            onClick={() => setActiveTab('audit')}
-            className={`flex-1 py-4 text-center font-bold flex justify-center items-center gap-2 transition-colors ${activeTab === 'audit' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-slate-500 hover:bg-slate-50'}`}
+            onClick={() => setActiveTab('users')}
+            className={`flex-1 py-4 text-center font-bold flex justify-center items-center gap-2 transition-colors ${activeTab === 'users' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-slate-500 hover:bg-slate-50'}`}
           >
-            <Activity className="w-5 h-5" /> 활동 로그 (Audit)
+            <Users className="w-5 h-5" /> 회원 관리
           </button>
         </div>
 
@@ -126,42 +152,60 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {activeTab === 'audit' && (
+          {activeTab === 'users' && (
             <div className="space-y-4">
-              {isLoadingAudit ? (
+              {isLoadingAllUsers ? (
                 <div className="animate-pulse flex space-x-4"><div className="h-24 bg-slate-200 rounded w-full"></div></div>
-              ) : auditLogs?.length === 0 ? (
+              ) : allUsers?.length === 0 ? (
                 <div className="text-center py-12 text-slate-400 font-medium">
-                  <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  기록된 활동 로그가 없습니다.
+                  <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  등록된 사용자가 없습니다.
                 </div>
               ) : (
-                <div className="relative border-l-2 border-slate-100 ml-4 space-y-6 pb-4">
-                  {auditLogs?.map((log: any) => (
-                    <div key={log.id} className="relative pl-6">
-                      <div className="absolute w-3 h-3 bg-primary rounded-full -left-[7px] top-1.5 border-2 border-white ring-2 ring-primary/20"></div>
-                      <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded-md text-xs font-bold text-white ${
-                              log.action === 'CREATE' ? 'bg-emerald-500' :
-                              log.action === 'UPDATE' ? 'bg-amber-500' :
-                              log.action === 'DELETE' ? 'bg-rose-500' : 'bg-slate-500'
-                            }`}>
-                              {log.action}
-                            </span>
-                            <span className="font-bold text-slate-700">{log.target_table}</span>
-                          </div>
-                          <span className="text-xs text-slate-400 font-medium">
-                            {format(new Date(log.created_at), 'yyyy-MM-dd HH:mm')}
+                <div className="grid gap-4">
+                  {allUsers?.map(user => (
+                    <div key={user.id} className="flex flex-col md:flex-row md:items-center justify-between p-5 border border-slate-100 rounded-2xl bg-white hover:border-primary/30 transition-colors shadow-sm">
+                      <div className="mb-4 md:mb-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-lg text-accent-navy">{user.name}</h3>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                            user.status === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                          }`}>
+                            {user.status === 'approved' ? '승인됨' : '대기중'}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-600 mb-2">
-                          <span className="font-bold text-accent-navy">{log.users?.name}</span>님이 작업을 수행했습니다.
-                        </p>
-                        <pre className="text-xs bg-slate-800 text-slate-300 p-2 rounded-lg overflow-x-auto">
-                          {JSON.stringify(log.details, null, 2)}
-                        </pre>
+                        <p className="text-sm text-slate-500">{user.email || '이메일 없음'}</p>
+                        <p className="text-xs text-slate-400 mt-1">가입일: {format(new Date(user.created_at || new Date()), 'yyyy-MM-dd')}</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col">
+                          <label className="text-xs font-bold text-slate-400 mb-1 ml-1">권한 변경</label>
+                          <select 
+                            value={user.role}
+                            onChange={(e) => updateRoleMutation.mutate({ userId: user.id, role: e.target.value })}
+                            disabled={updateRoleMutation.isPending}
+                            className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2 outline-none focus:border-primary transition-colors disabled:opacity-50"
+                          >
+                            <option value="admin">관리자 (Admin)</option>
+                            <option value="coach">지도자 (Coach)</option>
+                            <option value="athlete">선수 (Athlete)</option>
+                            <option value="parents">학부모 (Parents)</option>
+                            <option value="guest">일반인 (Guest)</option>
+                          </select>
+                        </div>
+                        
+                        <div className="flex flex-col">
+                          <label className="text-xs font-bold text-slate-400 mb-1 ml-1 opacity-0">삭제</label>
+                          <button
+                            onClick={() => { if(confirm('정말 이 사용자를 삭제하시겠습니까?')) deleteMutation.mutate(user.id) }}
+                            disabled={deleteMutation.isPending}
+                            className="p-2.5 text-rose-400 hover:text-white hover:bg-rose-500 bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
+                            title="사용자 삭제"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
