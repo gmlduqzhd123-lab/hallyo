@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0047AB; /* Cobalt Blue */
+  --color-primary-hover: #003685;
+  --color-secondary: #89CFF0; /* Sky Blue */
+  --color-secondary-hover: #6EBCE4;
+  --color-accent-navy: #001f3f;
+  --color-accent-pink: #FFB6C1;
+  --color-background: #F8FAFC;
+}
+
+@layer base {
+  * {
+    border-color: #e2e8f0;
+  }
+  body {
+    background-color: var(--color-background);
+    color: #1e293b;
+    /* Prevent text selection and web view highlights */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Custom scrollbar (Stitch theme) */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-secondary); /* Sky blue */
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary); /* Cobalt blue */
+  }
+
+  /* Keep input elements selectable */
+  input, textarea, select {
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+}

@@ -1,0 +1,179 @@
+'use client'
+
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { createClient } from '@/utils/supabase/client'
+import { Calendar, Plus, Trash2, MapPin } from 'lucide-react'
+import { Modal } from '@/components/ui/modal'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { addSchedule, softDeleteSchedule } from '@/app/actions/schedules'
+import { toast } from 'sonner'
+import { format } from 'date-fns'
+
+const schema = z.object({
+  type: z.literal('competition'),
+  title: z.string().min(2, '대회명을 입력해주세요.'),
+  date: z.string().min(10, '날짜를 선택해주세요.'),
+  location: z.string().min(2, '장소를 입력해주세요.'),
+  description: z.string().optional()
+})
+
+type FormValues = z.infer<typeof schema>
+
+export default function CompetitionsPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  const { data: competitions, isPending } = useQuery({
+    queryKey: ['competitions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('schedules')
+        .select('*, users(name)')
+        .eq('type', 'competition')
+        .eq('is_deleted', false)
+        .order('date', { ascending: false })
+      if (error) throw error
+      return data
+    }
+  })
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { type: 'competition' }
+  })
+
+  const addMutation = useMutation({
+    mutationFn: async (data: FormValues) => {
+      const formData = new FormData()
+      formData.append('type', data.type)
+      formData.append('title', data.title)
+      formData.append('date', data.date)
+      if (data.location) formData.append('location', data.location)
+      if (data.description) formData.append('description', data.description)
+      
+      const result = await addSchedule(formData)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('대회 일정이 등록되었습니다.', { style: { background: '#0047AB', color: 'white' } })
+      queryClient.invalidateQueries({ queryKey: ['competitions'] })
+      queryClient.invalidateQueries({ queryKey: ['schedules'] }) // Also invalidates calendar
+      reset()
+      setIsModalOpen(false)
+    },
+    onError: (err: Error) => toast.error(err.message)
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const result = await softDeleteSchedule(id)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('대회 일정이 삭제되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['competitions'] })
+      queryClient.invalidateQueries({ queryKey: ['schedules'] })
+    }
+  })
+
+  const onSubmit = (data: FormValues) => {
+    addMutation.mutate(data)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-rose-100 text-rose-500 rounded-xl">
+            <Calendar className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-accent-navy">대회 일정</h1>
+            <p className="text-sm text-slate-500 font-medium">참가할 대회의 세부 정보와 기록을 관리하세요.</p>
+          </div>
+        </div>
+
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-rose-500/30"
+        >
+          <Plus className="w-5 h-5" />
+          새 대회 등록
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {isPending ? (
+          <div className="py-12 text-center text-slate-400">불러오는 중...</div>
+        ) : competitions?.length === 0 ? (
+          <div className="py-12 text-center text-slate-400 font-medium bg-white rounded-3xl border border-slate-100">등록된 대회 일정이 없습니다.</div>
+        ) : (
+          competitions?.map((comp: any) => (
+            <div key={comp.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex justify-between items-center">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs font-bold border border-rose-200">
+                    {format(new Date(comp.date), 'yyyy년 MM월 dd일')}
+                  </span>
+                  <div className="flex items-center gap-1 text-slate-500 text-sm font-medium">
+                    <MapPin className="w-4 h-4" />
+                    {comp.location}
+                  </div>
+                </div>
+                <h2 className="text-xl font-bold text-accent-navy">{comp.title}</h2>
+                {comp.description && <p className="text-slate-500 mt-2 text-sm">{comp.description}</p>}
+              </div>
+              <button 
+                onClick={() => { if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(comp.id) }}
+                className="text-rose-400 hover:text-rose-600 p-3 rounded-xl hover:bg-rose-50 transition-colors"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="대회 일정 등록">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <input type="hidden" {...register('type')} value="competition" />
+          
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">대회명</label>
+            <input {...register('title')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" placeholder="예: 전라남도 소년체전" />
+            {errors.title && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.title.message}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-accent-navy mb-1">날짜</label>
+              <input type="date" {...register('date')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" />
+              {errors.date && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.date.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-accent-navy mb-1">장소</label>
+              <input {...register('location')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" placeholder="개최 수영장" />
+              {errors.location && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.location.message}</p>}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">대회 목표/설명</label>
+            <textarea {...register('description')} rows={3} className="w-full px-4 py-3 rounded-2xl border bg-slate-50 resize-none" placeholder="비고를 입력하세요" />
+          </div>
+
+          <div className="pt-4 flex gap-3">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">취소</button>
+            <button type="submit" disabled={addMutation.isPending} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30">등록하기</button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  )
+}

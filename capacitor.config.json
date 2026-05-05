@@ -1,0 +1,10 @@
+{
+  "appId": "com.hallyoswim.app",
+  "appName": "Hallyoswim",
+  "webDir": "out",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "http://localhost:3000",
+    "cleartext": true
+  }
+}
