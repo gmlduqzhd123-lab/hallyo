@@ -49,16 +49,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ]
 
   const handleNavClick = (e: React.MouseEvent, item: any) => {
-    if (item.adminOnly && userRole !== 'admin') {
-      e.preventDefault()
-      toast.error('관리자만 들어갈 수 있습니다.')
-    } else if (item.restrictedTo && !item.restrictedTo.includes(userRole)) {
-      e.preventDefault()
-      toast.error('관리자 또는 코치만 접근할 수 있습니다.')
-    } else {
-      setIsMobileMenuOpen(false)
-    }
+    setIsMobileMenuOpen(false)
   }
+
+  const visibleNavItems = navItems.filter(item => {
+    // If role is still loading (undefined), we don't know yet, but we'll wait for the query to resolve. 
+    // To prevent flicker, we could assume unauthorized until proven otherwise.
+    if (item.adminOnly && userRole !== 'admin') return false
+    if (item.restrictedTo && userRole && !item.restrictedTo.includes(userRole)) return false
+    return true
+  })
 
   return (
     <div className="min-h-screen flex">
@@ -73,7 +73,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </Link>
         
         <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
-          {navItems.map((item, idx) => {
+          {visibleNavItems.map((item, idx) => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             return (
             <Link 
@@ -116,7 +116,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Mobile Navigation Dropdown */}
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-[73px] left-0 right-0 bg-white shadow-xl z-20 p-4 border-b border-slate-100 flex flex-col gap-2">
-            {navItems.map((item, idx) => {
+            {visibleNavItems.map((item, idx) => {
               const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
               return (
               <Link 

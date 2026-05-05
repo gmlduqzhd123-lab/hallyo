@@ -18,6 +18,24 @@ export default function AthletesPage() {
   const [editingAthlete, setEditingAthlete] = useState<Athlete | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
+  const supabase = createClient()
+
+  const { data: userRole, isPending: rolePending } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+        
+      if (error) return null
+      return data.role
+    }
+  })
 
   const { data: athletes, isPending, isError, error } = useQuery({
     queryKey: ['athletes'],
@@ -182,6 +200,20 @@ export default function AthletesPage() {
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, '양식')
     XLSX.writeFile(wb, '선수_일괄등록_양식.xlsx')
+  }
+
+  if (rolePending || isPending) {
+    return <div className="p-8 text-center text-slate-500 font-bold">로딩 중...</div>
+  }
+
+  if (userRole !== 'admin' && userRole !== 'coach') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
+        <AlertCircle className="w-16 h-16 text-rose-500 mb-2" />
+        <h2 className="text-2xl font-bold text-slate-800">접근 권한이 없습니다</h2>
+        <p className="text-slate-500">선수 명단은 관리자 및 코치만 열람할 수 있습니다.</p>
+      </div>
+    )
   }
 
   return (
