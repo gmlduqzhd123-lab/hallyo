@@ -217,7 +217,7 @@ export default function DashboardPage() {
               <span className="bg-white p-2.5 rounded-xl shadow-sm text-fuchsia-500">
                 <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
               </span>
-              마음의 목소리 🌸
+              마음의 목소리(숨결처럼 너를 지나, 달디단) 🌸
             </h3>
             <button 
               onClick={() => setPoem(poems[Math.floor(Math.random() * poems.length)])}
