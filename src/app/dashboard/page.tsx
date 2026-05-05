@@ -192,7 +192,7 @@ export default function DashboardPage() {
                       {notice.title}
                     </div>
                     <div className="text-xs text-indigo-400/80 font-bold shrink-0">
-                      {new Date(notice.created_at).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' }).replace(/\.$/, '')}
+                      {new Date(notice.created_at).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' }).replace(new RegExp('\\\\.$'), '')}
                     </div>
                   </div>
                 )
@@ -200,8 +200,6 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-      </div>
-
       </div>
     </div>
   )
