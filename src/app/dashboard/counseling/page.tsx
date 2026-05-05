@@ -26,7 +26,7 @@ export default function CounselingPage() {
   const queryClient = useQueryClient()
 
   const { data: athletes } = useQuery({
-    queryKey: ['athletes'],
+    queryKey: ['athletes', 'counseling_selection'],
     queryFn: async () => {
       const { data } = await supabase.from('athletes').select('id, name').eq('is_deleted', false)
       return data || []
