@@ -45,15 +45,25 @@ export async function addSchedule(formData: FormData) {
     return { error: validatedFields.error.errors[0].message }
   }
 
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-  if (userError || !userData?.user) {
+  const { data: authData, error: userError } = await supabase.auth.getUser()
+  if (userError || !authData?.user) {
     return { error: '인증에 실패했습니다. 다시 로그인해주세요.' }
+  }
+
+  const { data: userRecord } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', authData.user.id)
+    .single()
+
+  if (userRecord?.role !== 'admin' && userRecord?.role !== 'coach') {
+    return { error: '관리자 또는 코치만 훈련 일정을 수정할 수 있습니다.' }
   }
 
   const { error } = await supabase.from('schedules').insert([
     {
       ...validatedFields.data,
-      created_by: userData.user.id,
+      created_by: authData.user.id,
       is_deleted: false,
     }
   ])
@@ -71,6 +81,14 @@ export async function addSchedule(formData: FormData) {
 export async function softDeleteSchedule(id: string) {
   const supabase = await createClient()
   
+  const { data: authData, error: userError } = await supabase.auth.getUser()
+  if (userError || !authData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: userRecord } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+  if (userRecord?.role !== 'admin' && userRecord?.role !== 'coach') {
+    return { error: '권한이 없습니다.' }
+  }
+
   const { error } = await supabase
     .from('schedules')
     .update({ is_deleted: true })
@@ -89,6 +107,14 @@ export async function softDeleteSchedule(id: string) {
 export async function updateScheduleParticipants(id: string, participants: string[]) {
   const supabase = await createClient()
   
+  const { data: authData, error: userError } = await supabase.auth.getUser()
+  if (userError || !authData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: userRecord } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+  if (userRecord?.role !== 'admin' && userRecord?.role !== 'coach') {
+    return { error: '권한이 없습니다.' }
+  }
+
   const { error } = await supabase
     .from('schedules')
     .update({ participants })

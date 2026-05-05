@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { AddScheduleModal } from '@/components/schedules/add-schedule-modal'
 import { Plus, Calendar as CalendarIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
 const locales = {
   'ko': ko,
@@ -39,6 +40,25 @@ export default function SchedulePage() {
     }
   })
 
+  const { data: userRole } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+        
+      if (error) return null
+      return data.role
+    }
+  })
+
+  const isAuthorized = userRole === 'admin' || userRole === 'coach'
+
   const events: Event[] = schedules?.map((s: any) => {
     const startDate = new Date(s.date)
     const endDate = s.end_date ? new Date(s.end_date) : new Date(s.date)
@@ -60,6 +80,10 @@ export default function SchedulePage() {
   }) || []
 
   const handleSelectSlot = (slotInfo: { start: Date }) => {
+    if (!isAuthorized) {
+      toast.error('관리자 또는 코치만 일정을 추가할 수 있습니다.')
+      return
+    }
     setSelectedDate(slotInfo.start)
     setIsModalOpen(true)
   }
@@ -109,13 +133,15 @@ export default function SchedulePage() {
           </div>
         </div>
 
-        <button 
-          onClick={() => { setSelectedDate(undefined); setIsModalOpen(true); }}
-          className="relative z-10 flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30 active:scale-95"
-        >
-          <Plus className="w-5 h-5" />
-          새 일정 추가
-        </button>
+        {isAuthorized && (
+          <button 
+            onClick={() => { setSelectedDate(undefined); setIsModalOpen(true); }}
+            className="relative z-10 flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30 active:scale-95"
+          >
+            <Plus className="w-5 h-5" />
+            새 일정 추가
+          </button>
+        )}
       </div>
 
       <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 h-[750px] calendar-wrapper relative overflow-hidden">
@@ -283,7 +309,7 @@ export default function SchedulePage() {
             views={['month', 'week', 'day', 'agenda']}
             onSelectSlot={handleSelectSlot}
             onSelectEvent={handleSelectEvent}
-            selectable
+            selectable={isAuthorized}
             eventPropGetter={eventPropGetter}
             components={{
               event: EventComponent
