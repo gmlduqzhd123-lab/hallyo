@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Settings, UserCheck, Users, CheckCircle, Clock, Trash2, Edit2 } from 'lucide-react'
+import { Settings, UserCheck, Users, CheckCircle, Clock, Trash2, Edit2, Type } from 'lucide-react'
 import { approveUser, deleteUser, updateUserRole } from '@/app/actions/admin'
+import { updateGlobalFont } from '@/app/actions/settings'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'approval' | 'users'>('approval')
+  const [activeTab, setActiveTab] = useState<'approval' | 'users' | 'fonts'>('fonts')
   const supabase = createClient()
   const queryClient = useQueryClient()
 
@@ -85,6 +86,49 @@ export default function SettingsPage() {
     }
   })
 
+  // Fetch current font
+  const { data: currentFont } = useQuery({
+    queryKey: ['global_font'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'global_font')
+        .single()
+      if (error) return 'MaplestoryL'
+      return data.value
+    }
+  })
+
+  const updateFontMutation = useMutation({
+    mutationFn: async (fontFamily: string) => {
+      const result = await updateGlobalFont(fontFamily)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('기본 폰트가 변경되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['global_font'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
+  const availableFonts = [
+    { name: '메이플스토리 L', family: 'MaplestoryL' },
+    { name: '메이플스토리 B', family: 'MaplestoryB' },
+    { name: '배달의민족 도현', family: 'BMDOHYEON' },
+    { name: '배달의민족 주아', family: 'BMJUA' },
+    { name: '강원교육모두 B', family: 'GangwonEduAllB' },
+    { name: '잘난체', family: 'Jalnan' },
+    { name: '교보 손글씨 2019', family: 'KyoboHandwriting2019' },
+    { name: '학교안심 나드리 B', family: 'SchoolSafeNadeuriB' },
+    { name: '학교안심 나드리 L', family: 'SchoolSafeNadeuriL' },
+    { name: '스위트머핀', family: 'SweetMuffin' },
+    { name: 'a바보', family: 'aBabo' },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
@@ -116,6 +160,12 @@ export default function SettingsPage() {
             className={`flex-1 py-4 text-center font-bold flex justify-center items-center gap-2 transition-colors ${activeTab === 'users' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-slate-500 hover:bg-slate-50'}`}
           >
             <Users className="w-5 h-5" /> 회원 관리
+          </button>
+          <button
+            onClick={() => setActiveTab('fonts')}
+            className={`flex-1 py-4 text-center font-bold flex justify-center items-center gap-2 transition-colors ${activeTab === 'fonts' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            <Type className="w-5 h-5" /> 폰트 설정
           </button>
         </div>
 
@@ -211,6 +261,41 @@ export default function SettingsPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'fonts' && (
+            <div className="space-y-6">
+              <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 mb-6 flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-amber-500 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-amber-900">전역 폰트 설정</h4>
+                  <p className="text-sm text-amber-700 mt-1">이곳에서 선택한 폰트는 시스템 전체(대시보드 등)에 실시간으로 반영됩니다.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {availableFonts.map(font => {
+                  const isActive = currentFont === font.family
+                  return (
+                    <div 
+                      key={font.family}
+                      onClick={() => updateFontMutation.mutate(font.family)}
+                      className={`cursor-pointer border-2 rounded-2xl p-6 transition-all ${isActive ? 'border-primary bg-primary/5 shadow-md shadow-primary/10' : 'border-slate-100 hover:border-primary/40 hover:shadow-sm bg-white'}`}
+                      style={{ fontFamily: `'${font.family}', sans-serif` }}
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <span className={`text-sm font-bold ${isActive ? 'text-primary' : 'text-slate-400 font-sans'}`}>
+                          {font.name} {isActive && '(적용중)'}
+                        </span>
+                        {isActive && <CheckCircle className="w-5 h-5 text-primary" />}
+                      </div>
+                      <p className="text-xl">여수한려초 수영부</p>
+                      <p className="text-sm text-slate-500 mt-2">1234567890 ABCabc</p>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>

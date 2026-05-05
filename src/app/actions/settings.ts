@@ -1,0 +1,32 @@
+'use server'
+
+import { createClient } from '@/utils/supabase/server'
+import { logAudit } from './audit'
+
+export async function updateGlobalFont(fontFamily: string) {
+  const supabase = await createClient()
+  
+  // check if admin
+  const { data: authData } = await supabase.auth.getUser()
+  if (!authData.user) return { error: '권한이 없습니다.' }
+
+  const { data: userData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', authData.user.id)
+    .single()
+    
+  if (userData?.role !== 'admin') {
+    return { error: '관리자만 폰트를 변경할 수 있습니다.' }
+  }
+
+  const { error } = await supabase
+    .from('system_settings')
+    .upsert({ key: 'global_font', value: fontFamily, updated_at: new Date().toISOString() })
+    
+  if (error) return { error: error.message }
+  
+  await logAudit('UPDATE', 'system_settings', { key: 'global_font', value: fontFamily })
+  
+  return { success: true }
+}

@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@font-face { font-family: 'BMDOHYEON'; src: url('/fonts/BMDOHYEON.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'BMJUA'; src: url('/fonts/BMJUA.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'GangwonEduAllB'; src: url('/fonts/GangwonEduAllB.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'Jalnan'; src: url('/fonts/Jalnan.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'KyoboHandwriting2019'; src: url('/fonts/KyoboHandwriting2019.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'MaplestoryB'; src: url('/fonts/MaplestoryB.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+@font-face { font-family: 'MaplestoryL'; src: url('/fonts/MaplestoryL.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'SchoolSafeNadeuriB'; src: url('/fonts/SchoolSafeNadeuriB.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+@font-face { font-family: 'SchoolSafeNadeuriL'; src: url('/fonts/SchoolSafeNadeuriL.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'SweetMuffin'; src: url('/fonts/SweetMuffin.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+@font-face { font-family: 'aBabo'; src: url('/fonts/aBabo.ttf') format('truetype'); font-weight: normal; font-style: normal; }
 @theme {
   --color-primary: #0047AB; /* Cobalt Blue */
   --color-primary-hover: #003685;
@@ -8,6 +19,7 @@
   --color-accent-navy: #001f3f;
   --color-accent-pink: #FFB6C1;
   --color-background: #F8FAFC;
+  --font-sans: var(--global-font, 'MaplestoryL'), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -17,6 +29,7 @@
   body {
     background-color: var(--color-background);
     color: #1e293b;
+    font-family: var(--global-font, 'MaplestoryL', sans-serif);
     /* Prevent text selection and web view highlights */
     user-select: none;
     -webkit-user-select: none;
