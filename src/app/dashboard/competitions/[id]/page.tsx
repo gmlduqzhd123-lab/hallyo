@@ -280,7 +280,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             <select {...register('athlete_id')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50 text-slate-700">
               <option value="">선수를 선택하세요</option>
               {athletes?.map((athlete: any) => (
-                <option key={athlete.id} value={athlete.id}>{athlete.name}</option>
+                <option key={athlete.id} value={athlete.id}>{athlete.name} ({athlete.grade}학년)</option>
               ))}
             </select>
             {errors.athlete_id && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.athlete_id.message}</p>}
@@ -334,7 +334,9 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                       : 'border-slate-100 hover:border-indigo-200 text-slate-600'
                   }`}
                 >
-                  <span className="font-bold">{athlete.name}</span>
+                  <span className="font-bold">
+                    {athlete.name} <span className="text-xs font-normal opacity-70 ml-1">({athlete.grade}학년)</span>
+                  </span>
                   {isSelected && <Check className="w-4 h-4 text-indigo-500" />}
                 </button>
               )
