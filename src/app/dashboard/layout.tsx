@@ -88,14 +88,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span>{item.name}</span>
             </Link>
           )})}
-        </nav>
-
-        <div className="p-4 border-t border-slate-50">
-          <button onClick={() => logout()} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-semibold">
+          
+          <button onClick={() => logout()} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-semibold mt-2">
             <LogOut className="w-5 h-5" />
             <span>로그아웃</span>
           </button>
-        </div>
+        </nav>
       </aside>
 
       {/* Main Content */}
