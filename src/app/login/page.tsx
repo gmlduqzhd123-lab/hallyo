@@ -29,7 +29,11 @@ export default function LoginPage() {
   })
 
   const { mutate: handleLogin, isPending } = useMutation({
-    mutationFn: login,
+    mutationFn: async (data: LoginFormValues) => {
+      const res = await login(data)
+      if (res?.error) throw new Error(res.error)
+      return res
+    },
     onSuccess: () => {
       toast.success('로그인에 성공했습니다.')
       router.push('/dashboard')

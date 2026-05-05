@@ -13,10 +13,11 @@ export async function login(data: { name: string; password: string }) {
   })
 
   if (error) {
-    throw new Error('이름 또는 비밀번호가 올바르지 않습니다.')
+    return { error: '이름 또는 비밀번호가 올바르지 않습니다.' }
   }
 
   revalidatePath('/', 'layout')
+  return { success: true }
 }
 
 export async function signup(data: { password: string; name: string }) {
@@ -30,9 +31,9 @@ export async function signup(data: { password: string; name: string }) {
 
   if (authError) {
     if (authError.message.includes('already registered')) {
-      throw new Error('이미 가입된 이름입니다.')
+      return { error: '이미 가입된 이름입니다.' }
     }
-    throw new Error(authError.message)
+    return { error: authError.message }
   }
 
   if (authData.user) {
@@ -48,9 +49,11 @@ export async function signup(data: { password: string; name: string }) {
       })
 
     if (dbError) {
-      throw new Error(dbError.message)
+      return { error: dbError.message }
     }
   }
+
+  return { success: true }
 }
 
 export async function logout() {

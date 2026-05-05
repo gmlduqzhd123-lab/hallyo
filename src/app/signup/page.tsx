@@ -29,7 +29,11 @@ export default function SignupPage() {
   })
 
   const { mutate: handleSignup, isPending } = useMutation({
-    mutationFn: signup,
+    mutationFn: async (data: SignupFormValues) => {
+      const res = await signup(data)
+      if (res?.error) throw new Error(res.error)
+      return res
+    },
     onSuccess: () => {
       toast.success('회원가입이 완료되었습니다. 승인을 대기해주세요.')
       router.push('/pending')
