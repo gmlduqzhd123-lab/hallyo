@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { addSchedule, softDeleteSchedule } from '@/app/actions/schedules'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import Link from 'next/link'
 
 const schema = z.object({
   type: z.literal('competition'),
@@ -116,11 +117,16 @@ export default function CompetitionsPage() {
         ) : competitions?.length === 0 ? (
           <div className="py-12 text-center text-slate-400 font-medium bg-white rounded-3xl border border-slate-100">등록된 대회 일정이 없습니다.</div>
         ) : (
-          competitions?.map((comp: any) => (
-            <div key={comp.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex justify-between items-center">
-              <div>
+          competitions?.map((comp: any) => {
+            const endDate = new Date(comp.end_date || comp.date)
+            endDate.setHours(23, 59, 59, 999)
+            const isExpired = endDate.getTime() < new Date().getTime()
+            
+            return (
+            <div key={comp.id} className={`bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex justify-between items-center transition-all ${isExpired ? 'opacity-50 grayscale hover:opacity-75' : 'hover:shadow-md'}`}>
+              <Link href={`/dashboard/competitions/${comp.id}`} className="flex-1 block">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs font-bold border border-rose-200">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${isExpired ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-rose-100 text-rose-600 border-rose-200'}`}>
                     {format(new Date(comp.date), 'yyyy년 MM월 dd일')}
                     {comp.end_date ? ` ~ ${format(new Date(comp.end_date), 'yyyy년 MM월 dd일')}` : ''}
                   </span>
@@ -131,15 +137,15 @@ export default function CompetitionsPage() {
                 </div>
                 <h2 className="text-xl font-bold text-accent-navy">{comp.title}</h2>
                 {comp.description && <p className="text-slate-500 mt-2 text-sm">{comp.description}</p>}
-              </div>
+              </Link>
               <button 
-                onClick={() => { if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(comp.id) }}
-                className="text-rose-400 hover:text-rose-600 p-3 rounded-xl hover:bg-rose-50 transition-colors"
+                onClick={(e) => { e.preventDefault(); if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(comp.id) }}
+                className="text-rose-400 hover:text-rose-600 p-3 rounded-xl hover:bg-rose-50 transition-colors ml-4"
               >
                 <Trash2 className="w-5 h-5" />
               </button>
             </div>
-          ))
+          )})
         )}
       </div>
 
