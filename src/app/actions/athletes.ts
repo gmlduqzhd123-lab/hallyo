@@ -6,22 +6,22 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 
 const athleteSchema = z.object({
-  category: z.string().optional(),
+  category: z.string().nullable().optional(),
   gender: z.enum(['M', 'F']),
   name: z.string().min(2, { message: '이름은 2자 이상 입력해주세요.' }),
-  hanja_name: z.string().optional(),
-  is_registered: z.boolean().optional(),
-  birth_date: z.string().optional(),
-  attendance_start_date: z.string().optional(),
-  attendance_end_date: z.string().optional(),
-  join_date: z.string().optional(),
-  grade: z.coerce.number().min(1).max(6).optional().or(z.literal(0)),
-  class_number: z.string().optional(),
-  student_number: z.coerce.number().optional().or(z.literal(0)),
-  homeroom_teacher: z.string().optional(),
-  student_phone: z.string().optional(),
-  parent_name: z.string().optional(),
-  parent_phone: z.string().optional(),
+  hanja_name: z.string().nullable().optional(),
+  is_registered: z.boolean().nullable().optional(),
+  birth_date: z.string().nullable().optional(),
+  attendance_start_date: z.string().nullable().optional(),
+  attendance_end_date: z.string().nullable().optional(),
+  join_date: z.string().nullable().optional(),
+  grade: z.coerce.number().min(1).max(6).nullable().optional().or(z.literal(0)),
+  class_number: z.string().nullable().optional(),
+  student_number: z.coerce.number().nullable().optional().or(z.literal(0)),
+  homeroom_teacher: z.string().nullable().optional(),
+  student_phone: z.string().nullable().optional(),
+  parent_name: z.string().nullable().optional(),
+  parent_phone: z.string().nullable().optional(),
 })
 
 export async function addAthlete(formData: FormData) {
@@ -54,22 +54,22 @@ export async function addAthlete(formData: FormData) {
 
   const { error } = await supabase.from('athletes').insert([
     {
-      category: validatedFields.data.category,
+      category: validatedFields.data.category || null,
       gender: validatedFields.data.gender,
       name: validatedFields.data.name,
-      hanja_name: validatedFields.data.hanja_name,
+      hanja_name: validatedFields.data.hanja_name || null,
       is_registered: validatedFields.data.is_registered,
-      birth_date: validatedFields.data.birth_date,
-      attendance_start_date: validatedFields.data.attendance_start_date,
-      attendance_end_date: validatedFields.data.attendance_end_date,
-      join_date: validatedFields.data.join_date,
+      birth_date: validatedFields.data.birth_date || null,
+      attendance_start_date: validatedFields.data.attendance_start_date || null,
+      attendance_end_date: validatedFields.data.attendance_end_date || null,
+      join_date: validatedFields.data.join_date || null,
       grade: validatedFields.data.grade || null,
-      class_number: validatedFields.data.class_number,
+      class_number: validatedFields.data.class_number || null,
       student_number: validatedFields.data.student_number || null,
-      homeroom_teacher: validatedFields.data.homeroom_teacher,
-      student_phone: validatedFields.data.student_phone,
-      parent_name: validatedFields.data.parent_name,
-      parent_phone: validatedFields.data.parent_phone,
+      homeroom_teacher: validatedFields.data.homeroom_teacher || null,
+      student_phone: validatedFields.data.student_phone || null,
+      parent_name: validatedFields.data.parent_name || null,
+      parent_phone: validatedFields.data.parent_phone || null,
       is_deleted: false,
     }
   ])
@@ -114,7 +114,23 @@ export async function bulkAddAthletes(athletes: Record<string, any>[]) {
   }
 
   const { error } = await supabase.from('athletes').insert(
-    validated.data.map(a => ({ ...a, is_deleted: false }))
+    validated.data.map(a => ({ 
+      ...a, 
+      category: a.category || null,
+      hanja_name: a.hanja_name || null,
+      birth_date: a.birth_date || null,
+      attendance_start_date: a.attendance_start_date || null,
+      attendance_end_date: a.attendance_end_date || null,
+      join_date: a.join_date || null,
+      grade: a.grade || null,
+      class_number: a.class_number || null,
+      student_number: a.student_number || null,
+      homeroom_teacher: a.homeroom_teacher || null,
+      student_phone: a.student_phone || null,
+      parent_name: a.parent_name || null,
+      parent_phone: a.parent_phone || null,
+      is_deleted: false 
+    }))
   )
 
   if (error) {
