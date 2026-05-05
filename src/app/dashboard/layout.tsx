@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen flex">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-white border-r border-slate-100 shadow-[4px_0_24px_rgb(0,71,171,0.03)] z-10">
-        <Link href="/" className="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <Link href="/login" className="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
           <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={48} height={48} className="w-12 h-12 object-contain rounded-xl" />
           <div>
             <h2 className="font-bold text-accent-navy leading-tight text-sm">여수한려초 수영부</h2>
@@ -95,7 +95,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between sticky top-0 z-20">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link href="/login" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={32} height={32} className="w-8 h-8 object-contain rounded-lg" />
             <h1 className="font-bold text-accent-navy text-sm">HALLYOSWIM</h1>
           </Link>
