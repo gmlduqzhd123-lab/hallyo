@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Image as ImageIcon, Upload, Trash2, Maximize2, X } from 'lucide-react'
+import { Image as ImageIcon, Upload, Trash2, Maximize2, X, Download } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
@@ -13,6 +13,26 @@ export default function PhotosPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
   const queryClient = useQueryClient()
+
+  const handleDownload = async (url: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `photo-${Date.now()}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      toast.success('사진이 성공적으로 다운로드되었습니다.');
+    } catch (error) {
+      toast.error('사진 다운로드에 실패했습니다.');
+    }
+  };
+
 
   const { data: photos, isPending } = useQuery({
     queryKey: ['photos'],
@@ -150,6 +170,13 @@ export default function PhotosPage() {
                   <Maximize2 className="w-5 h-5" />
                 </button>
                 <button 
+                  onClick={(e) => handleDownload(photo.url, e)}
+                  className="p-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                  title="사진 다운로드"
+                >
+                  <Download className="w-5 h-5" />
+                </button>
+                <button 
                   onClick={() => { if(confirm('이 사진을 정말 삭제하시겠습니까?')) deleteMutation.mutate(photo.id) }}
                   className="p-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
                   title="사진 삭제"
@@ -168,13 +195,22 @@ export default function PhotosPage() {
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8"
           onClick={() => setSelectedPhoto(null)}
         >
-          <button 
-            className="absolute top-6 right-6 p-2 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all"
-            onClick={() => setSelectedPhoto(null)}
-            title="닫기"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="absolute top-6 right-6 flex items-center gap-3">
+            <button 
+              className="p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/30 rounded-full transition-all"
+              onClick={(e) => handleDownload(selectedPhoto, e)}
+              title="다운로드"
+            >
+              <Download className="w-6 h-6" />
+            </button>
+            <button 
+              className="p-2 text-white/50 hover:text-white bg-white/10 hover:bg-white/30 rounded-full transition-all"
+              onClick={() => setSelectedPhoto(null)}
+              title="닫기"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
           <img 
             src={selectedPhoto} 
             alt="확대된 사진" 
