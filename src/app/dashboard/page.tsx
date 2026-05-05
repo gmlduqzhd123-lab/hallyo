@@ -64,20 +64,23 @@ export default function DashboardPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       
       {/* Header Title */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-accent-navy">선수 명단 대시보드</h1>
-        <p className="text-slate-500 mt-1">여수한려초등학교 수영부 선수 현황입니다.</p>
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-blue-600">대시보드 ✨</h1>
+          <p className="text-slate-500 mt-1 font-medium">여수한려초 수영부에 오신 것을 환영합니다! 🐬</p>
+        </div>
       </div>
 
       {/* Stats Widget */}
-      <div className="bg-primary rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-[0_10px_40px_rgb(0,71,171,0.2)] min-h-[160px]">
+      <div className="bg-gradient-to-br from-sky-400 via-blue-400 to-indigo-500 rounded-[32px] p-6 md:p-8 text-white relative overflow-hidden shadow-xl shadow-blue-500/20 min-h-[160px] border border-white/20">
         {/* Decorative background elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 right-20 w-32 h-32 bg-secondary/30 rounded-full blur-2xl translate-y-1/2"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-10 w-40 h-40 bg-sky-300/30 rounded-full blur-2xl translate-y-1/2"></div>
+        <div className="absolute top-10 left-1/2 w-20 h-20 bg-pink-300/30 rounded-full blur-xl"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 h-full">
           {isPending ? (
-            <div className="flex items-center gap-3 animate-pulse text-blue-200 font-bold">
+            <div className="flex items-center gap-3 animate-pulse text-blue-100 font-bold">
               <div className="w-6 h-6 border-4 border-t-white border-white/30 rounded-full animate-spin"></div>
               데이터를 불러오는 중...
             </div>
@@ -89,20 +92,20 @@ export default function DashboardPage() {
           ) : (
             <React.Fragment>
               <div>
-                <p className="text-primary-100 font-semibold text-sm md:text-base mb-1 text-blue-200">현재 선수 인원</p>
+                <p className="text-white/80 font-bold text-sm md:text-base mb-1 tracking-wide">우리 수영부 요정들 🧚‍♀️</p>
                 <div className="flex items-baseline gap-2">
-                  <h2 className="text-4xl md:text-5xl font-bold">총 {total}명</h2>
+                  <h2 className="text-5xl md:text-6xl font-black drop-shadow-md">총 {total}명</h2>
                 </div>
               </div>
               
               <div className="flex gap-3">
-                <div className="bg-white/15 backdrop-blur-md px-5 py-3 rounded-2xl flex items-center gap-2 border border-white/10">
-                  <span className="text-xl">👦</span>
-                  <span className="font-bold text-lg">남 ( {boys} )명</span>
+                <div className="bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md px-5 py-3 rounded-2xl flex items-center gap-2 border border-white/20 shadow-lg shadow-black/5">
+                  <span className="text-2xl drop-shadow-sm">👦</span>
+                  <span className="font-bold text-lg text-white">남 ( {boys} )명</span>
                 </div>
-                <div className="bg-accent-pink/20 backdrop-blur-md px-5 py-3 rounded-2xl flex items-center gap-2 border border-accent-pink/20">
-                  <span className="text-xl">👧</span>
-                  <span className="font-bold text-lg">여 ( {girls} )명</span>
+                <div className="bg-pink-400/30 hover:bg-pink-400/40 transition-colors backdrop-blur-md px-5 py-3 rounded-2xl flex items-center gap-2 border border-pink-300/30 shadow-lg shadow-black/5">
+                  <span className="text-2xl drop-shadow-sm">👧</span>
+                  <span className="font-bold text-lg text-white">여 ( {girls} )명</span>
                 </div>
               </div>
             </React.Fragment>
@@ -113,23 +116,23 @@ export default function DashboardPage() {
       {/* Random Quote Widget */}
       <div className={`transition-all duration-700 transform ${quote ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         {quote && (
-          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-[2px] shadow-sm">
-            <div className="bg-white rounded-[22px] p-6 md:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden h-full">
-              <div className="absolute top-4 left-6 text-indigo-100 opacity-50">
+          <div className="bg-gradient-to-r from-amber-200 via-orange-200 to-rose-200 rounded-[32px] p-[3px] shadow-lg shadow-orange-500/10">
+            <div className="bg-white/90 backdrop-blur-sm rounded-[29px] p-6 md:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden h-full border border-white">
+              <div className="absolute top-4 left-6 text-orange-200 opacity-60">
                 <Quote className="w-16 h-16" fill="currentColor" />
               </div>
-              <p className="relative z-10 text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 leading-relaxed px-4 md:px-12 py-4">
+              <p className="relative z-10 text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 leading-relaxed px-4 md:px-12 py-4 drop-shadow-sm">
                 "{quote}"
               </p>
               <div className="relative z-10 flex flex-col items-center gap-1 mt-2">
-                <p className="text-sm font-bold text-slate-400 tracking-widest uppercase">
-                  오늘의 명언
+                <p className="text-sm font-bold text-orange-400/80 tracking-widest uppercase">
+                  오늘의 긍정 에너지 ✨
                 </p>
                 <button 
                   onClick={() => setQuote(quotes[Math.floor(Math.random() * quotes.length)])}
-                  className="text-xs text-indigo-400 hover:text-indigo-600 font-semibold mt-2 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors"
+                  className="text-xs text-orange-500 hover:text-white font-bold mt-2 px-4 py-1.5 bg-orange-50 hover:bg-gradient-to-r hover:from-orange-400 hover:to-rose-400 rounded-full transition-all duration-300 shadow-sm"
                 >
-                  다른 명언 보기
+                  다른 명언 보기 🎯
                 </button>
               </div>
             </div>
@@ -140,53 +143,56 @@ export default function DashboardPage() {
       {/* Placeholders Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Today's Training */}
-        <div className="bg-white rounded-3xl p-6 border-2 border-secondary/20 shadow-sm flex flex-col items-center justify-center min-h-[280px] text-center group hover:border-secondary transition-colors cursor-pointer">
-          <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <CalendarDays className="w-8 h-8 text-secondary-hover" />
+        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-[32px] p-8 border border-teal-100/50 shadow-sm shadow-teal-500/5 flex flex-col items-center justify-center min-h-[280px] text-center group hover:shadow-md hover:shadow-teal-500/10 transition-all cursor-pointer relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 text-teal-500/5 text-[120px] font-black pointer-events-none transform rotate-12">🏊‍♂️</div>
+          <div className="w-20 h-20 bg-white rounded-[24px] shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
+            <CalendarDays className="w-10 h-10 text-teal-500" />
           </div>
-          <h3 className="font-bold text-lg text-accent-navy mb-2">오늘의 훈련 일정</h3>
-          <p className="text-slate-500 text-sm mb-6 max-w-[200px]">등록된 오늘의 훈련 일정이 없습니다. 새로운 훈련을 계획해보세요!</p>
-          <Link href="/dashboard/training" className="inline-flex items-center gap-2 text-primary font-bold bg-primary/5 px-4 py-2 rounded-full hover:bg-primary/10 transition-colors">
+          <h3 className="font-extrabold text-xl text-teal-900 mb-3 relative z-10">오늘의 훈련 일정</h3>
+          <p className="text-teal-700/70 text-sm mb-8 max-w-[220px] font-medium leading-relaxed relative z-10">등록된 훈련 일정이 없어요.<br/>새로운 훈련을 계획해볼까요? 🌱</p>
+          <Link href="/dashboard/training" className="relative z-10 inline-flex items-center gap-2 text-white font-bold bg-teal-500 px-6 py-3 rounded-full hover:bg-teal-600 hover:-translate-y-1 transition-all shadow-md shadow-teal-500/30">
             일정 추가하기 <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
         {/* Recent Notices */}
-        <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100 flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-lg text-accent-navy flex items-center gap-2">
-              <Bell className="w-5 h-5 text-secondary-hover" /> 최근 공지
+        <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-[32px] p-8 border border-indigo-100/50 shadow-sm shadow-indigo-500/5 flex flex-col relative overflow-hidden">
+          <div className="absolute -bottom-10 -left-10 text-indigo-500/5 text-[120px] font-black pointer-events-none transform -rotate-12">📢</div>
+          <div className="flex justify-between items-center mb-6 relative z-10">
+            <h3 className="font-extrabold text-xl text-indigo-900 flex items-center gap-2">
+              <span className="bg-white p-2 rounded-xl shadow-sm text-indigo-500"><Bell className="w-5 h-5" /></span>
+              최근 소식
             </h3>
-            <Link href="/dashboard/notices" className="text-sm font-semibold text-slate-400 hover:text-primary transition-colors">전체보기</Link>
+            <Link href="/dashboard/notices" className="text-sm font-bold text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100/50 px-3 py-1.5 rounded-full transition-colors">더보기</Link>
           </div>
           
-          <div className="space-y-3 flex-1">
+          <div className="space-y-3 flex-1 relative z-10">
             {noticesPending ? (
               <div className="flex justify-center items-center h-full min-h-[100px]">
-                <div className="w-5 h-5 border-2 border-secondary border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-500 rounded-full animate-spin"></div>
               </div>
             ) : !notices || notices.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[100px] text-slate-400">
-                <Bell className="w-8 h-8 mb-2 opacity-20" />
-                <p className="text-sm font-medium">최근 등록된 공지사항이 없습니다.</p>
+              <div className="flex flex-col items-center justify-center h-full min-h-[120px] text-indigo-300">
+                <Bell className="w-10 h-10 mb-3 opacity-30 drop-shadow-sm" />
+                <p className="text-sm font-bold">새로운 소식이 아직 없어요 💭</p>
               </div>
             ) : (
               notices.map((notice) => {
                 const isTournament = notice.title.includes('대회')
                 const isTraining = notice.title.includes('훈련')
-                const tag = isTournament ? '대회' : (isTraining ? '훈련' : '공지')
-                const isPink = isTournament
+                const tag = isTournament ? '대회 🏆' : (isTraining ? '훈련 🏊‍♂️' : '공지 📢')
+                const tagColor = isTournament ? 'bg-rose-100 text-rose-600' : (isTraining ? 'bg-sky-100 text-sky-600' : 'bg-indigo-100 text-indigo-600')
 
                 return (
-                  <div key={notice.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100">
-                    <div className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold ${isPink ? 'bg-accent-pink/10 text-rose-500' : 'bg-secondary/15 text-primary'}`}>
+                  <div key={notice.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-white/60 hover:bg-white rounded-2xl cursor-pointer transition-all border border-white shadow-sm hover:shadow-md hover:-translate-y-0.5 group">
+                    <div className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-black ${tagColor} shadow-sm group-hover:scale-105 transition-transform`}>
                       {tag}
                     </div>
-                    <div className="flex-1 truncate font-semibold text-slate-700 text-sm">
+                    <div className="flex-1 truncate font-bold text-slate-700 text-sm group-hover:text-indigo-900 transition-colors">
                       {notice.title}
                     </div>
-                    <div className="text-xs text-slate-400 font-medium shrink-0">
-                      {new Date(notice.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.$/, '')}
+                    <div className="text-xs text-indigo-400/80 font-bold shrink-0">
+                      {new Date(notice.created_at).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' }).replace(/\.$/, '')}
                     </div>
                   </div>
                 )
