@@ -24,8 +24,7 @@ const getEmbedUrl = (url: string) => {
 export default function CompetitionVideosPage() {
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [uploadType, setUploadType] = useState<'youtube' | 'file'>('youtube')
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadType, setUploadType] = useState<'youtube' | 'gdrive'>('youtube')
   
   const queryClient = useQueryClient()
   const supabase = createClient()
@@ -57,20 +56,7 @@ export default function CompetitionVideosPage() {
       if (uploadType === 'youtube') {
         finalUrl = formData.get('url') as string
       } else {
-        const file = fileInputRef.current?.files?.[0]
-        if (!file) throw new Error('업로드할 영상 파일을 선택해주세요.')
-        
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('videos')
-          .upload(fileName, file, { upsert: false })
-
-        if (uploadError) throw new Error(`영상 업로드 실패: ${uploadError.message}`)
-
-        const { data } = supabase.storage.from('videos').getPublicUrl(fileName)
-        finalUrl = data.publicUrl
+        finalUrl = formData.get('gdriveUrl') as string
       }
       
       const result = await addCompetitionVideo({ title, description, url: finalUrl })
@@ -110,7 +96,7 @@ export default function CompetitionVideosPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black text-accent-navy">대회 영상</h1>
-            <p className="text-sm text-slate-500 font-medium">유튜브 링크 또는 직접 업로드하여 대회 영상을 공유하세요.</p>
+            <p className="text-sm text-slate-500 font-medium">유튜브 링크 또는 구글 드라이브 링크를 등록하여 대회 영상을 공유하세요.</p>
           </div>
         </div>
 
@@ -140,13 +126,13 @@ export default function CompetitionVideosPage() {
             </button>
             <button
               type="button"
-              onClick={() => setUploadType('file')}
+              onClick={() => setUploadType('gdrive')}
               className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-2 font-bold transition-all ${
-                uploadType === 'file' ? 'bg-purple-50 text-purple-600 border-2 border-purple-200' : 'bg-slate-50 text-slate-500 border-2 border-transparent hover:bg-slate-100'
+                uploadType === 'gdrive' ? 'bg-purple-50 text-purple-600 border-2 border-purple-200' : 'bg-slate-50 text-slate-500 border-2 border-transparent hover:bg-slate-100'
               }`}
             >
-              <Upload className="w-5 h-5" />
-              직접 업로드
+              <Link2 className="w-5 h-5" />
+              구글 드라이브 링크
             </button>
           </div>
 
@@ -174,13 +160,13 @@ export default function CompetitionVideosPage() {
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">영상 파일 선택</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">구글 드라이브 링크 (URL)</label>
                 <input 
-                  type="file"
-                  ref={fileInputRef}
-                  accept="video/*"
-                  required
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-slate-800"
+                  name="gdriveUrl" 
+                  required 
+                  type="url"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-slate-800 font-mono text-sm"
+                  placeholder="https://drive.google.com/file/d/.../view"
                 />
               </div>
             )}
@@ -230,7 +216,7 @@ export default function CompetitionVideosPage() {
           <div className="bg-purple-50 p-6 rounded-full inline-block">
             <Film className="w-12 h-12 text-purple-300" />
           </div>
-          <p className="text-slate-400 font-medium">아직 등록된 대회 영상이 없습니다.<br/>유튜브 링크를 등록하거나 직접 촬영한 영상을 올려보세요!</p>
+          <p className="text-slate-400 font-medium">아직 등록된 대회 영상이 없습니다.<br/>유튜브 링크나 구글 드라이브 링크를 올려보세요!</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -249,14 +235,21 @@ export default function CompetitionVideosPage() {
                       allowFullScreen
                     />
                   </div>
-                ) : (
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm flex items-center justify-center relative">
-                    <video 
-                      src={video.url} 
-                      controls 
-                      controlsList="nodownload"
-                      className="w-full h-full object-contain bg-black"
+                ) : video.url.includes('drive.google.com') ? (
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm">
+                    <iframe
+                      className="w-full h-full"
+                      src={video.url.replace(/\/view.*$/, '/preview')}
+                      title={video.title}
+                      allow="autoplay"
                     />
+                  </div>
+                ) : (
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm flex items-center justify-center">
+                    <a href={video.url} target="_blank" rel="noreferrer" className="text-purple-400 hover:text-purple-300 font-bold flex items-center gap-2">
+                      <Link2 className="w-5 h-5" />
+                      영상 링크 열기
+                    </a>
                   </div>
                 )}
                 
