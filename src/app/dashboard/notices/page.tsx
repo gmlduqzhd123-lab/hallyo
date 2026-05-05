@@ -104,7 +104,7 @@ export default function NoticesPage() {
           <div className="py-12 text-center text-slate-400 font-medium bg-white rounded-3xl border border-slate-100">등록된 공지사항이 없습니다.</div>
         ) : (
           notices?.map((notice: any) => (
-            <div key={notice.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <div key={notice.id} id={notice.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 scroll-mt-24">
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-lg font-bold text-accent-navy">{notice.title}</h2>
                 <button 

@@ -189,7 +189,7 @@ export default function DashboardPage() {
                 const tagColor = isTournament ? 'bg-rose-100 text-rose-600' : (isTraining ? 'bg-sky-100 text-sky-600' : 'bg-indigo-100 text-indigo-600')
 
                 return (
-                  <div key={notice.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-white/60 hover:bg-white rounded-2xl cursor-pointer transition-all border border-white shadow-sm hover:shadow-md hover:-translate-y-0.5 group">
+                  <Link href={`/dashboard/notices#${notice.id}`} key={notice.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-white/60 hover:bg-white rounded-2xl cursor-pointer transition-all border border-white shadow-sm hover:shadow-md hover:-translate-y-0.5 group">
                     <div className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-black ${tagColor} shadow-sm group-hover:scale-105 transition-transform`}>
                       {tag}
                     </div>
@@ -199,7 +199,7 @@ export default function DashboardPage() {
                     <div className="text-xs text-indigo-400/80 font-bold shrink-0">
                       {new Date(notice.created_at).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' }).replace(new RegExp('\\\\.$'), '')}
                     </div>
-                  </div>
+                  </Link>
                 )
               })
             )}
