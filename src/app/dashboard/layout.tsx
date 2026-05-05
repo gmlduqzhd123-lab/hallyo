@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, LayoutDashboard, Image as ImageIcon, Film, History, Trophy, Code2 } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2 } from 'lucide-react'
 import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   })
 
   const navItems = [
-    { name: '대시보드', icon: LayoutDashboard, href: '/dashboard' },
+    { name: '홈', icon: Home, href: '/dashboard' },
     { name: '선수 명단', icon: Users, href: '/dashboard/athletes', restrictedTo: ['admin', 'coach'] },
     { name: '대회 일정', icon: Calendar, href: '/dashboard/competitions' },
     { name: '훈련 일정', icon: CalendarDays, href: '/dashboard/training' },

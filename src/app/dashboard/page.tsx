@@ -71,7 +71,7 @@ export default function DashboardPage() {
       {/* Header Title */}
       <div className="flex items-center gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-blue-600">대시보드 ✨</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-blue-600">홈 ✨</h1>
           <p className="text-slate-500 mt-1 font-medium">여수한려초 수영부에 오신 것을 환영합니다! 🐬</p>
         </div>
       </div>
