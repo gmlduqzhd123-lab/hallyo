@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Trophy, Plus, Trash2, Edit2, Medal, Star, Upload, Loader2, X } from 'lucide-react'
+import { Trophy, Plus, Trash2, Edit2, Medal, Star, Upload, Loader2, X, Download, ZoomIn } from 'lucide-react'
 import { toast } from 'sonner'
 import { addHallOfFameRecord, updateHallOfFameRecord, deleteHallOfFameRecord } from '@/app/actions/hall_of_fame'
 
@@ -18,6 +18,7 @@ type HallOfFameData = {
 
 export default function HallOfFamePage() {
   const [isAdding, setIsAdding] = useState(false)
+  const [viewingRecord, setViewingRecord] = useState<HallOfFameData | null>(null)
   const [editingRecord, setEditingRecord] = useState<HallOfFameData | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -298,7 +299,10 @@ export default function HallOfFamePage() {
           {records?.map((record) => (
             <div key={record.id} className="bg-white rounded-[32px] overflow-hidden border border-amber-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
               {record.photo_url ? (
-                <div className="relative h-64 sm:h-80 overflow-hidden bg-slate-900 flex items-center justify-center">
+                <div 
+                  className="relative h-64 sm:h-80 overflow-hidden bg-slate-900 flex items-center justify-center cursor-pointer"
+                  onClick={() => setViewingRecord(record)}
+                >
                   <div 
                     className="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" 
                     style={{ backgroundImage: `url(${record.photo_url})` }}
@@ -307,6 +311,9 @@ export default function HallOfFamePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20 pointer-events-none"></div>
                   <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1 z-30">
                     <Medal className="w-3 h-3" /> 영광의 얼굴
+                  </div>
+                  <div className="absolute bottom-4 right-4 bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 flex items-center gap-1">
+                    <ZoomIn className="w-3 h-3" /> 클릭하여 보기
                   </div>
                 </div>
               ) : (
@@ -353,6 +360,58 @@ export default function HallOfFamePage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Lightbox Viewer */}
+      {viewingRecord && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setViewingRecord(null)}
+        >
+          {/* Close Button */}
+          <button 
+            className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 backdrop-blur-md p-3 rounded-full transition-all z-50"
+            onClick={() => setViewingRecord(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Download Button */}
+          {viewingRecord.photo_url && (
+            <a
+              href={viewingRecord.photo_url}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute top-6 right-20 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 backdrop-blur-md p-3 rounded-full transition-all z-50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Download className="w-6 h-6" />
+            </a>
+          )}
+
+          {/* Photo */}
+          <div className="max-w-[90vw] max-h-[70vh] relative" onClick={(e) => e.stopPropagation()}>
+            {viewingRecord.photo_url && (
+              <img 
+                src={viewingRecord.photo_url} 
+                alt={viewingRecord.athlete_name}
+                className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl"
+              />
+            )}
+          </div>
+
+          {/* Info Overlay */}
+          <div 
+            className="mt-6 max-w-lg w-full text-center" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-white text-2xl font-black mb-2">{viewingRecord.athlete_name}</h3>
+            <p className="text-amber-400 font-bold text-lg mb-3">{viewingRecord.achievement}</p>
+            {viewingRecord.story && (
+              <p className="text-white/70 text-sm leading-relaxed italic">"{viewingRecord.story}"</p>
+            )}
+          </div>
         </div>
       )}
     </main>
