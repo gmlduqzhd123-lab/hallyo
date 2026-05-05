@@ -88,17 +88,7 @@ export default function SchedulePage() {
     const resource = event.resource as any
     const isCompetition = resource.type === 'competition'
     return {
-      style: {
-        backgroundColor: isCompetition ? '#ffe4e6' : '#e0f2fe', // Pastel pink / Pastel sky blue
-        color: isCompetition ? '#e11d48' : '#0369a1',
-        borderRadius: '12px',
-        border: `1px solid ${isCompetition ? '#fecdd3' : '#bae6fd'}`,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-        display: 'block',
-        padding: '3px 6px',
-        margin: '2px 4px',
-        outline: 'none',
-      }
+      className: isCompetition ? 'custom-event-competition' : 'custom-event-training'
     }
   }
 
@@ -226,13 +216,42 @@ export default function SchedulePage() {
             color: #0f172a;
             transform: scale(1.1);
           }
-          .calendar-wrapper .rbc-event { 
-            background: transparent !important;
-            padding: 0 !important;
-            border: none !important;
+          .calendar-wrapper .rbc-event {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            padding: 3px 6px;
+            margin: 2px 4px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            outline: none;
+          }
+          .calendar-wrapper .custom-event-competition {
+            background-color: #ffe4e6;
+            color: #e11d48;
+            border: 1px solid #fecdd3;
+          }
+          .calendar-wrapper .custom-event-training {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+          }
+          /* Multi-day continuous event ribbon effect */
+          .calendar-wrapper .rbc-event.rbc-event-continues-after {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right-color: transparent;
+            margin-right: 0;
+          }
+          .calendar-wrapper .rbc-event.rbc-event-continues-prior {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-left-color: transparent;
+            margin-left: 0;
           }
           .calendar-wrapper .rbc-event-content {
             font-size: 0.8rem;
+            width: 100%;
           }
           .calendar-wrapper .rbc-toolbar-label {
             font-size: 1.5rem;
