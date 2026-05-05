@@ -17,10 +17,18 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 export type Athlete = {
   id: string
-  name: string
+  category?: string
   gender: 'M' | 'F'
+  name: string
+  hanja_name?: string
+  is_registered?: boolean
+  birth_date?: string
+  attendance_start_date?: string
+  attendance_end_date?: string
+  join_date?: string
   grade: number
   class_number?: string
+  student_number?: number
   homeroom_teacher?: string
   student_phone?: string
   parent_name?: string
@@ -59,9 +67,9 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
 
   const columns: ColumnDef<Athlete>[] = [
     {
-      accessorKey: 'name',
-      header: '이름',
-      cell: ({ row }) => <span className="font-bold text-accent-navy">{row.getValue('name')}</span>,
+      accessorKey: 'category',
+      header: '종별',
+      cell: ({ row }) => <span className="text-slate-600 font-medium">{row.getValue('category') || '-'}</span>,
     },
     {
       accessorKey: 'gender',
@@ -70,40 +78,83 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
         const val = row.getValue('gender')
         return (
           <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${val === 'M' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>
-            {val === 'M' ? '남 (Boy)' : '여 (Girl)'}
+            {val === 'M' ? '남' : '여'}
           </span>
         )
       },
     },
     {
+      accessorKey: 'name',
+      header: '이름',
+      cell: ({ row }) => <span className="font-bold text-accent-navy">{row.getValue('name')}</span>,
+    },
+    {
+      accessorKey: 'hanja_name',
+      header: '한자 이름',
+      cell: ({ row }) => <span className="text-slate-600">{row.getValue('hanja_name') || '-'}</span>,
+    },
+    {
+      accessorKey: 'is_registered',
+      header: '등록 여부',
+      cell: ({ row }) => {
+        const val = row.getValue('is_registered')
+        return <span className={`px-2 py-1 text-xs font-bold rounded-lg ${val ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{val ? 'O' : 'X'}</span>
+      },
+    },
+    {
+      accessorKey: 'birth_date',
+      header: '생년월일',
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('birth_date') || '-'}</span>,
+    },
+    {
+      accessorKey: 'attendance_start_date',
+      header: '재학 시작일',
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('attendance_start_date') || '-'}</span>,
+    },
+    {
+      accessorKey: 'attendance_end_date',
+      header: '재학 종료일',
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('attendance_end_date') || '-'}</span>,
+    },
+    {
+      accessorKey: 'join_date',
+      header: '입단 날짜',
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('join_date') || '-'}</span>,
+    },
+    {
       accessorKey: 'grade',
       header: '학년',
-      cell: ({ row }) => <span className="font-semibold text-slate-600">{row.getValue('grade')}학년</span>,
+      cell: ({ row }) => <span className="font-semibold text-slate-600">{row.getValue('grade') ? `${row.getValue('grade')}학년` : '-'}</span>,
     },
     {
       accessorKey: 'class_number',
-      header: '학급',
-      cell: ({ row }) => <span className="text-slate-600">{row.getValue('class_number') || '-'}</span>,
+      header: '반',
+      cell: ({ row }) => <span className="text-slate-600">{row.getValue('class_number') ? `${row.getValue('class_number')}반` : '-'}</span>,
+    },
+    {
+      accessorKey: 'student_number',
+      header: '번호',
+      cell: ({ row }) => <span className="text-slate-600">{row.getValue('student_number') ? `${row.getValue('student_number')}번` : '-'}</span>,
     },
     {
       accessorKey: 'homeroom_teacher',
       header: '담임교사',
-      cell: ({ row }) => <span className="text-slate-600">{row.getValue('homeroom_teacher') || '-'}</span>,
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('homeroom_teacher') || '-'}</span>,
     },
     {
       accessorKey: 'student_phone',
       header: '학생 연락처',
-      cell: ({ row }) => <span className="text-slate-600">{row.getValue('student_phone') || '-'}</span>,
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('student_phone') || '-'}</span>,
     },
     {
       accessorKey: 'parent_name',
       header: '학부모 성함',
-      cell: ({ row }) => <span className="text-slate-600">{row.getValue('parent_name') || '-'}</span>,
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('parent_name') || '-'}</span>,
     },
     {
       accessorKey: 'parent_phone',
       header: '학부모 연락처',
-      cell: ({ row }) => <span className="text-slate-600">{row.getValue('parent_phone') || '-'}</span>,
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('parent_phone') || '-'}</span>,
     },
     {
       id: 'actions',

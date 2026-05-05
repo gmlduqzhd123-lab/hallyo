@@ -102,7 +102,7 @@ export async function softDeleteAthlete(id: string) {
   return { success: true }
 }
 
-export async function bulkAddAthletes(athletes: { name: string, gender: 'M' | 'F', grade: number, class_number?: string, homeroom_teacher?: string, student_phone?: string, parent_name?: string, parent_phone?: string }[]) {
+export async function bulkAddAthletes(athletes: Record<string, any>[]) {
   const supabase = await createClient()
   
   // Zod array validation

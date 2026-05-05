@@ -34,7 +34,7 @@ export default function AthletesPage() {
 
   const bulkMutation = useMutation({
     mutationFn: async (parsedData: unknown[]) => {
-      const res = await bulkAddAthletes(parsedData as { name: string, gender: 'M' | 'F', grade: number }[])
+      const res = await bulkAddAthletes(parsedData as Record<string, any>[])
       if (res?.error) throw new Error(res.error)
       return res
     },
@@ -66,14 +66,22 @@ export default function AthletesPage() {
 
         // Mapping Korean headers to English keys
         const mappedData = data.map((row) => ({
-          name: String(row['이름'] || row['name'] || ''),
+          category: String(row['종별'] || row['category'] || ''),
           gender: row['성별'] === '남' ? 'M' : row['성별'] === '여' ? 'F' : row['gender'],
-          grade: Number(row['학년'] || row['grade']),
-          class_number: String(row['학급'] || row['class'] || ''),
-          homeroom_teacher: String(row['담임선생님'] || row['담임교사'] || row['homeroom_teacher'] || ''),
-          student_phone: String(row['학생 연락처'] || row['학생연락처'] || row['student_phone'] || ''),
-          parent_name: String(row['학부모 성함'] || row['학부모성함'] || row['학부모'] || row['parent_name'] || ''),
-          parent_phone: String(row['학부모 연락처'] || row['학부모연락처'] || row['parent_phone'] || ''),
+          name: String(row['이름'] || row['name'] || ''),
+          hanja_name: String(row['한자 이름'] || row['한자이름'] || ''),
+          is_registered: String(row['선수 등록 여부'] || row['선수등록'] || '').toUpperCase() === 'O',
+          birth_date: String(row['생년 월일'] || row['생년월일'] || ''),
+          attendance_start_date: String(row['재학 기간(시작)'] || row['재학 시작일'] || ''),
+          attendance_end_date: String(row['재학 기간(종료)'] || row['재학 종료일'] || ''),
+          join_date: String(row['입단 날짜'] || row['입단일'] || ''),
+          grade: Number(row['학년'] || row['grade'] || 0),
+          class_number: String(row['반'] || row['학급'] || row['class'] || ''),
+          student_number: Number(row['번호'] || row['student_number'] || 0),
+          homeroom_teacher: String(row['담임교사 성명'] || row['담임교사'] || row['담임선생님'] || ''),
+          student_phone: String(row['학생 연락처'] || row['학생연락처'] || ''),
+          parent_name: String(row['학부모 성함'] || row['학부모성함'] || ''),
+          parent_phone: String(row['학부모 연락처'] || row['학부모연락처'] || ''),
         }))
 
         bulkMutation.mutate(mappedData)
@@ -93,11 +101,19 @@ export default function AthletesPage() {
     }
 
     const exportData = athletes.map(a => ({
-      '이름': a.name,
+      '종별': a.category || '-',
       '성별': a.gender === 'M' ? '남' : '여',
-      '학년': a.grade,
-      '학급': a.class_number || '-',
-      '담임선생님': a.homeroom_teacher || '-',
+      '이름': a.name,
+      '한자 이름': a.hanja_name || '-',
+      '선수 등록 여부': a.is_registered ? 'O' : 'X',
+      '생년 월일': a.birth_date || '-',
+      '재학 기간(시작)': a.attendance_start_date || '-',
+      '재학 기간(종료)': a.attendance_end_date || '-',
+      '입단 날짜': a.join_date || '-',
+      '학년': a.grade || '-',
+      '반': a.class_number || '-',
+      '번호': a.student_number || '-',
+      '담임교사 성명': a.homeroom_teacher || '-',
       '학생 연락처': a.student_phone || '-',
       '학부모 성함': a.parent_name || '-',
       '학부모 연락처': a.parent_phone || '-',
@@ -112,8 +128,8 @@ export default function AthletesPage() {
 
   const handleDownloadTemplate = () => {
     const templateData = [
-      { '이름': '홍길동', '성별': '남', '학년': 5, '학급': '3반', '담임선생님': '이몽룡', '학생 연락처': '010-1111-2222', '학부모 성함': '홍판서', '학부모 연락처': '010-3333-4444' },
-      { '이름': '심청이', '성별': '여', '학년': 4, '학급': '1반', '담임선생님': '성춘향', '학생 연락처': '010-5555-6666', '학부모 성함': '심봉사', '학부모 연락처': '010-7777-8888' }
+      { '종별': '남초', '성별': '남', '이름': '홍길동', '한자 이름': '洪吉童', '선수 등록 여부': 'O', '생년 월일': '2013-01-01', '재학 기간(시작)': '2020-03-02', '재학 기간(종료)': '2026-02-28', '입단 날짜': '2022-05-01', '학년': 5, '반': '3', '번호': 15, '담임교사 성명': '이몽룡', '학생 연락처': '010-1111-2222', '학부모 성함': '홍판서', '학부모 연락처': '010-3333-4444' },
+      { '종별': '여초', '성별': '여', '이름': '심청이', '한자 이름': '沈淸', '선수 등록 여부': 'X', '생년 월일': '2014-05-05', '재학 기간(시작)': '2021-03-02', '재학 기간(종료)': '2027-02-28', '입단 날짜': '2023-01-01', '학년': 4, '반': '1', '번호': 10, '담임교사 성명': '성춘향', '학생 연락처': '010-5555-6666', '학부모 성함': '심봉사', '학부모 연락처': '010-7777-8888' }
     ]
     const ws = XLSX.utils.json_to_sheet(templateData)
     const wb = XLSX.utils.book_new()
