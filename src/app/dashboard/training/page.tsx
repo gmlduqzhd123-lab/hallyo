@@ -200,6 +200,13 @@ export default function SchedulePage() {
             color: #64748b;
             text-align: center;
           }
+          /* Sunday (Red) */
+          .calendar-wrapper .rbc-header:nth-child(1) { color: #ef4444; }
+          .calendar-wrapper .rbc-month-row .rbc-date-cell:nth-child(1) > a { color: #ef4444; }
+          /* Saturday (Blue) */
+          .calendar-wrapper .rbc-header:nth-child(7) { color: #3b82f6; }
+          .calendar-wrapper .rbc-month-row .rbc-date-cell:nth-child(7) > a { color: #3b82f6; }
+          
           .calendar-wrapper .rbc-date-cell > a, .calendar-wrapper .rbc-date-cell > a:link, .calendar-wrapper .rbc-date-cell > a:visited {
             color: inherit;
             display: inline-flex;
