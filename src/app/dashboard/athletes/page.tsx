@@ -70,7 +70,21 @@ export default function AthletesPage() {
             const date = new Date(Math.round((val - 25569) * 86400 * 1000))
             return date.toISOString().split('T')[0]
           }
-          return String(val).trim().replace(/[\.\/]/g, '-')
+          
+          const strVal = String(val).trim()
+          const numMatches = strVal.match(/\d+/g)
+          
+          if (numMatches && numMatches.length >= 3) {
+             const y = numMatches[0]
+             const m = numMatches[1]
+             const d = numMatches[2]
+             
+             if (y.length === 4 && Number(m) >= 1 && Number(m) <= 12 && Number(d) >= 1 && Number(d) <= 31) {
+                 return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+             }
+          }
+          
+          return ''
         }
 
         // Mapping Korean headers to English keys
