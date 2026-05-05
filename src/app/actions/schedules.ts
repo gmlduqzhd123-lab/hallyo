@@ -12,11 +12,23 @@ const scheduleSchema = z.object({
   end_date: z.string().optional(),
   description: z.string().optional(),
   location: z.string().optional(),
+  participants: z.array(z.string()).optional(),
 })
 
 export async function addSchedule(formData: FormData) {
   const supabase = await createClient()
   
+  // Get participants (if passed as JSON or multiple values)
+  const participantsStr = formData.get('participants')
+  let participants: string[] = []
+  if (participantsStr && typeof participantsStr === 'string') {
+    try {
+      participants = JSON.parse(participantsStr)
+    } catch(e) {
+      // In case it's comma separated or just single id
+    }
+  }
+
   const rawData = {
     type: formData.get('type'),
     title: formData.get('title'),
@@ -24,6 +36,7 @@ export async function addSchedule(formData: FormData) {
     end_date: formData.get('end_date') ? formData.get('end_date') : undefined,
     description: formData.get('description') || '',
     location: formData.get('location') || '',
+    participants,
   }
 
   const validatedFields = scheduleSchema.safeParse(rawData)

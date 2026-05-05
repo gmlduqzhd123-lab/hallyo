@@ -19,7 +19,8 @@ const schema = z.object({
   date: z.string().min(10, '시작일을 선택해주세요.'),
   end_date: z.string().optional().or(z.literal('')),
   location: z.string().min(2, '장소를 입력해주세요.'),
-  description: z.string().optional()
+  description: z.string().optional(),
+  participants: z.array(z.string()).optional()
 })
 
 type FormValues = z.infer<typeof schema>
@@ -43,6 +44,19 @@ export default function CompetitionsPage() {
     }
   })
 
+  const { data: athletes } = useQuery({
+    queryKey: ['athletes-list'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('athletes')
+        .select('id, name')
+        .eq('is_deleted', false)
+        .order('name')
+      if (error) throw error
+      return data
+    }
+  })
+
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { type: 'competition' }
@@ -57,6 +71,9 @@ export default function CompetitionsPage() {
       if (data.end_date) formData.append('end_date', data.end_date)
       if (data.location) formData.append('location', data.location)
       if (data.description) formData.append('description', data.description)
+      if (data.participants && data.participants.length > 0) {
+        formData.append('participants', JSON.stringify(data.participants))
+      }
       
       const result = await addSchedule(formData)
       if (result?.error) throw new Error(result.error)
@@ -184,6 +201,23 @@ export default function CompetitionsPage() {
               <label className="block text-sm font-bold text-accent-navy mb-1">장소</label>
               <input {...register('location')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" placeholder="개최 수영장" />
               {errors.location && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.location.message}</p>}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-2">참여 선수</label>
+            <div className="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border">
+              {athletes?.map((athlete: any) => (
+                <label key={athlete.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 rounded-lg transition-colors">
+                  <input 
+                    type="checkbox" 
+                    value={athlete.id} 
+                    {...register('participants')} 
+                    className="w-4 h-4 text-rose-500 rounded border-slate-300 focus:ring-rose-500"
+                  />
+                  <span className="text-sm font-medium text-slate-700">{athlete.name}</span>
+                </label>
+              ))}
             </div>
           </div>
 
