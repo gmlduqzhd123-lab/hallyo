@@ -68,7 +68,12 @@ export default function AthletesPage() {
         const mappedData = data.map((row) => ({
           name: String(row['이름'] || row['name'] || ''),
           gender: row['성별'] === '남' ? 'M' : row['성별'] === '여' ? 'F' : row['gender'],
-          grade: Number(row['학년'] || row['grade'])
+          grade: Number(row['학년'] || row['grade']),
+          class_number: String(row['학급'] || row['class'] || ''),
+          homeroom_teacher: String(row['담임선생님'] || row['담임교사'] || row['homeroom_teacher'] || ''),
+          student_phone: String(row['학생 연락처'] || row['학생연락처'] || row['student_phone'] || ''),
+          parent_name: String(row['학부모 성함'] || row['학부모성함'] || row['학부모'] || row['parent_name'] || ''),
+          parent_phone: String(row['학부모 연락처'] || row['학부모연락처'] || row['parent_phone'] || ''),
         }))
 
         bulkMutation.mutate(mappedData)
@@ -91,13 +96,29 @@ export default function AthletesPage() {
       '이름': a.name,
       '성별': a.gender === 'M' ? '남' : '여',
       '학년': a.grade,
+      '학급': a.class_number || '-',
+      '담임선생님': a.homeroom_teacher || '-',
+      '학생 연락처': a.student_phone || '-',
+      '학부모 성함': a.parent_name || '-',
+      '학부모 연락처': a.parent_phone || '-',
       '등록일': new Date(a.created_at).toLocaleDateString()
     }))
 
     const ws = XLSX.utils.json_to_sheet(exportData)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, '선수 명단')
-    XLSX.writeFile(wb, '한려초_수영부_선수명단.xlsx')
+    XLSX.writeFile(wb, '여수한려초_수영부_선수명단.xlsx')
+  }
+
+  const handleDownloadTemplate = () => {
+    const templateData = [
+      { '이름': '홍길동', '성별': '남', '학년': 5, '학급': '3반', '담임선생님': '이몽룡', '학생 연락처': '010-1111-2222', '학부모 성함': '홍판서', '학부모 연락처': '010-3333-4444' },
+      { '이름': '심청이', '성별': '여', '학년': 4, '학급': '1반', '담임선생님': '성춘향', '학생 연락처': '010-5555-6666', '학부모 성함': '심봉사', '학부모 연락처': '010-7777-8888' }
+    ]
+    const ws = XLSX.utils.json_to_sheet(templateData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '양식')
+    XLSX.writeFile(wb, '선수_일괄등록_양식.xlsx')
   }
 
   return (
@@ -108,7 +129,7 @@ export default function AthletesPage() {
           <p className="text-slate-500 mt-1">등록된 선수를 관리하고 기록을 확인할 수 있습니다.</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <input 
             type="file" 
             accept=".xlsx, .xls, .csv" 
@@ -116,6 +137,14 @@ export default function AthletesPage() {
             ref={fileInputRef}
             onChange={handleFileUpload}
           />
+          <button 
+            onClick={handleDownloadTemplate}
+            className="px-4 py-2.5 rounded-2xl bg-emerald-50 text-emerald-600 font-bold hover:bg-emerald-100 transition-colors flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">양식 다운로드</span>
+          </button>
+
           <button 
             onClick={() => fileInputRef.current?.click()}
             disabled={bulkMutation.isPending}

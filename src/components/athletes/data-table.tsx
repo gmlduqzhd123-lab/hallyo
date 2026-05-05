@@ -20,6 +20,11 @@ export type Athlete = {
   name: string
   gender: 'M' | 'F'
   grade: number
+  class_number?: string
+  homeroom_teacher?: string
+  student_phone?: string
+  parent_name?: string
+  parent_phone?: string
   created_at: string
 }
 
@@ -74,6 +79,31 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
       accessorKey: 'grade',
       header: '학년',
       cell: ({ row }) => <span className="font-semibold text-slate-600">{row.getValue('grade')}학년</span>,
+    },
+    {
+      accessorKey: 'class_number',
+      header: '학급',
+      cell: ({ row }) => <span className="text-slate-600">{row.getValue('class_number') || '-'}</span>,
+    },
+    {
+      accessorKey: 'homeroom_teacher',
+      header: '담임교사',
+      cell: ({ row }) => <span className="text-slate-600">{row.getValue('homeroom_teacher') || '-'}</span>,
+    },
+    {
+      accessorKey: 'student_phone',
+      header: '학생 연락처',
+      cell: ({ row }) => <span className="text-slate-600">{row.getValue('student_phone') || '-'}</span>,
+    },
+    {
+      accessorKey: 'parent_name',
+      header: '학부모 성함',
+      cell: ({ row }) => <span className="text-slate-600">{row.getValue('parent_name') || '-'}</span>,
+    },
+    {
+      accessorKey: 'parent_phone',
+      header: '학부모 연락처',
+      cell: ({ row }) => <span className="text-slate-600">{row.getValue('parent_phone') || '-'}</span>,
     },
     {
       id: 'actions',

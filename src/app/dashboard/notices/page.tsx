@@ -83,7 +83,7 @@ export default function NoticesPage() {
             <Bell className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-accent-navy">공지 사항</h1>
+            <h1 className="text-2xl font-black text-accent-navy">공지사항</h1>
             <p className="text-sm text-slate-500 font-medium">전체 학생 및 학부모 전달 사항을 관리하세요.</p>
           </div>
         </div>

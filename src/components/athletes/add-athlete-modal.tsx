@@ -12,6 +12,11 @@ const athleteSchema = z.object({
   name: z.string().min(2, '이름은 2자 이상 입력해주세요.'),
   gender: z.enum(['M', 'F']),
   grade: z.coerce.number().min(1, '학년은 1~6 사이여야 합니다.').max(6, '학년은 1~6 사이여야 합니다.'),
+  class_number: z.string().optional(),
+  homeroom_teacher: z.string().optional(),
+  student_phone: z.string().optional(),
+  parent_name: z.string().optional(),
+  parent_phone: z.string().optional(),
 })
 
 type AthleteFormValues = z.infer<typeof athleteSchema>
@@ -35,6 +40,11 @@ export function AddAthleteModal({ isOpen, onClose }: Props) {
       formData.append('name', data.name)
       formData.append('gender', data.gender)
       formData.append('grade', data.grade.toString())
+      if (data.class_number) formData.append('class_number', data.class_number)
+      if (data.homeroom_teacher) formData.append('homeroom_teacher', data.homeroom_teacher)
+      if (data.student_phone) formData.append('student_phone', data.student_phone)
+      if (data.parent_name) formData.append('parent_name', data.parent_name)
+      if (data.parent_phone) formData.append('parent_phone', data.parent_phone)
       
       const result = await addAthlete(formData)
       if (result?.error) throw new Error(result.error)
@@ -95,6 +105,51 @@ export function AddAthleteModal({ isOpen, onClose }: Props) {
               placeholder="1~6"
             />
             {errors.grade && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.grade.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">학급</label>
+            <input 
+              {...register('class_number')}
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium border-slate-200"
+              placeholder="예: 3반"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">담임선생님</label>
+            <input 
+              {...register('homeroom_teacher')}
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium border-slate-200"
+              placeholder="담임 성함"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">학생 연락처</label>
+            <input 
+              {...register('student_phone')}
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium border-slate-200"
+              placeholder="010-0000-0000"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">학부모 성함</label>
+            <input 
+              {...register('parent_name')}
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium border-slate-200"
+              placeholder="학부모 성함"
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-bold text-accent-navy mb-1">학부모 연락처</label>
+            <input 
+              {...register('parent_phone')}
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium border-slate-200"
+              placeholder="010-0000-0000"
+            />
           </div>
         </div>
 

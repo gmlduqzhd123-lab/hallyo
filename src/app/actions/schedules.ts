@@ -8,7 +8,8 @@ import { revalidatePath } from 'next/cache'
 const scheduleSchema = z.object({
   type: z.enum(['training', 'competition']),
   title: z.string().min(2, { message: '제목은 2자 이상 입력해주세요.' }),
-  date: z.string().min(10, { message: '올바른 날짜를 선택해주세요.' }),
+  date: z.string().min(10, { message: '올바른 시작일을 선택해주세요.' }),
+  end_date: z.string().optional(),
   description: z.string().optional(),
   location: z.string().optional(),
 })
@@ -20,6 +21,7 @@ export async function addSchedule(formData: FormData) {
     type: formData.get('type'),
     title: formData.get('title'),
     date: formData.get('date'),
+    end_date: formData.get('end_date') ? formData.get('end_date') : undefined,
     description: formData.get('description') || '',
     location: formData.get('location') || '',
   }

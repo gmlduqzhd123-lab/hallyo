@@ -9,6 +9,11 @@ const athleteSchema = z.object({
   name: z.string().min(2, { message: '이름은 2자 이상 입력해주세요.' }),
   gender: z.enum(['M', 'F']),
   grade: z.coerce.number().min(1).max(6),
+  class_number: z.string().optional(),
+  homeroom_teacher: z.string().optional(),
+  student_phone: z.string().optional(),
+  parent_name: z.string().optional(),
+  parent_phone: z.string().optional(),
 })
 
 export async function addAthlete(formData: FormData) {
@@ -18,6 +23,11 @@ export async function addAthlete(formData: FormData) {
     name: formData.get('name'),
     gender: formData.get('gender'),
     grade: formData.get('grade'),
+    class_number: formData.get('class_number') || '',
+    homeroom_teacher: formData.get('homeroom_teacher') || '',
+    student_phone: formData.get('student_phone') || '',
+    parent_name: formData.get('parent_name') || '',
+    parent_phone: formData.get('parent_phone') || '',
   }
 
   const validatedFields = athleteSchema.safeParse(rawData)
@@ -31,6 +41,11 @@ export async function addAthlete(formData: FormData) {
       name: validatedFields.data.name,
       gender: validatedFields.data.gender,
       grade: validatedFields.data.grade,
+      class_number: validatedFields.data.class_number,
+      homeroom_teacher: validatedFields.data.homeroom_teacher,
+      student_phone: validatedFields.data.student_phone,
+      parent_name: validatedFields.data.parent_name,
+      parent_phone: validatedFields.data.parent_phone,
       is_deleted: false,
     }
   ])
@@ -63,7 +78,7 @@ export async function softDeleteAthlete(id: string) {
   return { success: true }
 }
 
-export async function bulkAddAthletes(athletes: { name: string, gender: 'M' | 'F', grade: number }[]) {
+export async function bulkAddAthletes(athletes: { name: string, gender: 'M' | 'F', grade: number, class_number?: string, homeroom_teacher?: string, student_phone?: string, parent_name?: string, parent_phone?: string }[]) {
   const supabase = await createClient()
   
   // Zod array validation

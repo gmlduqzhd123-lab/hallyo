@@ -19,10 +19,31 @@ async function fetchActiveAthletes() {
   return data
 }
 
+// Fetch recent notices
+async function fetchRecentNotices() {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('notices')
+    .select('id, title, created_at')
+    .eq('is_deleted', false)
+    .order('created_at', { ascending: false })
+    .limit(3)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+  return data
+}
+
 export default function DashboardPage() {
   const { data: athletes, isPending, isError, error } = useQuery({
     queryKey: ['athletes', 'active'],
     queryFn: fetchActiveAthletes,
+  })
+
+  const { data: notices, isPending: noticesPending } = useQuery({
+    queryKey: ['notices', 'recent'],
+    queryFn: fetchRecentNotices,
   })
 
   // Calculations for stats
@@ -36,7 +57,7 @@ export default function DashboardPage() {
       {/* Header Title */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-accent-navy">선수 명단 대시보드</h1>
-        <p className="text-slate-500 mt-1">한려초등학교 수영부 선수 현황입니다.</p>
+        <p className="text-slate-500 mt-1">여수한려초등학교 수영부 선수 현황입니다.</p>
       </div>
 
       {/* Stats Widget */}
@@ -104,23 +125,37 @@ export default function DashboardPage() {
           </div>
           
           <div className="space-y-3 flex-1">
-            {[
-              { tag: '공지', title: '5월 주말 훈련 일정 안내', date: '2026.05.04' },
-              { tag: '대회', title: '제 15회 교육감배 수영대회 참가 신청', date: '2026.05.02', isPink: true },
-              { tag: '훈련', title: '실내수영장 보수공사로 인한 장소 변경', date: '2026.04.28' }
-            ].map((notice, i) => (
-              <div key={i} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100">
-                <div className={`px-2.5 py-1 rounded-lg text-xs font-bold ${notice.isPink ? 'bg-accent-pink/10 text-rose-500' : 'bg-secondary/15 text-primary'}`}>
-                  {notice.tag}
-                </div>
-                <div className="flex-1 truncate font-semibold text-slate-700 text-sm">
-                  {notice.title}
-                </div>
-                <div className="text-xs text-slate-400 font-medium">
-                  {notice.date}
-                </div>
+            {noticesPending ? (
+              <div className="flex justify-center items-center h-full min-h-[100px]">
+                <div className="w-5 h-5 border-2 border-secondary border-t-transparent rounded-full animate-spin"></div>
               </div>
-            ))}
+            ) : !notices || notices.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full min-h-[100px] text-slate-400">
+                <Bell className="w-8 h-8 mb-2 opacity-20" />
+                <p className="text-sm font-medium">최근 등록된 공지사항이 없습니다.</p>
+              </div>
+            ) : (
+              notices.map((notice) => {
+                const isTournament = notice.title.includes('대회')
+                const isTraining = notice.title.includes('훈련')
+                const tag = isTournament ? '대회' : (isTraining ? '훈련' : '공지')
+                const isPink = isTournament
+
+                return (
+                  <div key={notice.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100">
+                    <div className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold ${isPink ? 'bg-accent-pink/10 text-rose-500' : 'bg-secondary/15 text-primary'}`}>
+                      {tag}
+                    </div>
+                    <div className="flex-1 truncate font-semibold text-slate-700 text-sm">
+                      {notice.title}
+                    </div>
+                    <div className="text-xs text-slate-400 font-medium shrink-0">
+                      {new Date(notice.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.$/, '')}
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
       </div>

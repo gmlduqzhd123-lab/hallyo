@@ -15,7 +15,8 @@ import { format } from 'date-fns'
 const schema = z.object({
   type: z.literal('competition'),
   title: z.string().min(2, '대회명을 입력해주세요.'),
-  date: z.string().min(10, '날짜를 선택해주세요.'),
+  date: z.string().min(10, '시작일을 선택해주세요.'),
+  end_date: z.string().optional().or(z.literal('')),
   location: z.string().min(2, '장소를 입력해주세요.'),
   description: z.string().optional()
 })
@@ -52,6 +53,7 @@ export default function CompetitionsPage() {
       formData.append('type', data.type)
       formData.append('title', data.title)
       formData.append('date', data.date)
+      if (data.end_date) formData.append('end_date', data.end_date)
       if (data.location) formData.append('location', data.location)
       if (data.description) formData.append('description', data.description)
       
@@ -120,6 +122,7 @@ export default function CompetitionsPage() {
                 <div className="flex items-center gap-3 mb-2">
                   <span className="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs font-bold border border-rose-200">
                     {format(new Date(comp.date), 'yyyy년 MM월 dd일')}
+                    {comp.end_date ? ` ~ ${format(new Date(comp.end_date), 'yyyy년 MM월 dd일')}` : ''}
                   </span>
                   <div className="flex items-center gap-1 text-slate-500 text-sm font-medium">
                     <MapPin className="w-4 h-4" />
@@ -152,11 +155,16 @@ export default function CompetitionsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-accent-navy mb-1">날짜</label>
+              <label className="block text-sm font-bold text-accent-navy mb-1">시작일</label>
               <input type="date" {...register('date')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" />
               {errors.date && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.date.message}</p>}
             </div>
             <div>
+              <label className="block text-sm font-bold text-accent-navy mb-1">종료일</label>
+              <input type="date" {...register('end_date')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" />
+              {errors.end_date && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.end_date.message}</p>}
+            </div>
+            <div className="col-span-2">
               <label className="block text-sm font-bold text-accent-navy mb-1">장소</label>
               <input {...register('location')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" placeholder="개최 수영장" />
               {errors.location && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.location.message}</p>}

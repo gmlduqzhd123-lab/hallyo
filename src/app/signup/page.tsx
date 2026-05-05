@@ -9,10 +9,12 @@ import { toast } from 'sonner'
 import { Waves } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const signupSchema = z.object({
   name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다.'),
   password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다.'),
+  role: z.enum(['admin', 'athlete', 'coach', 'parents', 'guest']),
 })
 
 type SignupFormValues = z.infer<typeof signupSchema>
@@ -51,8 +53,8 @@ export default function SignupPage() {
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent-pink/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         
         <div className="text-center mb-10 relative z-10">
-          <div className="mx-auto bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mb-4">
-            <Waves className="w-10 h-10 text-primary" />
+          <div className="mx-auto w-28 h-28 flex items-center justify-center mb-4">
+            <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={112} height={112} className="w-full h-full object-contain rounded-full shadow-md" />
           </div>
           <h1 className="text-2xl font-bold text-accent-navy mb-2">회원가입</h1>
           <p className="text-secondary-hover font-semibold tracking-wide">HALLYOSWIM</p>
@@ -78,6 +80,22 @@ export default function SignupPage() {
               className={`w-full px-5 py-4 bg-slate-50 border-2 ${errors.password ? 'border-rose-400' : 'border-transparent focus:border-primary'} focus:bg-white rounded-2xl outline-none transition-all text-slate-800 placeholder-slate-400`}
             />
             {errors.password && <p className="text-rose-500 text-xs font-bold mt-2 ml-1">{errors.password.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">역할 (Role)</label>
+            <select 
+              {...register('role')}
+              className={`w-full px-5 py-4 bg-slate-50 border-2 ${errors.role ? 'border-rose-400' : 'border-transparent focus:border-primary'} focus:bg-white rounded-2xl outline-none transition-all text-slate-800`}
+              defaultValue="athlete"
+            >
+              <option value="athlete">선수 (Athlete)</option>
+              <option value="parents">학부모 (Parents)</option>
+              <option value="coach">지도자 (Coach)</option>
+              <option value="guest">일반인 (Guest)</option>
+              <option value="admin">관리자 (Admin)</option>
+            </select>
+            {errors.role && <p className="text-rose-500 text-xs font-bold mt-2 ml-1">{errors.role.message}</p>}
           </div>
           
           <div className="pt-4 space-y-3">

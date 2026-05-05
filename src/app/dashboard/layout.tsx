@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, LayoutDashboard } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, LayoutDashboard, Image as ImageIcon, Film } from 'lucide-react'
 import { logout } from '../actions/auth'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +19,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '훈련 일정', icon: CalendarDays, href: '/dashboard/training' },
     { name: '상담 일지', icon: BookOpen, href: '/dashboard/counseling' },
     { name: '훈련 영상', icon: Video, href: '/dashboard/videos' },
-    { name: '공지 사항', icon: Bell, href: '/dashboard/notices' },
+    { name: '공지사항', icon: Bell, href: '/dashboard/notices' },
+    { name: '활동 사진', icon: ImageIcon, href: '/dashboard/photos' },
+    { name: '대회 영상', icon: Film, href: '/dashboard/competition-videos' },
     { name: '환경 설정', icon: Settings, href: '/dashboard/settings' },
   ]
 
@@ -26,15 +29,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen flex">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-white border-r border-slate-100 shadow-[4px_0_24px_rgb(0,71,171,0.03)] z-10">
-        <div className="p-6 flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-xl">
-            <Waves className="w-6 h-6 text-primary" />
-          </div>
+        <Link href="/" className="p-6 flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={48} height={48} className="w-12 h-12 object-contain rounded-xl" />
           <div>
             <h2 className="font-bold text-accent-navy leading-tight text-sm">여수한려초 수영부</h2>
             <p className="text-xs text-secondary-hover font-bold">HALLYOSWIM</p>
           </div>
-        </div>
+        </Link>
         
         <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
           {navItems.map((item, idx) => {
@@ -42,6 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             return (
             <Link 
               href={item.href}
+              prefetch={true}
               key={idx}
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-semibold ${isActive ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-slate-500 hover:bg-secondary/15 hover:text-primary'}`}
             >
@@ -63,12 +65,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-2">
-            <div className="bg-primary/10 p-1.5 rounded-lg">
-              <Waves className="w-5 h-5 text-primary" />
-            </div>
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={32} height={32} className="w-8 h-8 object-contain rounded-lg" />
             <h1 className="font-bold text-accent-navy text-sm">HALLYOSWIM</h1>
-          </div>
+          </Link>
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 bg-slate-50 rounded-xl text-slate-600"

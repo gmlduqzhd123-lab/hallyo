@@ -21,7 +21,7 @@ export async function login(data: { name: string; password: string }) {
   return { success: true }
 }
 
-export async function signup(data: { password: string; name: string }) {
+export async function signup(data: { password: string; name: string; role: string }) {
   const supabase = await createClient()
   const email = Buffer.from(data.name).toString('hex') + '@hallyoswim.com'
 
@@ -45,7 +45,7 @@ export async function signup(data: { password: string; name: string }) {
         id: authData.user.id,
         email: email,
         name: data.name,
-        role: 'athlete',
+        role: data.role,
         status: 'pending',
       })
 

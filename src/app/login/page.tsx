@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { Waves } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const loginSchema = z.object({
   name: z.string().min(2, '이름을 입력해주세요.'),
@@ -51,8 +52,8 @@ export default function LoginPage() {
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent-pink/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         
         <div className="text-center mb-10 relative z-10">
-          <div className="mx-auto bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mb-4">
-            <Waves className="w-10 h-10 text-primary" />
+          <div className="mx-auto w-28 h-28 flex items-center justify-center mb-4">
+            <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={112} height={112} className="w-full h-full object-contain rounded-full shadow-md" />
           </div>
           <h1 className="text-2xl font-bold text-accent-navy mb-2">여수한려초등학교 수영부</h1>
           <p className="text-secondary-hover font-semibold tracking-wide">HALLYOSWIM</p>

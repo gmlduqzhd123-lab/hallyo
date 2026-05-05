@@ -39,14 +39,25 @@ export default function SchedulePage() {
     }
   })
 
-  const events: Event[] = schedules?.map((s: any) => ({
-    id: s.id,
-    title: s.title,
-    start: new Date(s.date),
-    end: new Date(s.date),
-    allDay: true,
-    resource: s
-  })) || []
+  const events: Event[] = schedules?.map((s: any) => {
+    const startDate = new Date(s.date)
+    const endDate = s.end_date ? new Date(s.end_date) : new Date(s.date)
+    
+    // react-big-calendar의 allDay 이벤트는 종료일이 배제(exclusive)되므로, 
+    // 실제 종료일에도 표시되려면 종료일에 1일을 더해주어야 합니다.
+    if (s.end_date) {
+      endDate.setDate(endDate.getDate() + 1)
+    }
+
+    return {
+      id: s.id,
+      title: s.title,
+      start: startDate,
+      end: endDate,
+      allDay: true,
+      resource: s
+    }
+  }) || []
 
   const handleSelectSlot = (slotInfo: { start: Date }) => {
     setSelectedDate(slotInfo.start)
