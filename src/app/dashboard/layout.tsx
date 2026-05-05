@@ -6,24 +6,53 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, LayoutDashboard, Image as ImageIcon, Film } from 'lucide-react'
 import { logout } from '../actions/auth'
+import { createClient } from '@/utils/supabase/client'
+import { useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
   const pathname = usePathname()
+  const supabase = createClient()
+
+  const { data: userRole } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+        
+      if (error) return null
+      return data.role
+    }
+  })
 
   const navItems = [
     { name: '대시보드', icon: LayoutDashboard, href: '/dashboard' },
     { name: '선수 명단', icon: Users, href: '/dashboard/athletes' },
     { name: '대회 일정', icon: Calendar, href: '/dashboard/competitions' },
     { name: '훈련 일정', icon: CalendarDays, href: '/dashboard/training' },
-    { name: '상담 일지', icon: BookOpen, href: '/dashboard/counseling' },
+    { name: '상담 일지', icon: BookOpen, href: '/dashboard/counseling', adminOnly: true },
     { name: '수영 관련 영상', icon: Video, href: '/dashboard/videos' },
     { name: '공지사항', icon: Bell, href: '/dashboard/notices' },
     { name: '활동 사진', icon: ImageIcon, href: '/dashboard/photos' },
     { name: '대회 영상', icon: Film, href: '/dashboard/competition-videos' },
-    { name: '환경 설정', icon: Settings, href: '/dashboard/settings' },
+    { name: '환경 설정', icon: Settings, href: '/dashboard/settings', adminOnly: true },
   ]
+
+  const handleNavClick = (e: React.MouseEvent, item: any) => {
+    if (item.adminOnly && userRole !== 'admin') {
+      e.preventDefault()
+      toast.error('관리자만 들어갈 수 있습니다.')
+    } else {
+      setIsMobileMenuOpen(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -45,6 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               href={item.href}
               prefetch={true}
               key={idx}
+              onClick={(e) => handleNavClick(e, item)}
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-semibold ${isActive ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-slate-500 hover:bg-secondary/15 hover:text-primary'}`}
             >
               <item.icon className="w-5 h-5" />
@@ -86,7 +116,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link 
                 href={item.href}
                 key={idx}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => handleNavClick(e, item)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold ${isActive ? 'bg-primary text-white' : 'text-slate-600 hover:bg-secondary/10'}`}
               >
                 <item.icon className="w-5 h-5" />
