@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import React from 'react'
 import { CalendarDays, ChevronRight, Bell, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
 
 // Fetch athletes (is_deleted = false)
 async function fetchActiveAthletes() {
@@ -110,9 +111,9 @@ export default function DashboardPage() {
           </div>
           <h3 className="font-bold text-lg text-accent-navy mb-2">오늘의 훈련 일정</h3>
           <p className="text-slate-500 text-sm mb-6 max-w-[200px]">등록된 오늘의 훈련 일정이 없습니다. 새로운 훈련을 계획해보세요!</p>
-          <button className="flex items-center gap-2 text-primary font-bold bg-primary/5 px-4 py-2 rounded-full hover:bg-primary/10 transition-colors">
+          <Link href="/dashboard/training" className="inline-flex items-center gap-2 text-primary font-bold bg-primary/5 px-4 py-2 rounded-full hover:bg-primary/10 transition-colors">
             일정 추가하기 <ChevronRight className="w-4 h-4" />
-          </button>
+          </Link>
         </div>
 
         {/* Recent Notices */}
@@ -121,7 +122,7 @@ export default function DashboardPage() {
             <h3 className="font-bold text-lg text-accent-navy flex items-center gap-2">
               <Bell className="w-5 h-5 text-secondary-hover" /> 최근 공지
             </h3>
-            <button className="text-sm font-semibold text-slate-400 hover:text-primary transition-colors">전체보기</button>
+            <Link href="/dashboard/notices" className="text-sm font-semibold text-slate-400 hover:text-primary transition-colors">전체보기</Link>
           </div>
           
           <div className="space-y-3 flex-1">
