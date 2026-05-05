@@ -110,6 +110,33 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Random Quote Widget */}
+      <div className={`transition-all duration-700 transform ${quote ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        {quote && (
+          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-[2px] shadow-sm">
+            <div className="bg-white rounded-[22px] p-6 md:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden h-full">
+              <div className="absolute top-4 left-6 text-indigo-100 opacity-50">
+                <Quote className="w-16 h-16" fill="currentColor" />
+              </div>
+              <p className="relative z-10 text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 leading-relaxed px-4 md:px-12 py-4">
+                "{quote}"
+              </p>
+              <div className="relative z-10 flex flex-col items-center gap-1 mt-2">
+                <p className="text-sm font-bold text-slate-400 tracking-widest uppercase">
+                  오늘의 명언
+                </p>
+                <button 
+                  onClick={() => setQuote(quotes[Math.floor(Math.random() * quotes.length)])}
+                  className="text-xs text-indigo-400 hover:text-indigo-600 font-semibold mt-2 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors"
+                >
+                  다른 명언 보기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Placeholders Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Today's Training */}
@@ -169,22 +196,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Random Quote Widget */}
-      {quote && (
-        <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-[2px] shadow-sm">
-          <div className="bg-white rounded-[22px] p-6 md:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden h-full">
-            <div className="absolute top-4 left-6 text-indigo-100 opacity-50">
-              <Quote className="w-16 h-16" fill="currentColor" />
-            </div>
-            <p className="relative z-10 text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 leading-relaxed px-4 md:px-12 py-4">
-              "{quote}"
-            </p>
-            <p className="relative z-10 text-sm font-bold text-slate-400 mt-2 tracking-widest uppercase">
-              오늘의 명언
-            </p>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
