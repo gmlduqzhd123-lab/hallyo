@@ -68,19 +68,35 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`${athleteName || '선수'} 개인 최고 기록 (PB)`}>
       <div className="space-y-4">
-        {/* Filters */}
-        <div className="flex items-center gap-2">
+        {/* Event Selector Buttons */}
+        <div className="space-y-2">
           <label className="text-sm font-bold text-accent-navy">종목 선택:</label>
-          <select 
-            value={selectedEvent}
-            onChange={(e) => setSelectedEvent(e.target.value)}
-            className="px-3 py-2 rounded-xl border bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm appearance-none"
-          >
-            <option value="all">전체 종목 보기</option>
-            {uniqueEvents.map(event => (
-              <option key={event} value={event}>{event}</option>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: 'all', label: '전체' },
+              { key: '자유형50M', label: '자유형 50M' },
+              { key: '자유형100M', label: '자유형 100M' },
+              { key: '자유형200M', label: '자유형 200M' },
+              { key: '배영50M', label: '배영 50M' },
+              { key: '평영50M', label: '평영 50M' },
+              { key: '평영100M', label: '평영 100M' },
+              { key: '접영50M', label: '접영 50M' },
+              { key: '접영100M', label: '접영 100M' },
+            ].map(event => (
+              <button
+                key={event.key}
+                type="button"
+                onClick={() => setSelectedEvent(event.key)}
+                className={`px-4 py-2 rounded-2xl text-sm font-bold transition-all ${
+                  selectedEvent === event.key
+                    ? 'bg-primary text-white shadow-md shadow-primary/30 scale-105'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                }`}
+              >
+                {event.label}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
 
         {/* Chart Area */}
