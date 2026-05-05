@@ -2,10 +2,13 @@
 
 import { useState, useMemo } from 'react'
 import { Modal } from '@/components/ui/modal'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Plus, Trash2, Check, X } from 'lucide-react'
+import { addRecord, deleteRecord } from '@/app/actions/records'
+import { toast } from 'sonner'
+import { format } from 'date-fns'
 
 interface Props {
   isOpen: boolean
@@ -16,6 +19,14 @@ interface Props {
 
 export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props) {
   const [selectedEvent, setSelectedEvent] = useState<string>('all')
+  const queryClient = useQueryClient()
+  
+  // Form states
+  const [isAdding, setIsAdding] = useState(false)
+  const [recordTime, setRecordTime] = useState('')
+  const [recordDate, setRecordDate] = useState('')
+  const [isCompetition, setIsCompetition] = useState(false)
+  const [selectedScheduleId, setSelectedScheduleId] = useState('')
 
   const { data: records, isPending, isError } = useQuery({
     queryKey: ['records', athleteId],
@@ -33,6 +44,64 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
       return data
     },
     enabled: !!athleteId && isOpen
+  })
+
+  const { data: schedules } = useQuery({
+    queryKey: ['schedules-all'],
+    queryFn: async () => {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('schedules')
+        .select('id, title, start_date')
+        .eq('is_deleted', false)
+        .order('start_date', { ascending: false })
+      if (error) throw new Error(error.message)
+      return data
+    },
+    enabled: isOpen
+  })
+
+  const addMutation = useMutation({
+    mutationFn: async () => {
+      if (!athleteId || !recordTime || !recordDate || !selectedEvent) throw new Error('필수 정보를 입력해주세요.')
+      const formData = new FormData()
+      formData.append('athlete_id', athleteId)
+      formData.append('event_name', selectedEvent)
+      formData.append('record_time', recordTime)
+      formData.append('record_date', recordDate)
+      if (isCompetition && selectedScheduleId) {
+        formData.append('schedule_id', selectedScheduleId)
+      } else {
+        formData.append('schedule_id', '')
+      }
+      
+      const res = await addRecord(formData)
+      if (res?.error) throw new Error(res.error)
+      return res
+    },
+    onSuccess: () => {
+      toast.success('기록이 등록되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['records', athleteId] })
+      setIsAdding(false)
+      setRecordTime('')
+      setRecordDate('')
+      setIsCompetition(false)
+      setSelectedScheduleId('')
+    },
+    onError: (err: Error) => toast.error(err.message)
+  })
+
+  const delMutation = useMutation({
+    mutationFn: async ({ id, scheduleId }: { id: string, scheduleId: string | null }) => {
+      const res = await deleteRecord(id, scheduleId)
+      if (res?.error) throw new Error(res.error)
+      return res
+    },
+    onSuccess: () => {
+      toast.success('기록이 삭제되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['records', athleteId] })
+    },
+    onError: (err: Error) => toast.error(err.message)
   })
 
   // Extract unique events
@@ -164,6 +233,125 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
             </ResponsiveContainer>
           )}
         </div>
+
+        {/* Record Management Section */}
+        {selectedEvent !== 'all' && (
+          <div className="mt-6 border-t border-slate-100 pt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="font-bold text-accent-navy flex items-center gap-2">
+                기록 관리 <span className="text-sm font-normal text-slate-500">({selectedEvent})</span>
+              </h4>
+              {!isAdding && (
+                <button 
+                  onClick={() => setIsAdding(true)}
+                  className="text-sm bg-primary text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  <Plus className="w-4 h-4" /> 기록 추가
+                </button>
+              )}
+            </div>
+
+            {isAdding && (
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-4 space-y-4 shadow-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">기록일 <span className="text-rose-500">*</span></label>
+                    <input 
+                      type="date" 
+                      value={recordDate} 
+                      onChange={e => setRecordDate(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">기록 (초) <span className="text-rose-500">*</span></label>
+                    <input 
+                      type="number" 
+                      step="0.01" 
+                      value={recordTime} 
+                      onChange={e => setRecordTime(e.target.value)}
+                      placeholder="예: 25.43"
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-3 cursor-pointer w-fit select-none">
+                    <input 
+                      type="checkbox" 
+                      checked={isCompetition} 
+                      onChange={e => setIsCompetition(e.target.checked)}
+                      className="rounded text-primary focus:ring-primary w-4 h-4"
+                    />
+                    대회 기록입니다
+                  </label>
+                  
+                  {isCompetition && (
+                    <select 
+                      value={selectedScheduleId}
+                      onChange={e => setSelectedScheduleId(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-white"
+                    >
+                      <option value="">대회를 선택해주세요</option>
+                      {schedules?.map((s: any) => (
+                        <option key={s.id} value={s.id}>{s.title}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 mt-4">
+                  <button 
+                    onClick={() => setIsAdding(false)}
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-200 transition-colors"
+                  >
+                    취소
+                  </button>
+                  <button 
+                    onClick={() => addMutation.mutate()}
+                    disabled={addMutation.isPending}
+                    className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-primary hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-md shadow-primary/20"
+                  >
+                    {addMutation.isPending ? '저장 중...' : '저장'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
+              {records?.filter(r => r.event_name === selectedEvent).length === 0 ? (
+                <div className="text-sm text-slate-400 text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">등록된 기록이 없습니다.</div>
+              ) : (
+                records?.filter(r => r.event_name === selectedEvent).map(record => (
+                  <div key={record.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all rounded-2xl shadow-sm group">
+                    <div className="flex items-center gap-4">
+                      <div className="font-black text-primary text-xl w-20 tracking-tight">{record.record_time}초</div>
+                      <div className="text-sm flex flex-col gap-1">
+                        <div className="font-bold text-slate-700 flex items-center gap-2">
+                          {format(new Date(record.record_date), 'yyyy.MM.dd')}
+                          {!record.schedule_id && <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full">일반 기록</span>}
+                        </div>
+                        {record.schedule_id && (
+                          <div className="text-xs text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg w-fit font-semibold border border-indigo-100">
+                            🏆 {schedules?.find((s: any) => s.id === record.schedule_id)?.title || '대회 기록'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => { if(confirm('이 기록을 삭제하시겠습니까?')) delMutation.mutate({ id: record.id, scheduleId: record.schedule_id }) }}
+                      className="text-slate-300 hover:text-rose-500 p-2 hover:bg-rose-50 rounded-xl transition-colors opacity-0 group-hover:opacity-100"
+                      title="기록 삭제"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   )

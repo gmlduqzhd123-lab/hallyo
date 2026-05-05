@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 
 const recordSchema = z.object({
-  schedule_id: z.string().uuid(),
+  schedule_id: z.string().uuid().optional().nullable().or(z.literal('')),
   athlete_id: z.string().uuid(),
   event_name: z.string().min(1, { message: '종목을 입력해주세요.' }),
   record_time: z.coerce.number().positive({ message: '유효한 기록을 입력해주세요 (초 단위).' }),
@@ -32,7 +32,7 @@ export async function addRecord(formData: FormData) {
 
   const { error } = await supabase.from('records').insert([
     {
-      schedule_id: validatedFields.data.schedule_id,
+      schedule_id: validatedFields.data.schedule_id || null,
       athlete_id: validatedFields.data.athlete_id,
       event_name: validatedFields.data.event_name,
       record_time: validatedFields.data.record_time,
@@ -47,11 +47,14 @@ export async function addRecord(formData: FormData) {
 
   await logAudit('CREATE', 'records', { event_name: validatedFields.data.event_name })
 
-  revalidatePath(`/dashboard/competitions/${validatedFields.data.schedule_id}`)
+  if (validatedFields.data.schedule_id) {
+    revalidatePath(`/dashboard/competitions/${validatedFields.data.schedule_id}`)
+  }
+  revalidatePath('/dashboard/athletes')
   return { success: true }
 }
 
-export async function deleteRecord(id: string, schedule_id: string) {
+export async function deleteRecord(id: string, schedule_id?: string | null) {
   const supabase = await createClient()
   
   const { error } = await supabase
@@ -65,6 +68,9 @@ export async function deleteRecord(id: string, schedule_id: string) {
 
   await logAudit('DELETE', 'records', { id })
 
-  revalidatePath(`/dashboard/competitions/${schedule_id}`)
+  if (schedule_id) {
+    revalidatePath(`/dashboard/competitions/${schedule_id}`)
+  }
+  revalidatePath('/dashboard/athletes')
   return { success: true }
 }
