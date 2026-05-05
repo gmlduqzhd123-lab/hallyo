@@ -104,40 +104,52 @@ export async function softDeleteAthlete(id: string) {
 
 export async function bulkAddAthletes(athletes: Record<string, any>[]) {
   const supabase = await createClient()
-  
-  // Zod array validation
-  const arraySchema = z.array(athleteSchema)
-  const validated = arraySchema.safeParse(athletes)
-  
-  if (!validated.success) {
-    return { error: '엑셀 데이터 형식이 올바르지 않습니다.' }
+
+  // Minimal validation: name and gender are required
+  const cleanedRows = []
+  for (const a of athletes) {
+    const name = String(a.name || '').trim()
+    const gender = String(a.gender || '').trim()
+
+    if (!name || name.length < 1) continue           // skip rows without a name
+    if (gender !== 'M' && gender !== 'F') continue    // skip rows without valid gender
+
+    const toNullStr  = (v: any) => { const s = String(v ?? '').trim(); return s === '' || s === 'undefined' || s === 'null' ? null : s }
+    const toNullDate = (v: any) => { const s = String(v ?? '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null }
+    const toNullInt  = (v: any) => { const n = Number(v); return isNaN(n) || n === 0 ? null : n }
+
+    cleanedRows.push({
+      name,
+      gender,
+      category: toNullStr(a.category),
+      hanja_name: toNullStr(a.hanja_name),
+      is_registered: a.is_registered === true,
+      birth_date: toNullDate(a.birth_date),
+      attendance_start_date: toNullDate(a.attendance_start_date),
+      attendance_end_date: toNullDate(a.attendance_end_date),
+      join_date: toNullDate(a.join_date),
+      grade: toNullInt(a.grade),
+      class_number: toNullStr(a.class_number),
+      student_number: toNullInt(a.student_number),
+      homeroom_teacher: toNullStr(a.homeroom_teacher),
+      student_phone: toNullStr(a.student_phone),
+      parent_name: toNullStr(a.parent_name),
+      parent_phone: toNullStr(a.parent_phone),
+      is_deleted: false,
+    })
   }
 
-  const { error } = await supabase.from('athletes').insert(
-    validated.data.map(a => ({ 
-      ...a, 
-      category: a.category || null,
-      hanja_name: a.hanja_name || null,
-      birth_date: a.birth_date || null,
-      attendance_start_date: a.attendance_start_date || null,
-      attendance_end_date: a.attendance_end_date || null,
-      join_date: a.join_date || null,
-      grade: a.grade || null,
-      class_number: a.class_number || null,
-      student_number: a.student_number || null,
-      homeroom_teacher: a.homeroom_teacher || null,
-      student_phone: a.student_phone || null,
-      parent_name: a.parent_name || null,
-      parent_phone: a.parent_phone || null,
-      is_deleted: false 
-    }))
-  )
+  if (cleanedRows.length === 0) {
+    return { error: '유효한 선수 데이터가 없습니다. 이름과 성별은 필수입니다.' }
+  }
+
+  const { error } = await supabase.from('athletes').insert(cleanedRows)
 
   if (error) {
     return { error: '일괄 등록에 실패했습니다: ' + error.message }
   }
 
-  await logAudit('CREATE', 'athletes', { bulk: true, count: validated.data.length })
+  await logAudit('CREATE', 'athletes', { bulk: true, count: cleanedRows.length })
 
   revalidatePath('/dashboard/athletes')
   return { success: true }
