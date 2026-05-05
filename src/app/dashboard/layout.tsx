@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '대회 일정', icon: Calendar, href: '/dashboard/competitions' },
     { name: '훈련 일정', icon: CalendarDays, href: '/dashboard/training' },
     { name: '상담 일지', icon: BookOpen, href: '/dashboard/counseling' },
-    { name: '훈련 영상', icon: Video, href: '/dashboard/videos' },
+    { name: '수영 관련 영상', icon: Video, href: '/dashboard/videos' },
     { name: '공지사항', icon: Bell, href: '/dashboard/notices' },
     { name: '활동 사진', icon: ImageIcon, href: '/dashboard/photos' },
     { name: '대회 영상', icon: Film, href: '/dashboard/competition-videos' },

@@ -78,8 +78,8 @@ export default function TrainingVideosPage() {
             <Video className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">훈련 영상 시청</h1>
-            <p className="text-slate-500 text-sm mt-1">유튜브 링크를 등록하여 훈련 영상을 공유하세요.</p>
+            <h1 className="text-2xl font-bold text-slate-900">수영 관련 영상 시청</h1>
+            <p className="text-slate-500 text-sm mt-1">유튜브 링크를 등록하여 수영 관련 영상을 공유하세요.</p>
           </div>
         </div>
         <button
@@ -158,8 +158,8 @@ export default function TrainingVideosPage() {
           <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-5">
             <Video className="w-10 h-10 text-slate-300" />
           </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-2">아직 등록된 훈련 영상이 없네요!</h3>
-          <p className="text-slate-500 mb-6">첫 번째 유튜브 훈련 영상을 공유하여 선수들의 실력을 향상시켜보세요.</p>
+          <h3 className="text-xl font-bold text-slate-800 mb-2">아직 등록된 수영 관련 영상이 없네요!</h3>
+          <p className="text-slate-500 mb-6">첫 번째 유튜브 수영 관련 영상을 공유하여 선수들의 실력을 향상시켜보세요.</p>
           <button
             onClick={() => setIsAdding(true)}
             className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
