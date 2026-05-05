@@ -39,6 +39,27 @@ async function fetchRecentNotices() {
 }
 
 export default function DashboardPage() {
+  const supabase = createClient()
+  
+  const { data: userRole } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+        
+      if (error) return null
+      return data.role
+    }
+  })
+  
+  const isAuthorized = userRole === 'admin' || userRole === 'coach'
+
   const { data: athletes, isPending, isError, error } = useQuery({
     queryKey: ['athletes', 'active'],
     queryFn: fetchActiveAthletes,
@@ -155,9 +176,11 @@ export default function DashboardPage() {
           </Link>
           <h3 className="font-extrabold text-xl text-teal-900 mb-3 relative z-10">오늘의 훈련 일정</h3>
           <p className="text-teal-700/70 text-sm mb-8 max-w-[220px] font-medium leading-relaxed relative z-10">등록된 훈련 일정이 없어요.<br/>새로운 훈련을 계획해볼까요? 🌱</p>
-          <Link href="/dashboard/training" className="relative z-10 inline-flex items-center gap-2 text-white font-bold bg-teal-500 px-6 py-3 rounded-full hover:bg-teal-600 hover:-translate-y-1 transition-all shadow-md shadow-teal-500/30">
-            일정 추가하기 <ChevronRight className="w-4 h-4" />
-          </Link>
+          {isAuthorized && (
+            <Link href="/dashboard/training" className="relative z-10 inline-flex items-center gap-2 text-white font-bold bg-teal-500 px-6 py-3 rounded-full hover:bg-teal-600 hover:-translate-y-1 transition-all shadow-md shadow-teal-500/30">
+              일정 추가하기 <ChevronRight className="w-4 h-4" />
+            </Link>
+          )}
         </div>
 
         {/* Recent Notices */}
