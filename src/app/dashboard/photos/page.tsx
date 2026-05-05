@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Image as ImageIcon, Upload, Trash2 } from 'lucide-react'
+import { Image as ImageIcon, Upload, Trash2, Maximize2, X } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
@@ -9,6 +9,7 @@ import { addPhotos, softDeletePhoto } from '@/app/actions/photos'
 
 export default function PhotosPage() {
   const [isUploading, setIsUploading] = useState(false)
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -140,7 +141,14 @@ export default function PhotosPage() {
                 alt="활동 사진" 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100">
+                <button 
+                  onClick={() => setSelectedPhoto(photo.url)}
+                  className="p-3 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                  title="사진 크게 보기"
+                >
+                  <Maximize2 className="w-5 h-5" />
+                </button>
                 <button 
                   onClick={() => { if(confirm('이 사진을 정말 삭제하시겠습니까?')) deleteMutation.mutate(photo.id) }}
                   className="p-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
@@ -151,6 +159,28 @@ export default function PhotosPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {selectedPhoto && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <button 
+            className="absolute top-6 right-6 p-2 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all"
+            onClick={() => setSelectedPhoto(null)}
+            title="닫기"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img 
+            src={selectedPhoto} 
+            alt="확대된 사진" 
+            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>
