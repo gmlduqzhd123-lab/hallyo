@@ -64,9 +64,10 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     queryFn: async () => {
       const { data, error } = await supabase
         .from('athletes')
-        .select('id, name')
+        .select('id, name, grade')
         .eq('is_deleted', false)
-        .order('name')
+        .order('grade', { ascending: false })
+        .order('name', { ascending: true })
       if (error) throw error
       return data
     }
