@@ -7,9 +7,9 @@ import { AddAthleteModal } from '@/components/athletes/add-athlete-modal'
 import { EditAthleteModal } from '@/components/athletes/edit-athlete-modal'
 import { DataTable, Athlete } from '@/components/athletes/data-table'
 import { PbChartModal } from '@/components/athletes/pb-chart-modal'
-import { UserPlus, Download, Upload, AlertCircle } from 'lucide-react'
+import { UserPlus, Download, Upload, AlertCircle, Trash2 } from 'lucide-react'
 import * as XLSX from 'xlsx'
-import { bulkAddAthletes } from '@/app/actions/athletes'
+import { bulkAddAthletes, bulkDeleteAllAthletes } from '@/app/actions/athletes'
 import { toast } from 'sonner'
 
 export default function AthletesPage() {
@@ -40,8 +40,11 @@ export default function AthletesPage() {
       if (res?.error) throw new Error(res.error)
       return res
     },
-    onSuccess: () => {
-      toast.success('엑셀 일괄 등록이 완료되었습니다.', {
+    onSuccess: (res: any) => {
+      const msg = res?.inserted != null && res?.updated != null
+        ? `신규 ${res.inserted}명 등록, 기존 ${res.updated}명 업데이트 완료!`
+        : '엑셀 일괄 등록이 완료되었습니다.'
+      toast.success(msg, {
         style: { background: '#0047AB', color: 'white', border: 'none' }
       })
       queryClient.invalidateQueries({ queryKey: ['athletes'] })
@@ -117,6 +120,25 @@ export default function AthletesPage() {
       }
     }
     reader.readAsBinaryString(file)
+  }
+
+  const handleDeleteAll = async () => {
+    if (!athletes || athletes.length === 0) {
+      toast.error('삭제할 선수가 없습니다.')
+      return
+    }
+    if (!confirm(`등록된 선수 ${athletes.length}명을 모두 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return
+    if (!confirm('정말로 전체 삭제하시겠습니까? 한 번 더 확인합니다.')) return
+
+    const result = await bulkDeleteAllAthletes()
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success(`${result.count}명의 선수가 모두 삭제되었습니다.`, {
+        style: { background: '#E11D48', color: 'white', border: 'none' }
+      })
+      queryClient.invalidateQueries({ queryKey: ['athletes'] })
+    }
   }
 
   const handleExport = () => {
@@ -209,6 +231,14 @@ export default function AthletesPage() {
           >
             <UserPlus className="w-4 h-4" />
             선수 추가
+          </button>
+
+          <button 
+            onClick={handleDeleteAll}
+            className="px-4 py-2.5 rounded-2xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="hidden sm:inline">전체 삭제</span>
           </button>
         </div>
       </div>

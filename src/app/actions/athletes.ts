@@ -152,8 +152,8 @@ export async function bulkAddAthletes(athletes: Record<string, any>[]) {
     const name = String(a.name || '').trim()
     const gender = String(a.gender || '').trim()
 
-    if (!name || name.length < 1) continue           // skip rows without a name
-    if (gender !== 'M' && gender !== 'F') continue    // skip rows without valid gender
+    if (!name || name.length < 1) continue
+    if (gender !== 'M' && gender !== 'F') continue
 
     const toNullStr  = (v: any) => { const s = String(v ?? '').trim(); return s === '' || s === 'undefined' || s === 'null' ? null : s }
     const toNullDate = (v: any) => { const s = String(v ?? '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null }
@@ -184,14 +184,93 @@ export async function bulkAddAthletes(athletes: Record<string, any>[]) {
     return { error: '유효한 선수 데이터가 없습니다. 이름과 성별은 필수입니다.' }
   }
 
-  const { error } = await supabase.from('athletes').insert(cleanedRows)
+  // Fetch existing athletes to detect duplicates (match by name + gender)
+  const { data: existing } = await supabase
+    .from('athletes')
+    .select('id, name, gender')
+    .eq('is_deleted', false)
 
-  if (error) {
-    return { error: '일괄 등록에 실패했습니다: ' + error.message }
+  const existingMap = new Map<string, string>()
+  if (existing) {
+    for (const e of existing) {
+      existingMap.set(`${e.name}__${e.gender}`, e.id)
+    }
   }
 
-  await logAudit('CREATE', 'athletes', { bulk: true, count: cleanedRows.length })
+  const toInsert: typeof cleanedRows = []
+  const toUpdate: { id: string; data: (typeof cleanedRows)[0] }[] = []
+
+  for (const row of cleanedRows) {
+    const key = `${row.name}__${row.gender}`
+    const existingId = existingMap.get(key)
+    if (existingId) {
+      toUpdate.push({ id: existingId, data: row })
+    } else {
+      toInsert.push(row)
+    }
+  }
+
+  const errors: string[] = []
+
+  // Insert new athletes
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from('athletes').insert(toInsert)
+    if (error) errors.push(`신규 등록 실패: ${error.message}`)
+  }
+
+  // Update existing athletes
+  for (const item of toUpdate) {
+    const { is_deleted, ...updateData } = item.data
+    const { error } = await supabase
+      .from('athletes')
+      .update(updateData)
+      .eq('id', item.id)
+    if (error) errors.push(`${item.data.name} 업데이트 실패: ${error.message}`)
+  }
+
+  if (errors.length > 0) {
+    return { error: errors.join(', ') }
+  }
+
+  await logAudit('CREATE', 'athletes', { 
+    bulk: true, 
+    inserted: toInsert.length, 
+    updated: toUpdate.length 
+  })
 
   revalidatePath('/dashboard/athletes')
-  return { success: true }
+  return { 
+    success: true, 
+    inserted: toInsert.length, 
+    updated: toUpdate.length 
+  }
+}
+
+export async function bulkDeleteAllAthletes() {
+  const supabase = await createClient()
+
+  const { data: athletes } = await supabase
+    .from('athletes')
+    .select('id')
+    .eq('is_deleted', false)
+
+  if (!athletes || athletes.length === 0) {
+    return { error: '삭제할 선수가 없습니다.' }
+  }
+
+  const ids = athletes.map(a => a.id)
+
+  const { error } = await supabase
+    .from('athletes')
+    .update({ is_deleted: true })
+    .in('id', ids)
+
+  if (error) {
+    return { error: '전체 삭제에 실패했습니다: ' + error.message }
+  }
+
+  await logAudit('DELETE', 'athletes', { bulk_delete_all: true, count: ids.length })
+
+  revalidatePath('/dashboard/athletes')
+  return { success: true, count: ids.length }
 }
