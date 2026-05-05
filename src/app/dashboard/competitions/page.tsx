@@ -139,6 +139,11 @@ export default function CompetitionsPage() {
             endDate.setHours(23, 59, 59, 999)
             const isExpired = endDate.getTime() < new Date().getTime()
             
+            const participantNames = comp.participants
+              ?.map((id: string) => athletes?.find((a: any) => a.id === id)?.name)
+              .filter(Boolean)
+              .join(', ')
+            
             return (
             <div key={comp.id} className={`bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex justify-between items-center transition-all group ${isExpired ? 'opacity-50 grayscale hover:opacity-75' : 'hover:shadow-md hover:border-blue-200'}`}>
               <Link href={`/dashboard/competitions/${comp.id}`} className="flex-1 block cursor-pointer">
@@ -154,7 +159,14 @@ export default function CompetitionsPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-bold text-accent-navy group-hover:text-blue-600 transition-colors">{comp.title}</h2>
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-xl font-bold text-accent-navy group-hover:text-blue-600 transition-colors">{comp.title}</h2>
+                      {participantNames && (
+                        <span className="text-sm font-medium text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
+                          {participantNames}
+                        </span>
+                      )}
+                    </div>
                     {comp.description && <p className="text-slate-500 mt-2 text-sm line-clamp-1">{comp.description}</p>}
                   </div>
                 </div>
