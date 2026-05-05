@@ -64,6 +64,15 @@ export default function AthletesPage() {
         const ws = wb.Sheets[wsname]
         const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws)
 
+        const parseExcelDate = (val: unknown): string => {
+          if (!val) return ''
+          if (typeof val === 'number') {
+            const date = new Date(Math.round((val - 25569) * 86400 * 1000))
+            return date.toISOString().split('T')[0]
+          }
+          return String(val).trim().replace(/[\.\/]/g, '-')
+        }
+
         // Mapping Korean headers to English keys
         const mappedData = data.map((row) => ({
           category: String(row['종별'] || row['category'] || ''),
@@ -71,10 +80,10 @@ export default function AthletesPage() {
           name: String(row['이름'] || row['name'] || ''),
           hanja_name: String(row['한자 이름'] || row['한자이름'] || ''),
           is_registered: String(row['선수 등록 여부'] || row['선수등록'] || '').toUpperCase() === 'O',
-          birth_date: String(row['생년 월일'] || row['생년월일'] || ''),
-          attendance_start_date: String(row['재학 기간(시작)'] || row['재학 시작일'] || ''),
-          attendance_end_date: String(row['재학 기간(종료)'] || row['재학 종료일'] || ''),
-          join_date: String(row['입단 날짜'] || row['입단일'] || ''),
+          birth_date: parseExcelDate(row['생년 월일'] || row['생년월일']),
+          attendance_start_date: parseExcelDate(row['재학 기간(시작)'] || row['재학 시작일']),
+          attendance_end_date: parseExcelDate(row['재학 기간(종료)'] || row['재학 종료일']),
+          join_date: parseExcelDate(row['입단 날짜'] || row['입단일']),
           grade: Number(row['학년'] || row['grade'] || 0),
           class_number: String(row['반'] || row['학급'] || row['class'] || ''),
           student_number: Number(row['번호'] || row['student_number'] || 0),
