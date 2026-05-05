@@ -102,6 +102,47 @@ export async function softDeleteAthlete(id: string) {
   return { success: true }
 }
 
+export async function updateAthlete(id: string, data: Record<string, any>) {
+  const supabase = await createClient()
+
+  const toNullStr  = (v: any) => { const s = String(v ?? '').trim(); return s === '' || s === 'undefined' || s === 'null' ? null : s }
+  const toNullDate = (v: any) => { const s = String(v ?? '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null }
+  const toNullInt  = (v: any) => { const n = Number(v); return isNaN(n) || n === 0 ? null : n }
+
+  const cleaned = {
+    name: String(data.name || '').trim(),
+    gender: data.gender,
+    category: toNullStr(data.category),
+    hanja_name: toNullStr(data.hanja_name),
+    is_registered: data.is_registered === true || data.is_registered === 'true',
+    birth_date: toNullDate(data.birth_date),
+    attendance_start_date: toNullDate(data.attendance_start_date),
+    attendance_end_date: toNullDate(data.attendance_end_date),
+    join_date: toNullDate(data.join_date),
+    grade: toNullInt(data.grade),
+    class_number: toNullStr(data.class_number),
+    student_number: toNullInt(data.student_number),
+    homeroom_teacher: toNullStr(data.homeroom_teacher),
+    student_phone: toNullStr(data.student_phone),
+    parent_name: toNullStr(data.parent_name),
+    parent_phone: toNullStr(data.parent_phone),
+  }
+
+  const { error } = await supabase
+    .from('athletes')
+    .update(cleaned)
+    .eq('id', id)
+
+  if (error) {
+    return { error: '선수 정보 수정에 실패했습니다: ' + error.message }
+  }
+
+  await logAudit('UPDATE', 'athletes', { id, name: cleaned.name })
+
+  revalidatePath('/dashboard/athletes')
+  return { success: true }
+}
+
 export async function bulkAddAthletes(athletes: Record<string, any>[]) {
   const supabase = await createClient()
 

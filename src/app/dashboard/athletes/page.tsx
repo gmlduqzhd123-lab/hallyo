@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { AddAthleteModal } from '@/components/athletes/add-athlete-modal'
+import { EditAthleteModal } from '@/components/athletes/edit-athlete-modal'
 import { DataTable, Athlete } from '@/components/athletes/data-table'
 import { PbChartModal } from '@/components/athletes/pb-chart-modal'
 import { UserPlus, Download, Upload, AlertCircle } from 'lucide-react'
@@ -14,6 +15,7 @@ import { toast } from 'sonner'
 export default function AthletesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null)
+  const [editingAthlete, setEditingAthlete] = useState<Athlete | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
 
@@ -221,7 +223,11 @@ export default function AthletesPage() {
            <p className="font-bold">선수 명단을 불러오는 중 오류가 발생했습니다: {error.message}</p>
          </div>
       ) : (
-        <DataTable data={athletes || []} onRowClick={(athlete) => setSelectedAthlete(athlete)} />
+        <DataTable 
+          data={athletes || []} 
+          onRowClick={(athlete) => setSelectedAthlete(athlete)}
+          onEdit={(athlete) => setEditingAthlete(athlete)}
+        />
       )}
 
       {/* Modals */}
@@ -235,6 +241,12 @@ export default function AthletesPage() {
         onClose={() => setSelectedAthlete(null)}
         athleteId={selectedAthlete?.id || null}
         athleteName={selectedAthlete?.name || null}
+      />
+
+      <EditAthleteModal
+        isOpen={!!editingAthlete}
+        onClose={() => setEditingAthlete(null)}
+        athlete={editingAthlete}
       />
     </div>
   )

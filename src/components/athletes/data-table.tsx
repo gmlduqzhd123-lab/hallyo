@@ -10,7 +10,7 @@ import {
   getFilteredRowModel,
   ColumnDef
 } from '@tanstack/react-table'
-import { ChevronDown, ChevronUp, Trash2, LineChart, Search } from 'lucide-react'
+import { ChevronDown, ChevronUp, Trash2, LineChart, Search, Edit2 } from 'lucide-react'
 import { softDeleteAthlete } from '@/app/actions/athletes'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -39,9 +39,10 @@ export type Athlete = {
 interface DataTableProps {
   data: Athlete[]
   onRowClick: (athlete: Athlete) => void
+  onEdit: (athlete: Athlete) => void
 }
 
-export function DataTable({ data, onRowClick }: DataTableProps) {
+export function DataTable({ data, onRowClick, onEdit }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const queryClient = useQueryClient()
@@ -69,7 +70,7 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
     {
       accessorKey: 'category',
       header: '종별',
-      cell: ({ row }) => <span className="text-slate-600 font-medium">{row.getValue('category') || '-'}</span>,
+      cell: ({ row }) => <span className="text-slate-600 font-medium whitespace-nowrap">{row.getValue('category') || '-'}</span>,
     },
     {
       accessorKey: 'gender',
@@ -86,12 +87,12 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
     {
       accessorKey: 'name',
       header: '이름',
-      cell: ({ row }) => <span className="font-bold text-accent-navy">{row.getValue('name')}</span>,
+      cell: ({ row }) => <span className="font-bold text-accent-navy whitespace-nowrap">{row.getValue('name')}</span>,
     },
     {
       accessorKey: 'hanja_name',
       header: '한자 이름',
-      cell: ({ row }) => <span className="text-slate-600">{row.getValue('hanja_name') || '-'}</span>,
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('hanja_name') || '-'}</span>,
     },
     {
       accessorKey: 'is_registered',
@@ -129,12 +130,12 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
     {
       accessorKey: 'class_number',
       header: '반',
-      cell: ({ row }) => <span className="text-slate-600">{row.getValue('class_number') ? `${row.getValue('class_number')}반` : '-'}</span>,
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('class_number') ? `${row.getValue('class_number')}반` : '-'}</span>,
     },
     {
       accessorKey: 'student_number',
       header: '번호',
-      cell: ({ row }) => <span className="text-slate-600">{row.getValue('student_number') ? `${row.getValue('student_number')}번` : '-'}</span>,
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('student_number') ? `${row.getValue('student_number')}번` : '-'}</span>,
     },
     {
       accessorKey: 'homeroom_teacher',
@@ -161,13 +162,20 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
       cell: ({ row }) => {
         const athlete = row.original
         return (
-          <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={() => onEdit(athlete)}
+              className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
+              title="선수 정보 수정"
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
             <button 
               onClick={() => onRowClick(athlete)}
               className="p-2 text-primary hover:bg-primary/10 rounded-xl transition-colors"
               title="개인 최고 기록 (PB) 보기"
             >
-              <LineChart className="w-5 h-5" />
+              <LineChart className="w-4 h-4" />
             </button>
             <button 
               onClick={() => {
@@ -179,7 +187,7 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
               className="p-2 text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-colors disabled:opacity-50"
               title="삭제"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         )
@@ -227,7 +235,7 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
                   {headerGroup.headers.map(header => (
                     <th 
                       key={header.id} 
-                      className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                      className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap"
                       onClick={header.column.getToggleSortingHandler()}
                     >
                       <div className="flex items-center gap-1 font-bold">
@@ -251,10 +259,10 @@ export function DataTable({ data, onRowClick }: DataTableProps) {
                   <tr 
                     key={row.id} 
                     className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group cursor-pointer"
-                    onClick={() => onRowClick(row.original)}
+                    onClick={() => onEdit(row.original)}
                   >
                     {row.getVisibleCells().map(cell => (
-                      <td key={cell.id} className="px-6 py-4">
+                      <td key={cell.id} className="px-6 py-4 whitespace-nowrap">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
