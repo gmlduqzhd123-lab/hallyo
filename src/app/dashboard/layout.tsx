@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems = [
     { name: '대시보드', icon: LayoutDashboard, href: '/dashboard' },
-    { name: '선수 명단', icon: Users, href: '/dashboard/athletes' },
+    { name: '선수 명단', icon: Users, href: '/dashboard/athletes', restrictedTo: ['admin', 'coach'] },
     { name: '대회 일정', icon: Calendar, href: '/dashboard/competitions' },
     { name: '훈련 일정', icon: CalendarDays, href: '/dashboard/training' },
     { name: '상담 일지', icon: BookOpen, href: '/dashboard/counseling', adminOnly: true },
@@ -52,6 +52,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (item.adminOnly && userRole !== 'admin') {
       e.preventDefault()
       toast.error('관리자만 들어갈 수 있습니다.')
+    } else if (item.restrictedTo && !item.restrictedTo.includes(userRole)) {
+      e.preventDefault()
+      toast.error('관리자 또는 코치만 접근할 수 있습니다.')
     } else {
       setIsMobileMenuOpen(false)
     }
