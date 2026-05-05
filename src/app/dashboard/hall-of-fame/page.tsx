@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Trophy, Plus, Trash2, Edit2, Medal, Star, Upload, Loader2, X, Download, ZoomIn } from 'lucide-react'
+import { Trophy, Plus, Trash2, Edit2, Medal, Star, Upload, Loader2, X, Download, ZoomIn, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { addHallOfFameRecord, updateHallOfFameRecord, deleteHallOfFameRecord } from '@/app/actions/hall_of_fame'
 
@@ -13,6 +13,7 @@ type HallOfFameData = {
   achievement: string
   story: string | null
   photo_url: string | null
+  article_url?: string | null
   created_at: string
 }
 
@@ -86,16 +87,17 @@ export default function HallOfFamePage() {
       const athlete_name = formData.get('athlete_name') as string
       const achievement = formData.get('achievement') as string
       const story = formData.get('story') as string
+      const article_url = formData.get('article_url') as string
 
       if (editingRecord) {
         const result = await updateHallOfFameRecord(editingRecord.id, { 
-          athlete_name, achievement, story, photo_url: previewUrl || editingRecord.photo_url 
+          athlete_name, achievement, story, photo_url: previewUrl || editingRecord.photo_url, article_url 
         })
         if (result.error) throw new Error(result.error)
         toast.success('기록이 성공적으로 수정되었습니다.')
       } else {
         const result = await addHallOfFameRecord({ 
-          athlete_name, achievement, story, photo_url: previewUrl 
+          athlete_name, achievement, story, photo_url: previewUrl, article_url 
         })
         if (result.error) throw new Error(result.error)
         toast.success('명예의 전당에 성공적으로 등록되었습니다. 🎉')
@@ -261,6 +263,17 @@ export default function HallOfFamePage() {
               />
             </div>
 
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-amber-900 ml-1">관련 기사 링크 <span className="text-slate-400 font-normal">(선택)</span></label>
+              <input 
+                type="url"
+                name="article_url" 
+                defaultValue={editingRecord?.article_url || ''}
+                className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white"
+                placeholder="예: https://www.news.com/article/..."
+              />
+            </div>
+
             <div className="flex justify-end gap-3 pt-2">
               <button 
                 type="button"
@@ -409,7 +422,18 @@ export default function HallOfFamePage() {
             <h3 className="text-white text-2xl font-black mb-2">{viewingRecord.athlete_name}</h3>
             <p className="text-amber-400 font-bold text-lg mb-3">{viewingRecord.achievement}</p>
             {viewingRecord.story && (
-              <p className="text-white/70 text-sm leading-relaxed italic">"{viewingRecord.story}"</p>
+              <p className="text-white/70 text-sm leading-relaxed italic mb-4">"{viewingRecord.story}"</p>
+            )}
+            {viewingRecord.article_url && (
+              <a 
+                href={viewingRecord.article_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-5 rounded-full transition-all text-sm shadow-lg shadow-amber-500/20"
+              >
+                <ExternalLink className="w-4 h-4" />
+                관련 기사 보기
+              </a>
             )}
           </div>
         </div>

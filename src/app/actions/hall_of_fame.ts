@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function addHallOfFameRecord(data: { athlete_name: string; achievement: string; story?: string | null; photo_url?: string | null }) {
+export async function addHallOfFameRecord(data: { athlete_name: string; achievement: string; story?: string | null; photo_url?: string | null; article_url?: string | null }) {
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -13,6 +13,7 @@ export async function addHallOfFameRecord(data: { athlete_name: string; achievem
       achievement: data.achievement,
       story: data.story || null,
       photo_url: data.photo_url || null,
+      article_url: data.article_url || null,
       is_deleted: false,
     }])
 
@@ -22,7 +23,7 @@ export async function addHallOfFameRecord(data: { athlete_name: string; achievem
   return { success: true }
 }
 
-export async function updateHallOfFameRecord(id: string, data: { athlete_name: string; achievement: string; story?: string | null; photo_url?: string | null }) {
+export async function updateHallOfFameRecord(id: string, data: { athlete_name: string; achievement: string; story?: string | null; photo_url?: string | null; article_url?: string | null }) {
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -32,6 +33,7 @@ export async function updateHallOfFameRecord(id: string, data: { athlete_name: s
       achievement: data.achievement,
       story: data.story || null,
       photo_url: data.photo_url || null,
+      article_url: data.article_url || null,
     })
     .eq('id', id)
 
