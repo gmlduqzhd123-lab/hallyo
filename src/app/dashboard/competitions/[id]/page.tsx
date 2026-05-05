@@ -3,12 +3,13 @@
 import { useState, use } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { ArrowLeft, Trophy, Plus, Trash2, MapPin, Calendar as CalendarIcon } from 'lucide-react'
+import { ArrowLeft, Trophy, Plus, Trash2, MapPin, Calendar as CalendarIcon, Users, UserPlus, Check } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { addRecord, deleteRecord } from '@/app/actions/records'
+import { updateScheduleParticipants } from '@/app/actions/schedules'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -26,6 +27,8 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const resolvedParams = use(params)
   const id = resolvedParams.id
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false)
+  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([])
   const supabase = createClient()
   const queryClient = useQueryClient()
 
@@ -107,6 +110,32 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     }
   })
 
+  const updateParticipantsMutation = useMutation({
+    mutationFn: async (participants: string[]) => {
+      const result = await updateScheduleParticipants(id, participants)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('참여 선수가 수정되었습니다.', { style: { background: '#0047AB', color: 'white' } })
+      queryClient.invalidateQueries({ queryKey: ['competition', id] })
+      setIsParticipantsModalOpen(false)
+    },
+    onError: (err: Error) => toast.error(err.message)
+  })
+
+  const handleToggleParticipant = (athleteId: string) => {
+    setSelectedParticipants(prev => 
+      prev.includes(athleteId) 
+        ? prev.filter(id => id !== athleteId)
+        : [...prev, athleteId]
+    )
+  }
+
+  const handleUpdateParticipants = () => {
+    updateParticipantsMutation.mutate(selectedParticipants)
+  }
+
   const onSubmit = (data: FormValues) => {
     addMutation.mutate(data)
   }
@@ -154,6 +183,37 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
           <h1 className="text-3xl font-black text-accent-navy mb-3">{competition.title}</h1>
           {competition.description && <p className="text-slate-500 text-lg">{competition.description}</p>}
         </div>
+      </div>
+
+      <div className="flex justify-between items-center mt-12 mb-6">
+        <h2 className="text-2xl font-black text-accent-navy flex items-center gap-2">
+          <Users className="w-6 h-6 text-indigo-500" />
+          참여 선수
+        </h2>
+        <button 
+          onClick={() => {
+            setSelectedParticipants(competition.participants || [])
+            setIsParticipantsModalOpen(true)
+          }}
+          className="flex items-center gap-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2.5 rounded-xl font-bold transition-all"
+        >
+          <UserPlus className="w-4 h-4" />
+          참여 선수 수정
+        </button>
+      </div>
+
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-8">
+         {(competition.participants && competition.participants.length > 0) ? (
+           <div className="flex flex-wrap gap-2">
+             {athletes?.filter((a: any) => competition.participants.includes(a.id)).map((a: any) => (
+               <span key={a.id} className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold border border-indigo-100">
+                 {a.name}
+               </span>
+             ))}
+           </div>
+         ) : (
+           <p className="text-slate-400 text-sm font-medium">등록된 참여 선수가 없습니다.</p>
+         )}
       </div>
 
       <div className="flex justify-between items-center mt-12 mb-6">
@@ -255,6 +315,47 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             <button type="submit" disabled={addMutation.isPending} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-accent-navy hover:bg-blue-900 shadow-lg shadow-blue-900/30">등록하기</button>
           </div>
         </form>
+      </Modal>
+
+      <Modal isOpen={isParticipantsModalOpen} onClose={() => setIsParticipantsModalOpen(false)} title="참여 선수 수정">
+        <div className="space-y-4">
+          <p className="text-sm font-bold text-accent-navy mb-4">대회에 참여할 선수를 선택해주세요.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto pr-2">
+            {athletes?.map((athlete: any) => {
+              const isSelected = selectedParticipants.includes(athlete.id)
+              return (
+                <button
+                  key={athlete.id}
+                  onClick={() => handleToggleParticipant(athlete.id)}
+                  className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all text-left ${
+                    isSelected 
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700' 
+                      : 'border-slate-100 hover:border-indigo-200 text-slate-600'
+                  }`}
+                >
+                  <span className="font-bold">{athlete.name}</span>
+                  {isSelected && <Check className="w-4 h-4 text-indigo-500" />}
+                </button>
+              )
+            })}
+          </div>
+          <div className="pt-4 flex gap-3">
+            <button 
+              type="button" 
+              onClick={() => setIsParticipantsModalOpen(false)}
+              className="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
+            >
+              취소
+            </button>
+            <button 
+              onClick={handleUpdateParticipants}
+              disabled={updateParticipantsMutation.isPending}
+              className="flex-1 py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            >
+              {updateParticipantsMutation.isPending ? '수정 중...' : '수정 완료'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )

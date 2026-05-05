@@ -85,3 +85,22 @@ export async function softDeleteSchedule(id: string) {
   revalidatePath('/dashboard/training')
   return { success: true }
 }
+
+export async function updateScheduleParticipants(id: string, participants: string[]) {
+  const supabase = await createClient()
+  
+  const { error } = await supabase
+    .from('schedules')
+    .update({ participants })
+    .eq('id', id)
+
+  if (error) {
+    return { error: '참여 선수 수정에 실패했습니다: ' + error.message }
+  }
+
+  await logAudit('UPDATE', 'schedules', { id, action: 'update_participants' })
+
+  revalidatePath('/dashboard/competitions')
+  revalidatePath(`/dashboard/competitions/${id}`)
+  return { success: true }
+}
