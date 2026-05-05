@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, LayoutDashboard, Image as ImageIcon, Film, History, Trophy } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, LayoutDashboard, Image as ImageIcon, Film, History, Trophy, Code2 } from 'lucide-react'
 import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
@@ -44,6 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '대회 영상', icon: Film, href: '/dashboard/competition-videos' },
     { name: '수영부 연혁', icon: History, href: '/dashboard/history' },
     { name: '명예의 전당', icon: Trophy, href: '/dashboard/hall-of-fame' },
+    { name: '개발자 소개', icon: Code2, href: '/dashboard/developers' },
     { name: '환경 설정', icon: Settings, href: '/dashboard/settings', adminOnly: true },
   ]
 
