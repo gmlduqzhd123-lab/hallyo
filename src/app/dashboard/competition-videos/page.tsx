@@ -3,8 +3,8 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Film, Plus, Trash2, Loader2, Upload, Link2 } from 'lucide-react'
-import { addCompetitionVideo, softDeleteCompetitionVideo } from '@/app/actions/competition-videos'
+import { Film, Plus, Trash2, Loader2, Upload, Link2, Edit2 } from 'lucide-react'
+import { addCompetitionVideo, softDeleteCompetitionVideo, updateCompetitionVideo } from '@/app/actions/competition-videos'
 import { toast } from 'sonner'
 
 type VideoData = {
@@ -23,6 +23,7 @@ const getEmbedUrl = (url: string) => {
 
 export default function CompetitionVideosPage() {
   const [isAdding, setIsAdding] = useState(false)
+  const [editingVideo, setEditingVideo] = useState<VideoData | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadType, setUploadType] = useState<'youtube' | 'gdrive'>('youtube')
   
@@ -59,20 +60,41 @@ export default function CompetitionVideosPage() {
         finalUrl = formData.get('gdriveUrl') as string
       }
       
-      const result = await addCompetitionVideo({ title, description, url: finalUrl })
-      
-      if (result.error) {
-        throw new Error(result.error)
+      if (editingVideo) {
+        const result = await updateCompetitionVideo(editingVideo.id, { title, description, url: finalUrl })
+        if (result.error) {
+          throw new Error(result.error)
+        } else {
+          toast.success('영상이 성공적으로 수정되었습니다.')
+          setEditingVideo(null)
+          queryClient.invalidateQueries({ queryKey: ['competition_videos'] })
+        }
       } else {
-        toast.success('영상이 성공적으로 등록되었습니다.')
-        setIsAdding(false)
-        queryClient.invalidateQueries({ queryKey: ['competition_videos'] })
+        const result = await addCompetitionVideo({ title, description, url: finalUrl })
+        if (result.error) {
+          throw new Error(result.error)
+        } else {
+          toast.success('영상이 성공적으로 등록되었습니다.')
+          setIsAdding(false)
+          queryClient.invalidateQueries({ queryKey: ['competition_videos'] })
+        }
       }
     } catch (err: any) {
       toast.error(err.message || '오류가 발생했습니다.')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleEditClick = (video: VideoData) => {
+    setEditingVideo(video)
+    setIsAdding(false)
+    if (video.url.includes('drive.google.com')) {
+      setUploadType('gdrive')
+    } else {
+      setUploadType('youtube')
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelete = async (id: string) => {
@@ -101,7 +123,7 @@ export default function CompetitionVideosPage() {
         </div>
 
         <button 
-          onClick={() => setIsAdding(!isAdding)}
+          onClick={() => { setIsAdding(!isAdding); setEditingVideo(null); }}
           className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-purple-500/30"
         >
           <Plus className="w-5 h-5" />
@@ -109,9 +131,9 @@ export default function CompetitionVideosPage() {
         </button>
       </div>
 
-      {isAdding && (
+      {(isAdding || editingVideo) && (
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 animate-in fade-in slide-in-from-top-4">
-          <h2 className="text-xl font-bold text-slate-800 mb-6">새 영상 등록하기</h2>
+          <h2 className="text-xl font-bold text-slate-800 mb-6">{editingVideo ? '영상 수정하기' : '새 영상 등록하기'}</h2>
           
           <div className="flex gap-4 mb-6">
             <button
@@ -136,11 +158,12 @@ export default function CompetitionVideosPage() {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form key={editingVideo ? editingVideo.id : 'add'} onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">영상 제목</label>
               <input 
                 name="title" 
+                defaultValue={editingVideo?.title || ''}
                 required 
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-slate-800"
                 placeholder="예: 제55회 전국소년체육대회 자유형 결승"
@@ -152,6 +175,7 @@ export default function CompetitionVideosPage() {
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">유튜브 링크 (URL)</label>
                 <input 
                   name="url" 
+                  defaultValue={editingVideo && !editingVideo.url.includes('drive.google.com') ? editingVideo.url : ''}
                   required 
                   type="url"
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-slate-800 font-mono text-sm"
@@ -163,6 +187,7 @@ export default function CompetitionVideosPage() {
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">구글 드라이브 링크 (URL)</label>
                 <input 
                   name="gdriveUrl" 
+                  defaultValue={editingVideo && editingVideo.url.includes('drive.google.com') ? editingVideo.url : ''}
                   required 
                   type="url"
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-slate-800 font-mono text-sm"
@@ -175,6 +200,7 @@ export default function CompetitionVideosPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">영상 설명 (선택사항)</label>
               <textarea 
                 name="description" 
+                defaultValue={editingVideo?.description || ''}
                 rows={3}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all resize-none text-slate-800"
                 placeholder="영상에 대한 설명이나 피드백을 입력하세요."
@@ -184,7 +210,7 @@ export default function CompetitionVideosPage() {
             <div className="flex justify-end gap-3 pt-4">
               <button 
                 type="button" 
-                onClick={() => setIsAdding(false)}
+                onClick={() => { setIsAdding(false); setEditingVideo(null); }}
                 className="px-6 py-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-semibold transition-colors"
               >
                 취소
@@ -196,10 +222,12 @@ export default function CompetitionVideosPage() {
               >
                 {isSubmitting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
+                ) : editingVideo ? (
+                  <Edit2 className="w-5 h-5" />
                 ) : (
                   <Plus className="w-5 h-5" />
                 )}
-                {isSubmitting ? '업로드 중...' : '등록 완료'}
+                {isSubmitting ? '진행 중...' : (editingVideo ? '수정 완료' : '등록 완료')}
               </button>
             </div>
           </form>
@@ -262,13 +290,22 @@ export default function CompetitionVideosPage() {
                       </p>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleDelete(video.id)}
-                    className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
-                    title="삭제"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => handleEditClick(video)}
+                      className="p-2.5 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-xl transition-colors shrink-0"
+                      title="수정"
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(video.id)}
+                      className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+                      title="삭제"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             )

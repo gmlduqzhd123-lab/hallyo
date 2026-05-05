@@ -50,3 +50,30 @@ export async function softDeleteCompetitionVideo(id: string) {
   revalidatePath('/dashboard/competition-videos')
   return { success: true }
 }
+
+export async function updateCompetitionVideo(id: string, data: { title: string, url: string, description?: string }) {
+  const supabase = await createClient()
+  
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData?.user) {
+    return { error: '인증에 실패했습니다. 다시 로그인해주세요.' }
+  }
+
+  const { error } = await supabase
+    .from('competition_videos')
+    .update({
+      title: data.title,
+      url: data.url,
+      description: data.description,
+    })
+    .eq('id', id)
+
+  if (error) {
+    return { error: '영상 수정에 실패했습니다: ' + error.message }
+  }
+
+  await logAudit('UPDATE', 'competition_videos', { id, title: data.title })
+
+  revalidatePath('/dashboard/competition-videos')
+  return { success: true }
+}
