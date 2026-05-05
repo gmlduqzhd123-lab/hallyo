@@ -6,7 +6,6 @@ import { createClient } from '@/utils/supabase/client'
 import { Trophy, Plus, Trash2, Edit2, Medal, Star, Upload, Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { addHallOfFameRecord, updateHallOfFameRecord, deleteHallOfFameRecord } from '@/app/actions/hall_of_fame'
-import { uploadPhoto } from '@/utils/supabase/storage'
 
 type HallOfFameData = {
   id: string
@@ -58,8 +57,17 @@ export default function HallOfFamePage() {
 
     setUploadingImage(true)
     try {
-      const url = await uploadPhoto(file)
-      setPreviewUrl(url)
+      const fileExt = file.name.split('.').pop()
+      const fileName = `hall_of_fame_${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(fileName, file, { upsert: false })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('photos').getPublicUrl(fileName)
+      setPreviewUrl(data.publicUrl)
     } catch (err: any) {
       toast.error('사진 업로드에 실패했습니다.')
     } finally {
@@ -339,6 +347,6 @@ export default function HallOfFamePage() {
           ))}
         </div>
       )}
-    </div>
+    </main>
   )
 }

@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function addHallOfFameRecord(data: { athlete_name: string; achievement: string; story?: string; photo_url?: string }) {
+export async function addHallOfFameRecord(data: { athlete_name: string; achievement: string; story?: string | null; photo_url?: string | null }) {
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -22,7 +22,7 @@ export async function addHallOfFameRecord(data: { athlete_name: string; achievem
   return { success: true }
 }
 
-export async function updateHallOfFameRecord(id: string, data: { athlete_name: string; achievement: string; story?: string; photo_url?: string }) {
+export async function updateHallOfFameRecord(id: string, data: { athlete_name: string; achievement: string; story?: string | null; photo_url?: string | null }) {
   const supabase = await createClient()
 
   const { error } = await supabase
