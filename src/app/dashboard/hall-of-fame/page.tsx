@@ -207,8 +207,12 @@ export default function HallOfFamePage() {
                     </div>
                   ) : previewUrl ? (
                     <>
-                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110" 
+                        style={{ backgroundImage: `url(${previewUrl})` }}
+                      ></div>
+                      <img src={previewUrl} alt="Preview" className="w-full h-full object-contain relative z-10 drop-shadow-md" />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <span className="text-white font-bold text-sm bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">사진 변경</span>
                       </div>
                     </>
@@ -294,10 +298,14 @@ export default function HallOfFamePage() {
           {records?.map((record) => (
             <div key={record.id} className="bg-white rounded-[32px] overflow-hidden border border-amber-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
               {record.photo_url ? (
-                <div className="relative h-64 overflow-hidden bg-slate-100">
-                  <img src={record.photo_url} alt={record.athlete_name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <div className="relative h-64 sm:h-80 overflow-hidden bg-slate-900 flex items-center justify-center">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" 
+                    style={{ backgroundImage: `url(${record.photo_url})` }}
+                  ></div>
+                  <img src={record.photo_url} alt={record.athlete_name} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105 relative z-10 drop-shadow-2xl" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20 pointer-events-none"></div>
+                  <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1 z-30">
                     <Medal className="w-3 h-3" /> 영광의 얼굴
                   </div>
                 </div>
