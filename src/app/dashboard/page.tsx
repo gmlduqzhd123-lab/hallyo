@@ -150,9 +150,9 @@ export default function DashboardPage() {
         {/* Today's Training */}
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-[32px] p-8 border border-teal-100/50 shadow-sm shadow-teal-500/5 flex flex-col items-center justify-center min-h-[280px] text-center group hover:shadow-md hover:shadow-teal-500/10 transition-all cursor-pointer relative overflow-hidden">
           <div className="absolute -top-10 -right-10 text-teal-500/5 text-[120px] font-black pointer-events-none transform rotate-12">🏊‍♂️</div>
-          <div className="w-20 h-20 bg-white rounded-[24px] shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
+          <Link href="/dashboard/training" className="w-20 h-20 bg-white rounded-[24px] shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
             <CalendarDays className="w-10 h-10 text-teal-500" />
-          </div>
+          </Link>
           <h3 className="font-extrabold text-xl text-teal-900 mb-3 relative z-10">오늘의 훈련 일정</h3>
           <p className="text-teal-700/70 text-sm mb-8 max-w-[220px] font-medium leading-relaxed relative z-10">등록된 훈련 일정이 없어요.<br/>새로운 훈련을 계획해볼까요? 🌱</p>
           <Link href="/dashboard/training" className="relative z-10 inline-flex items-center gap-2 text-white font-bold bg-teal-500 px-6 py-3 rounded-full hover:bg-teal-600 hover:-translate-y-1 transition-all shadow-md shadow-teal-500/30">
