@@ -7,6 +7,7 @@ import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote, BookOpen, Downloa
 import Link from 'next/link'
 import { quotes } from '@/lib/quotes'
 import { poems } from '@/data/poems'
+import { essays } from '@/data/essays'
 
 // Fetch athletes (is_deleted = false)
 async function fetchActiveAthletes() {
@@ -72,6 +73,8 @@ export default function DashboardPage() {
 
   const [quote, setQuote] = useState<string>('')
   const [poem, setPoem] = useState<{title: string, page: string, content: string} | null>(null)
+  const [essay, setEssay] = useState<{title: string, content: string} | null>(null)
+  const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay'>('poem')
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   useEffect(() => {
@@ -80,6 +83,9 @@ export default function DashboardPage() {
     
     const randomPoem = poems[Math.floor(Math.random() * poems.length)]
     setPoem(randomPoem)
+
+    const randomEssay = essays[Math.floor(Math.random() * essays.length)]
+    setEssay(randomEssay)
 
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault()
@@ -260,45 +266,106 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Voice of Mind - Poems */}
-      {poem && (
-        <div className="bg-gradient-to-br from-fuchsia-50 to-pink-50 rounded-[32px] p-6 md:p-8 border border-fuchsia-100/50 shadow-sm shadow-fuchsia-500/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-          
-          <div className="flex justify-between items-center mb-6 relative z-10">
-            <h3 className="font-extrabold text-xl md:text-2xl text-fuchsia-900 flex items-center gap-3">
-              <span className="bg-white p-2.5 rounded-xl shadow-sm text-fuchsia-500">
-                <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
-              </span>
-              <a 
-                href="https://www.yes24.com/product/goods/154230919" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-fuchsia-600 hover:underline underline-offset-4 decoration-fuchsia-300 transition-all"
+      {/* Reading Section (Poems / Essays) */}
+      <div className="flex flex-col gap-4">
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-2 md:gap-4 justify-start">
+          <button
+            onClick={() => setActiveReadingTab('poem')}
+            className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base transition-all shadow-sm ${
+              activeReadingTab === 'poem'
+                ? 'bg-fuchsia-500 text-white shadow-fuchsia-500/30 border border-fuchsia-500'
+                : 'bg-white text-fuchsia-400 hover:bg-fuchsia-50 border border-fuchsia-100'
+            }`}
+          >
+            🌸 마음의 목소리
+          </button>
+          <button
+            onClick={() => setActiveReadingTab('essay')}
+            className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base transition-all shadow-sm ${
+              activeReadingTab === 'essay'
+                ? 'bg-blue-500 text-white shadow-blue-500/30 border border-blue-500'
+                : 'bg-white text-blue-400 hover:bg-blue-50 border border-blue-100'
+            }`}
+          >
+            🏊‍♂️ 수영부 에세이
+          </button>
+        </div>
+
+        {/* Voice of Mind - Poems */}
+        {activeReadingTab === 'poem' && poem && (
+          <div className="bg-gradient-to-br from-fuchsia-50 to-pink-50 rounded-[32px] p-6 md:p-8 border border-fuchsia-100/50 shadow-sm shadow-fuchsia-500/5 relative overflow-hidden group animate-in fade-in zoom-in-95 duration-500">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 relative z-10">
+              <h3 className="font-extrabold text-xl md:text-2xl text-fuchsia-900 flex items-center gap-3">
+                <span className="bg-white p-2.5 rounded-xl shadow-sm text-fuchsia-500 shrink-0">
+                  <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
+                </span>
+                <a 
+                  href="https://www.yes24.com/product/goods/154230919" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-fuchsia-600 hover:underline underline-offset-4 decoration-fuchsia-300 transition-all break-keep"
+                >
+                  마음의 목소리(숨결처럼 너를 지나, 달디단) 🌸
+                </a>
+              </h3>
+              <button 
+                onClick={() => setPoem(poems[Math.floor(Math.random() * poems.length)])}
+                className="shrink-0 text-xs md:text-sm font-bold text-fuchsia-500 hover:text-white bg-white hover:bg-fuchsia-400 px-4 py-2 rounded-full transition-all shadow-sm flex items-center gap-2 border border-fuchsia-100"
               >
-                마음의 목소리(숨결처럼 너를 지나, 달디단) 🌸
-              </a>
-            </h3>
-            <button 
-              onClick={() => setPoem(poems[Math.floor(Math.random() * poems.length)])}
-              className="text-xs md:text-sm font-bold text-fuchsia-500 hover:text-white bg-white hover:bg-fuchsia-400 px-4 py-2 rounded-full transition-all shadow-sm flex items-center gap-2 border border-fuchsia-100"
-            >
-              다른 시 읽기 📖
-            </button>
-          </div>
-          
-          <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 md:p-10 border border-white shadow-inner relative z-10">
-            <div className="flex flex-col items-center text-center">
-              <h4 className="text-xl md:text-2xl font-black text-slate-800 mb-2">{poem.title}</h4>
-              <p className="text-xs md:text-sm font-bold text-fuchsia-400 mb-8">{poem.page}</p>
-              
-              <div className="text-base md:text-lg text-slate-700 leading-[2.2] font-medium whitespace-pre-wrap max-w-2xl text-center">
-                {poem.content}
+                다른 시 읽기 📖
+              </button>
+            </div>
+            
+            <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 md:p-10 border border-white shadow-inner relative z-10">
+              <div className="flex flex-col items-center text-center">
+                <h4 className="text-xl md:text-2xl font-black text-slate-800 mb-2 break-keep">{poem.title}</h4>
+                <p className="text-xs md:text-sm font-bold text-fuchsia-400 mb-8">{poem.page}</p>
+                
+                <div className="text-base md:text-lg text-slate-700 leading-[2.2] font-medium whitespace-pre-wrap max-w-2xl text-center break-keep">
+                  {poem.content}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Swimming Team Essays */}
+        {activeReadingTab === 'essay' && essay && (
+          <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-[32px] p-6 md:p-8 border border-blue-100/50 shadow-sm shadow-blue-500/5 relative overflow-hidden group animate-in fade-in zoom-in-95 duration-500">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 relative z-10">
+              <h3 className="font-extrabold text-xl md:text-2xl text-blue-900 flex items-center gap-3">
+                <span className="bg-white p-2.5 rounded-xl shadow-sm text-blue-500 shrink-0">
+                  <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
+                </span>
+                <span className="break-keep">
+                  수영부 에세이(4번 레인, 엽쌤) 🏊‍♂️
+                </span>
+              </h3>
+              <button 
+                onClick={() => setEssay(essays[Math.floor(Math.random() * essays.length)])}
+                className="shrink-0 text-xs md:text-sm font-bold text-blue-500 hover:text-white bg-white hover:bg-blue-400 px-4 py-2 rounded-full transition-all shadow-sm flex items-center gap-2 border border-blue-100"
+              >
+                다른 에세이 읽기 📖
+              </button>
+            </div>
+            
+            <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 md:p-10 border border-white shadow-inner relative z-10">
+              <div className="flex flex-col items-center text-center">
+                <h4 className="text-xl md:text-2xl font-black text-slate-800 mb-8 break-keep">{essay.title}</h4>
+                
+                <div className="text-base md:text-lg text-slate-700 leading-[2.2] font-medium whitespace-pre-wrap max-w-2xl text-center md:text-left break-keep">
+                  {essay.content}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
     </div>
   )
