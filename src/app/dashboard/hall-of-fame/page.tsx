@@ -154,24 +154,24 @@ export default function HallOfFamePage() {
   return (
     <main className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-400 p-8 rounded-[32px] shadow-lg shadow-amber-500/20 text-white relative overflow-hidden border border-white/20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-400 p-6 md:p-8 rounded-[32px] shadow-lg shadow-amber-500/20 text-white relative overflow-hidden border border-white/20">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-10 w-40 h-40 bg-orange-300/30 rounded-full blur-2xl translate-y-1/2"></div>
         
         <div className="relative z-10 flex items-center gap-4">
-          <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner">
+          <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner shrink-0">
             <Trophy className="w-8 h-8 text-yellow-100" />
           </div>
           <div>
-            <h1 className="text-3xl font-black drop-shadow-md">명예의 전당</h1>
-            <p className="text-amber-100 mt-1 font-medium text-lg">빛나는 영광의 순간들, 자랑스러운 우리 선수들 ✨</p>
+            <h1 className="text-2xl md:text-3xl font-black drop-shadow-md break-keep">명예의 전당</h1>
+            <p className="text-amber-100 mt-1 font-medium text-base md:text-lg break-keep">빛나는 영광의 순간들, 자랑스러운 우리 선수들 ✨</p>
           </div>
         </div>
 
         {userRole === 'admin' && (
           <button 
             onClick={() => { setIsAdding(!isAdding); setEditingRecord(null); setPreviewUrl(null); }}
-            className="relative z-10 flex items-center gap-2 bg-white text-amber-600 hover:bg-amber-50 px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+            className="relative z-10 flex items-center justify-center gap-2 bg-white text-amber-600 hover:bg-amber-50 px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 shrink-0 whitespace-nowrap w-full md:w-auto"
           >
             <Plus className="w-5 h-5" />
             기록 등록
@@ -400,8 +400,8 @@ export default function HallOfFamePage() {
                   </div>
                 </div>
 
-                <h3 className="text-2xl font-black text-slate-800 mb-1">{record.athlete_name}</h3>
-                <h4 className="text-lg font-bold text-amber-600 mb-4">{record.achievement}</h4>
+                <h3 className="text-2xl font-black text-slate-800 mb-1 break-keep">{record.athlete_name}</h3>
+                <h4 className="text-lg font-bold text-amber-600 mb-4 break-keep">{record.achievement}</h4>
                 
                 {record.story && (
                   <div className="mt-2 bg-slate-50 p-5 rounded-2xl text-slate-600 text-sm leading-relaxed relative italic flex-1 border border-slate-100">
@@ -502,8 +502,8 @@ export default function HallOfFamePage() {
             className="mt-6 max-w-2xl w-full text-center bg-black/40 p-6 rounded-3xl backdrop-blur-md" 
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-white text-2xl md:text-3xl font-black mb-2">{viewingRecord.athlete_name}</h3>
-            <p className="text-amber-400 font-bold text-lg md:text-xl mb-6">{viewingRecord.achievement}</p>
+            <h3 className="text-white text-2xl md:text-3xl font-black mb-2 break-keep">{viewingRecord.athlete_name}</h3>
+            <p className="text-amber-400 font-bold text-lg md:text-xl mb-6 break-keep">{viewingRecord.achievement}</p>
             
             {viewingRecord.story && (
               <p className="text-white/80 text-sm md:text-base leading-relaxed italic mb-6">"{viewingRecord.story}"</p>

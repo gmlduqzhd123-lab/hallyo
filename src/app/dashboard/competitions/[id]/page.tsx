@@ -260,20 +260,20 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
           <Trophy className="w-48 h-48" />
         </div>
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-rose-100 text-rose-600 px-4 py-1.5 rounded-full text-sm font-black border border-rose-200">
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <span className="bg-rose-100 text-rose-600 px-4 py-1.5 rounded-full text-sm font-black border border-rose-200 whitespace-nowrap">
               {format(new Date(competition.date), 'yyyy년 MM월 dd일')}
               {competition.end_date ? ` ~ ${format(new Date(competition.end_date), 'yyyy년 MM월 dd일')}` : ''}
             </span>
             {competition.location && (
-              <div className="flex items-center gap-1.5 text-slate-600 text-sm font-bold bg-slate-100 px-4 py-1.5 rounded-full">
+              <div className="flex items-center gap-1.5 text-slate-600 text-sm font-bold bg-slate-100 px-4 py-1.5 rounded-full whitespace-nowrap">
                 <MapPin className="w-4 h-4" />
                 {competition.location}
               </div>
             )}
           </div>
-          <h1 className="text-3xl font-black text-accent-navy mb-3">{competition.title}</h1>
-          {competition.description && <p className="text-slate-500 text-lg">{competition.description}</p>}
+          <h1 className="text-2xl md:text-3xl font-black text-accent-navy mb-3 break-keep leading-tight">{competition.title}</h1>
+          {competition.description && <p className="text-slate-500 text-base md:text-lg break-keep leading-relaxed">{competition.description}</p>}
         </div>
       </div>
 
