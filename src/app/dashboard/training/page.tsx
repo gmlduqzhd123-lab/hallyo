@@ -366,7 +366,7 @@ export default function SchedulePage() {
             startAccessor="start"
             endAccessor="end"
             culture="ko"
-            views={{ month: true, week: true, day: true, agenda: true, year: YearView } as any}
+            views={{ month: true, week: true, day: true, agenda: false, year: YearView } as any}
             onSelectSlot={handleSelectSlot}
             onSelectEvent={handleSelectEvent}
             selectable={isAuthorized}
@@ -381,7 +381,7 @@ export default function SchedulePage() {
               month: "월간",
               week: "주간",
               day: "일간",
-              agenda: "목록",
+              year: "연간",
               noEventsInRange: "이 기간에는 일정이 없어요! 🏖️"
             }}
           />
