@@ -155,25 +155,25 @@ export default function DevelopersPage() {
   return (
     <main className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500 p-8 rounded-[32px] shadow-lg shadow-purple-500/20 text-white relative overflow-hidden border border-white/20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500 p-6 md:p-8 rounded-[32px] shadow-lg shadow-purple-500/20 text-white relative overflow-hidden border border-white/20">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-10 w-40 h-40 bg-fuchsia-300/30 rounded-full blur-2xl translate-y-1/2"></div>
         <div className="absolute top-10 right-1/4 w-20 h-20 bg-pink-300/20 rounded-full blur-xl"></div>
 
         <div className="relative z-10 flex items-center gap-4">
-          <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner">
+          <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner shrink-0">
             <Code2 className="w-8 h-8 text-purple-100" />
           </div>
           <div>
-            <h1 className="text-3xl font-black drop-shadow-md">개발자 소개</h1>
-            <p className="text-purple-100 mt-1 font-medium text-lg">이 서비스를 만든 사람들을 소개합니다 💜</p>
+            <h1 className="text-2xl md:text-3xl font-black drop-shadow-md break-keep">개발자 소개</h1>
+            <p className="text-purple-100 mt-1 font-medium text-base md:text-lg break-keep">이 서비스를 만든 사람들을 소개합니다 💜</p>
           </div>
         </div>
 
         {userRole === 'admin' && (
           <button
             onClick={() => { setIsAdding(!isAdding); setEditingDev(null); setPreviewUrl(null); }}
-            className="relative z-10 flex items-center gap-2 bg-white text-purple-600 hover:bg-purple-50 px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+            className="relative z-10 flex items-center justify-center gap-2 bg-white text-purple-600 hover:bg-purple-50 px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 shrink-0 whitespace-nowrap w-full md:w-auto"
           >
             <Plus className="w-5 h-5" />
             개발자 등록
@@ -344,9 +344,9 @@ export default function DevelopersPage() {
                 <div className="flex-1 p-8 flex flex-col">
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div>
-                      <h3 className="text-2xl font-black text-slate-800">{dev.name}</h3>
+                      <h3 className="text-2xl font-black text-slate-800 break-keep">{dev.name}</h3>
                       {dev.role && (
-                        <div className="inline-flex items-center gap-1.5 mt-1.5 px-3 py-1 bg-purple-50 text-purple-600 text-sm font-bold rounded-full">
+                        <div className="inline-flex items-center gap-1.5 mt-1.5 px-3 py-1 bg-purple-50 text-purple-600 text-sm font-bold rounded-full whitespace-nowrap">
                           <Briefcase className="w-3.5 h-3.5" />
                           {dev.role}
                         </div>
