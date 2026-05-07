@@ -49,8 +49,9 @@ export default function CompetitionsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('athletes')
-        .select('id, name')
+        .select('id, name, grade')
         .eq('is_deleted', false)
+        .order('grade', { ascending: false })
         .order('name')
       if (error) throw error
       return data
@@ -108,22 +109,22 @@ export default function CompetitionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-rose-100 text-rose-500 rounded-xl">
+          <div className="p-3 bg-rose-100 text-rose-500 rounded-xl shrink-0">
             <Calendar className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-accent-navy">대회 일정</h1>
-            <p className="text-sm text-slate-500 font-medium">참가할 대회의 세부 정보와 기록을 관리하세요.</p>
+            <h1 className="text-2xl font-black text-accent-navy break-keep">대회 일정</h1>
+            <p className="text-sm text-slate-500 font-medium break-keep">참가할 대회의 세부 정보와 기록을 관리하세요.</p>
           </div>
         </div>
 
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-rose-500/30"
+          className="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-rose-500/30 shrink-0 whitespace-nowrap w-full sm:w-auto"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5 shrink-0" />
           새 대회 등록
         </button>
       </div>
@@ -140,45 +141,56 @@ export default function CompetitionsPage() {
             const isExpired = endDate.getTime() < new Date().getTime()
             
             const participantNames = comp.participants
-              ?.map((id: string) => athletes?.find((a: any) => a.id === id)?.name)
+              ?.map((id: string) => athletes?.find((a: any) => a.id === id))
               .filter(Boolean)
+              .sort((a: any, b: any) => {
+                const gradeA = a.grade || 0
+                const gradeB = b.grade || 0
+                if (gradeB !== gradeA) return gradeB - gradeA
+                return a.name.localeCompare(b.name)
+              })
+              .map((a: any) => a.grade ? `${a.name}(${a.grade}학년)` : a.name)
               .join(', ')
             
             return (
-            <div key={comp.id} className={`bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex justify-between items-center transition-all group ${isExpired ? 'opacity-50 grayscale hover:opacity-75' : 'hover:shadow-md hover:border-blue-200'}`}>
-              <Link href={`/dashboard/competitions/${comp.id}`} className="flex-1 block cursor-pointer">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${isExpired ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-rose-100 text-rose-600 border-rose-200'}`}>
+            <div key={comp.id} className={`bg-white p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-100 flex gap-2 sm:gap-4 justify-between items-center transition-all group ${isExpired ? 'opacity-50 grayscale hover:opacity-75' : 'hover:shadow-md hover:border-blue-200'}`}>
+              <Link href={`/dashboard/competitions/${comp.id}`} className="flex-1 block cursor-pointer min-w-0">
+                <div className="flex flex-col xl:flex-row xl:items-center gap-2 xl:gap-3 mb-3">
+                  <span className={`w-fit inline-block px-3 py-1.5 rounded-full text-xs font-bold border break-keep ${isExpired ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-rose-100 text-rose-600 border-rose-200'}`}>
                     {format(new Date(comp.date), 'yyyy년 MM월 dd일')}
                     {comp.end_date ? ` ~ ${format(new Date(comp.end_date), 'yyyy년 MM월 dd일')}` : ''}
                   </span>
-                  <div className="flex items-center gap-1 text-slate-500 text-sm font-medium">
-                    <MapPin className="w-4 h-4" />
-                    {comp.location}
-                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      window.open(`https://map.naver.com/p/search/${encodeURIComponent(comp.location)}`, '_blank')
+                    }}
+                    className="flex items-center gap-1.5 text-slate-500 hover:text-blue-500 text-sm font-medium shrink-0 transition-colors z-10 relative"
+                    title="네이버 지도로 보기"
+                  >
+                    <MapPin className="w-4 h-4 shrink-0" />
+                    <span className="break-keep underline-offset-4 hover:underline">{comp.location}</span>
+                  </button>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <h2 className="text-xl font-bold text-accent-navy group-hover:text-blue-600 transition-colors">{comp.title}</h2>
-                      {participantNames && (
-                        <span className="text-sm font-medium text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
-                          {participantNames}
-                        </span>
-                      )}
-                    </div>
-                    {comp.description && <p className="text-slate-500 mt-2 text-sm line-clamp-1">{comp.description}</p>}
-                  </div>
+                <div className="flex flex-col gap-2 min-w-0">
+                  <h2 className="text-xl sm:text-2xl font-bold text-accent-navy group-hover:text-blue-600 transition-colors break-keep truncate w-full whitespace-normal line-clamp-2">{comp.title}</h2>
+                  {participantNames && (
+                    <p className="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 break-keep leading-relaxed w-fit mt-1">
+                      {participantNames}
+                    </p>
+                  )}
+                  {comp.description && <p className="text-slate-500 mt-1 text-sm line-clamp-2 break-keep">{comp.description}</p>}
                 </div>
               </Link>
               
-              <div className="flex items-center ml-4 pl-4 border-l border-slate-100">
-                <Link href={`/dashboard/competitions/${comp.id}`} className="p-3 text-slate-300 group-hover:text-blue-500 transition-colors rounded-xl hover:bg-blue-50">
+              <div className="flex flex-col sm:flex-row items-center sm:ml-4 pl-2 sm:pl-4 border-l border-slate-100 gap-1 shrink-0">
+                <Link href={`/dashboard/competitions/${comp.id}`} className="p-2 sm:p-3 text-slate-300 group-hover:text-blue-500 transition-colors rounded-xl hover:bg-blue-50">
                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                 </Link>
                 <button 
                   onClick={(e) => { e.preventDefault(); if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(comp.id) }}
-                  className="text-rose-400 hover:text-rose-600 p-3 rounded-xl hover:bg-rose-50 transition-colors"
+                  className="text-rose-400 hover:text-rose-600 p-2 sm:p-3 rounded-xl hover:bg-rose-50 transition-colors"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -227,7 +239,9 @@ export default function CompetitionsPage() {
                     {...register('participants')} 
                     className="w-4 h-4 text-rose-500 rounded border-slate-300 focus:ring-rose-500"
                   />
-                  <span className="text-sm font-medium text-slate-700">{athlete.name}</span>
+                  <span className="text-sm font-medium text-slate-700">
+                    {athlete.name} {athlete.grade ? <span className="text-slate-400 text-xs">({athlete.grade}학년)</span> : ''}
+                  </span>
                 </label>
               ))}
             </div>

@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import React, { useState, useEffect } from 'react'
-import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote, BookOpen } from 'lucide-react'
+import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote, BookOpen, Download } from 'lucide-react'
 import Link from 'next/link'
 import { quotes } from '@/lib/quotes'
 import { poems } from '@/data/poems'
@@ -72,6 +72,7 @@ export default function DashboardPage() {
 
   const [quote, setQuote] = useState<string>('')
   const [poem, setPoem] = useState<{title: string, page: string, content: string} | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   useEffect(() => {
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
@@ -79,7 +80,27 @@ export default function DashboardPage() {
     
     const randomPoem = poems[Math.floor(Math.random() * poems.length)]
     setPoem(randomPoem)
+
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   }, [])
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) {
+      alert('현재 브라우저에서는 자동 설치를 지원하지 않습니다.\n\n스마트폰의 공유 메뉴(또는 메뉴 버튼)에서 [홈 화면에 추가]를 선택해 설치해 주세요! 📱✨')
+      return
+    }
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    if (outcome === 'accepted') {
+      console.log('App installed')
+    }
+    setDeferredPrompt(null)
+  }
 
   // Calculations for stats
   const total = athletes?.length || 0
@@ -90,11 +111,20 @@ export default function DashboardPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       
       {/* Header Title */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-blue-600">홈 ✨</h1>
           <p className="text-slate-500 mt-1 font-medium">여수한려초 수영부에 오신 것을 환영합니다! 🐬</p>
         </div>
+
+        {/* 앱 설치 버튼 */}
+        <button 
+          onClick={handleInstallApp}
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1 active:scale-95"
+        >
+          <Download className="w-4 h-4" />
+          <span className="hidden sm:inline">앱 설치</span>
+        </button>
       </div>
 
       {/* Stats Widget */}
@@ -127,11 +157,11 @@ export default function DashboardPage() {
               <div className="flex gap-3">
                 <div className="bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md px-5 py-3 rounded-2xl flex items-center gap-2 border border-white/20 shadow-lg shadow-black/5">
                   <span className="text-2xl drop-shadow-sm">👦</span>
-                  <span className="font-bold text-lg text-white">남 ( {boys} )명</span>
+                  <span className="font-bold text-lg text-white whitespace-nowrap">남 ( {boys} )명</span>
                 </div>
                 <div className="bg-pink-400/30 hover:bg-pink-400/40 transition-colors backdrop-blur-md px-5 py-3 rounded-2xl flex items-center gap-2 border border-pink-300/30 shadow-lg shadow-black/5">
                   <span className="text-2xl drop-shadow-sm">👧</span>
-                  <span className="font-bold text-lg text-white">여 ( {girls} )명</span>
+                  <span className="font-bold text-lg text-white whitespace-nowrap">여 ( {girls} )명</span>
                 </div>
               </div>
             </React.Fragment>

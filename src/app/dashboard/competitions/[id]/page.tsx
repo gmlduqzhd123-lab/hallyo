@@ -13,10 +13,11 @@ import { updateScheduleParticipants } from '@/app/actions/schedules'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { formatTimeSeconds, parseTimeInput } from '@/utils/time'
 
 const schema = z.object({
   athlete_id: z.string().min(1, '선수를 선택해주세요.'),
-  event_name: z.string().min(1, '종목을 입력해주세요.'),
+  event_name: z.string().min(1, '종목을 선택해주세요.'),
   record_time: z.string().min(1, '기록을 입력해주세요.'),
   record_date: z.string().min(10, '기록일을 선택해주세요.'),
 })
@@ -73,9 +74,22 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     }
   })
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormValues>({
     resolver: zodResolver(schema),
   })
+
+  const selectedEventName = watch('event_name')
+
+  const EVENT_OPTIONS = [
+    { key: '자유형50M', label: '자유형 50M' },
+    { key: '자유형100M', label: '자유형 100M' },
+    { key: '자유형200M', label: '자유형 200M' },
+    { key: '배영50M', label: '배영 50M' },
+    { key: '평영50M', label: '평영 50M' },
+    { key: '평영100M', label: '평영 100M' },
+    { key: '접영50M', label: '접영 50M' },
+    { key: '접영100M', label: '접영 100M' },
+  ]
 
   const addMutation = useMutation({
     mutationFn: async (data: FormValues) => {
@@ -138,7 +152,8 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   }
 
   const onSubmit = (data: FormValues) => {
-    addMutation.mutate(data)
+    const parsedData = { ...data, record_time: parseTimeInput(data.record_time) }
+    addMutation.mutate(parsedData)
   }
 
   // Set default date when opening modal
@@ -256,7 +271,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                 <tr key={record.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 font-bold text-accent-navy">{record.athletes?.name}</td>
                   <td className="px-6 py-4 text-slate-700 font-medium">{record.event_name}</td>
-                  <td className="px-6 py-4 text-blue-600 font-black">{record.record_time}</td>
+                  <td className="px-6 py-4 text-blue-600 font-black">{formatTimeSeconds(record.record_time)}</td>
                   <td className="px-6 py-4 text-slate-500">{format(new Date(record.record_date), 'yyyy.MM.dd')}</td>
                   <td className="px-6 py-4 text-right">
                     <button 
@@ -287,20 +302,35 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-accent-navy mb-1">종목</label>
-            <input {...register('event_name')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" placeholder="예: 50m 자유형" />
-            {errors.event_name && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.event_name.message}</p>}
+            <label className="block text-sm font-bold text-accent-navy mb-2">종목 선택</label>
+            <div className="flex flex-wrap gap-2">
+              {EVENT_OPTIONS.map(event => (
+                <button
+                  key={event.key}
+                  type="button"
+                  onClick={() => setValue('event_name', event.key, { shouldValidate: true })}
+                  className={`px-4 py-2 rounded-2xl text-sm font-bold transition-all ${
+                    selectedEventName === event.key
+                      ? 'bg-blue-600 text-white shadow-md scale-105'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {event.label}
+                </button>
+              ))}
+            </div>
+            <input type="hidden" {...register('event_name')} />
+            {errors.event_name && <p className="text-rose-500 text-xs font-bold mt-2 ml-1">{errors.event_name.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-accent-navy mb-1">기록 (초)</label>
+              <label className="block text-sm font-bold text-accent-navy mb-1">기록</label>
               <input 
-                type="number" 
-                step="0.01" 
+                type="text" 
                 {...register('record_time')} 
                 className="w-full px-4 py-3 rounded-2xl border bg-slate-50" 
-                placeholder="예: 25.43" 
+                placeholder="예: 1:02.09 또는 25.43" 
               />
               {errors.record_time && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.record_time.message}</p>}
             </div>

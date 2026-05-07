@@ -24,6 +24,16 @@ export default function NoticesPage() {
   const supabase = createClient()
   const queryClient = useQueryClient()
 
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
+      const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
+      return data
+    }
+  })
+
   const { data: notices, isPending } = useQuery({
     queryKey: ['notices'],
     queryFn: async () => {
@@ -88,13 +98,15 @@ export default function NoticesPage() {
           </div>
         </div>
 
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30"
-        >
-          <Plus className="w-5 h-5" />
-          새 공지 작성
-        </button>
+        {profile?.role === 'admin' && (
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30"
+          >
+            <Plus className="w-5 h-5" />
+            새 공지 작성
+          </button>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -107,12 +119,14 @@ export default function NoticesPage() {
             <div key={notice.id} id={notice.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 scroll-mt-24">
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-lg font-bold text-accent-navy">{notice.title}</h2>
-                <button 
-                  onClick={() => { if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(notice.id) }}
-                  className="text-rose-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {profile?.role === 'admin' && (
+                  <button 
+                    onClick={() => { if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(notice.id) }}
+                    className="text-rose-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               <p className="text-slate-600 whitespace-pre-wrap leading-relaxed">{notice.content}</p>
               <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-4 text-xs text-slate-400 font-medium">

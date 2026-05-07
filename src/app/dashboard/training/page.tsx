@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Calendar, dateFnsLocalizer, Event } from 'react-big-calendar'
-import { format, parse, startOfWeek, getDay } from 'date-fns'
+import { format, parse, startOfWeek, getDay, startOfYear, endOfYear, addYears, getYear, getMonth } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { useQuery } from '@tanstack/react-query'
@@ -22,6 +22,66 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 })
+
+const YearView = ({ date, events }: any) => {
+  const currentYear = getYear(date)
+  
+  const months = Array.from({ length: 12 }, (_, i) => {
+    return {
+      month: i,
+      events: events.filter((e: any) => getYear(e.start) === currentYear && getMonth(e.start) === i)
+    }
+  })
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 overflow-y-auto h-full bg-white/50 rounded-2xl">
+      {months.map(({ month, events }) => (
+        <div key={month} className="bg-white rounded-2xl p-4 border border-slate-100 flex flex-col h-[280px] shadow-sm hover:shadow-md transition-shadow">
+          <h3 className="font-black text-lg text-accent-navy border-b border-slate-100 pb-2 mb-3 flex justify-between items-end">
+            <span>{month + 1}월</span>
+            <span className="text-xs font-bold text-slate-400">{events.length}개 일정</span>
+          </h3>
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+            {events.length === 0 ? (
+              <p className="text-slate-400 text-sm font-medium text-center mt-8">일정이 없습니다</p>
+            ) : (
+              events.sort((a:any, b:any) => a.start.getTime() - b.start.getTime()).map((e: any) => {
+                const isCompetition = e.resource?.type === 'competition'
+                const displayEndDate = e.allDay && e.end ? new Date(e.end.getTime() - 86400000) : e.end
+                
+                return (
+                  <div key={e.id} className={`text-xs p-2.5 rounded-xl border ${isCompetition ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-sky-50 border-sky-100 text-sky-700'}`}>
+                    <div className="font-bold truncate text-[13px] mb-1">{e.title}</div>
+                    <div className="text-[11px] font-medium opacity-75">
+                      {format(e.start, 'M.d')} 
+                      {displayEndDate && e.start.getTime() !== displayEndDate.getTime() ? ` ~ ${format(displayEndDate, 'M.d')}` : ''}
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+YearView.range = (date: Date) => {
+  return [startOfYear(date), endOfYear(date)]
+}
+
+YearView.navigate = (date: Date, action: string) => {
+  switch (action) {
+    case 'PREV': return addYears(date, -1)
+    case 'NEXT': return addYears(date, 1)
+    default: return date
+  }
+}
+
+YearView.title = (date: Date) => {
+  return `${getYear(date)}년 연간 계획`
+}
 
 export default function SchedulePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -306,7 +366,7 @@ export default function SchedulePage() {
             startAccessor="start"
             endAccessor="end"
             culture="ko"
-            views={['month', 'week', 'day', 'agenda']}
+            views={{ month: true, week: true, day: true, agenda: true, year: YearView } as any}
             onSelectSlot={handleSelectSlot}
             onSelectEvent={handleSelectEvent}
             selectable={isAuthorized}
@@ -322,6 +382,7 @@ export default function SchedulePage() {
               week: "주간",
               day: "일간",
               agenda: "목록",
+              year: "연간",
               noEventsInRange: "이 기간에는 일정이 없어요! 🏖️"
             }}
           />

@@ -26,6 +26,9 @@ export async function addVideo(formData: FormData) {
   }
 
   const { data: { user } } = await supabase.auth.getUser()
+  
+  const { data: roleData } = await supabase.from('users').select('role').eq('id', user?.id).single()
+  const status = roleData?.role === 'admin' ? 'approved' : 'pending'
 
   const { error } = await supabase.from('training_videos').insert([
     {
@@ -34,6 +37,7 @@ export async function addVideo(formData: FormData) {
       description: validatedFields.data.description,
       is_deleted: false,
       created_by: user?.id,
+      status
     }
   ])
 
@@ -55,6 +59,28 @@ export async function softDeleteVideo(id: string) {
 
   if (error) {
     return { error: '영상 삭제에 실패했습니다: ' + error.message }
+  }
+
+  revalidatePath('/dashboard/videos')
+  return { success: true }
+}
+
+export async function approveVideo(id: string) {
+  const supabase = await createClient()
+  
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData?.user) return { error: '인증에 실패했습니다.' }
+  
+  const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  if (roleData?.role !== 'admin') return { error: '권한이 없습니다.' }
+
+  const { error } = await supabase
+    .from('training_videos')
+    .update({ status: 'approved' })
+    .eq('id', id)
+
+  if (error) {
+    return { error: '영상 승인에 실패했습니다: ' + error.message }
   }
 
   revalidatePath('/dashboard/videos')

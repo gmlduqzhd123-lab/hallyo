@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Image as ImageIcon, Upload, Trash2, Maximize2, X, Download } from 'lucide-react'
+import { Image as ImageIcon, Upload, Trash2, Maximize2, X, Download, Check } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
-import { addPhotos, softDeletePhoto } from '@/app/actions/photos'
+import { addPhotos, softDeletePhoto, approvePhoto } from '@/app/actions/photos'
 
 export default function PhotosPage() {
   const [isUploading, setIsUploading] = useState(false)
@@ -34,6 +34,16 @@ export default function PhotosPage() {
   };
 
 
+  const { data: userRole, isPending: rolePending } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      const { data } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+      return data?.role
+    }
+  })
+
   const { data: photos, isPending } = useQuery({
     queryKey: ['photos'],
     queryFn: async () => {
@@ -46,6 +56,8 @@ export default function PhotosPage() {
       return data
     }
   })
+
+  const visiblePhotos = photos?.filter(p => userRole === 'admin' || p.status === 'approved') || []
 
   const uploadMutation = useMutation({
     mutationFn: async (files: FileList) => {
@@ -102,6 +114,21 @@ export default function PhotosPage() {
     }
   })
 
+  const approveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await approvePhoto(id)
+      if (res.error) throw new Error(res.error)
+      return res
+    },
+    onSuccess: () => {
+      toast.success('사진이 승인되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['photos'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       uploadMutation.mutate(e.target.files)
@@ -141,11 +168,11 @@ export default function PhotosPage() {
         </div>
       </div>
       
-      {isPending ? (
+      {isPending || rolePending ? (
         <div className="py-20 text-center text-slate-400 font-medium bg-white rounded-3xl border border-slate-100">
           사진을 불러오는 중입니다...
         </div>
-      ) : photos?.length === 0 ? (
+      ) : visiblePhotos.length === 0 ? (
         <div className="bg-white p-20 rounded-3xl shadow-sm border border-slate-100 text-center flex flex-col items-center gap-4">
           <div className="bg-slate-50 p-6 rounded-full inline-block">
             <ImageIcon className="w-12 h-12 text-slate-300" />
@@ -154,12 +181,17 @@ export default function PhotosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {photos?.map((photo: any) => (
+          {visiblePhotos.map((photo: any) => (
             <div key={photo.id} className="group relative aspect-square rounded-3xl overflow-hidden bg-slate-100 shadow-sm border border-slate-100">
+              {photo.status === 'pending' && (
+                <div className="absolute top-3 left-3 bg-rose-500 text-white px-2 py-1 text-xs font-bold rounded-lg z-10">
+                  승인 대기
+                </div>
+              )}
               <img 
                 src={photo.url} 
                 alt="활동 사진" 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${photo.status === 'pending' ? 'opacity-50 grayscale' : ''}`}
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100">
                 <button 
@@ -176,13 +208,24 @@ export default function PhotosPage() {
                 >
                   <Download className="w-5 h-5" />
                 </button>
-                <button 
-                  onClick={() => { if(confirm('이 사진을 정말 삭제하시겠습니까?')) deleteMutation.mutate(photo.id) }}
-                  className="p-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
-                  title="사진 삭제"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                {photo.status === 'pending' && userRole === 'admin' && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); approveMutation.mutate(photo.id) }}
+                    className="p-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                    title="사진 승인"
+                  >
+                    <Check className="w-5 h-5" />
+                  </button>
+                )}
+                {(userRole === 'admin' || userRole === 'coach') && (
+                  <button 
+                    onClick={() => { if(confirm('이 사진을 정말 삭제하시겠습니까?')) deleteMutation.mutate(photo.id) }}
+                    className="p-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                    title="사진 삭제"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

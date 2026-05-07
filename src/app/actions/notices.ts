@@ -29,6 +29,16 @@ export async function addNotice(formData: FormData) {
     return { error: '인증에 실패했습니다. 다시 로그인해주세요.' }
   }
 
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', userData.user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: '관리자만 공지사항을 등록할 수 있습니다.' }
+  }
+
   const { error } = await supabase.from('notices').insert([
     {
       ...validatedFields.data,
@@ -49,7 +59,22 @@ export async function addNotice(formData: FormData) {
 
 export async function softDeleteNotice(id: string) {
   const supabase = await createClient()
-  
+
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData?.user) {
+    return { error: '인증에 실패했습니다. 다시 로그인해주세요.' }
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', userData.user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: '관리자만 공지사항을 삭제할 수 있습니다.' }
+  }
+
   const { error } = await supabase
     .from('notices')
     .update({ is_deleted: true })

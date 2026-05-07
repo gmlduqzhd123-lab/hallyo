@@ -12,6 +12,9 @@ export async function addCompetitionVideo(data: { title: string, url: string, de
     return { error: '인증에 실패했습니다. 다시 로그인해주세요.' }
   }
 
+  const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  const status = roleData?.role === 'admin' ? 'approved' : 'pending'
+
   const { error } = await supabase
     .from('competition_videos')
     .insert([
@@ -19,7 +22,8 @@ export async function addCompetitionVideo(data: { title: string, url: string, de
         title: data.title,
         url: data.url,
         description: data.description,
-        created_by: userData.user.id
+        created_by: userData.user.id,
+        status
       }
     ])
 
@@ -74,6 +78,29 @@ export async function updateCompetitionVideo(id: string, data: { title: string, 
 
   await logAudit('UPDATE', 'competition_videos', { id, title: data.title })
 
+  revalidatePath('/dashboard/competition-videos')
+  return { success: true }
+}
+
+export async function approveCompetitionVideo(id: string) {
+  const supabase = await createClient()
+  
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData?.user) return { error: '인증에 실패했습니다.' }
+  
+  const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  if (roleData?.role !== 'admin') return { error: '권한이 없습니다.' }
+
+  const { error } = await supabase
+    .from('competition_videos')
+    .update({ status: 'approved' })
+    .eq('id', id)
+
+  if (error) {
+    return { error: '영상 승인에 실패했습니다: ' + error.message }
+  }
+
+  await logAudit('UPDATE', 'competition_videos_approve', { id })
   revalidatePath('/dashboard/competition-videos')
   return { success: true }
 }

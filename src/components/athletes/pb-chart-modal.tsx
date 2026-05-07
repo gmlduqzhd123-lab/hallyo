@@ -6,9 +6,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { AlertCircle, Plus, Trash2, Check, X } from 'lucide-react'
-import { addRecord, deleteRecord } from '@/app/actions/records'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import { formatTimeSeconds, parseTimeInput } from '@/utils/time'
 
 interface Props {
   isOpen: boolean
@@ -64,10 +64,11 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
   const addMutation = useMutation({
     mutationFn: async () => {
       if (!athleteId || !recordTime || !recordDate || !selectedEvent) throw new Error('필수 정보를 입력해주세요.')
+      const finalRecordTime = parseTimeInput(recordTime)
       const formData = new FormData()
       formData.append('athlete_id', athleteId)
       formData.append('event_name', selectedEvent)
-      formData.append('record_time', recordTime)
+      formData.append('record_time', finalRecordTime)
       formData.append('record_date', recordDate)
       if (isCompetition && selectedScheduleId) {
         formData.append('schedule_id', selectedScheduleId)
@@ -203,6 +204,7 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
                   domain={['auto', 'auto']}
                 />
                 <Tooltip 
+                  formatter={(value: number) => [formatTimeSeconds(value), '기록']}
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                   labelStyle={{ fontWeight: 'bold', color: '#0047AB', marginBottom: '4px' }}
                 />
@@ -264,13 +266,12 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1">기록 (초) <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-bold text-slate-600 mb-1">기록 <span className="text-rose-500">*</span></label>
                     <input 
-                      type="number" 
-                      step="0.01" 
+                      type="text" 
                       value={recordTime} 
                       onChange={e => setRecordTime(e.target.value)}
-                      placeholder="예: 25.43"
+                      placeholder="예: 1:02.09 또는 25.43"
                       className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                     />
                   </div>
@@ -326,7 +327,7 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
                 records?.filter(r => r.event_name === selectedEvent).map(record => (
                   <div key={record.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all rounded-2xl shadow-sm group">
                     <div className="flex items-center gap-4">
-                      <div className="font-black text-primary text-xl w-20 tracking-tight">{record.record_time}초</div>
+                      <div className="font-black text-primary text-xl w-24 tracking-tight">{formatTimeSeconds(record.record_time)}</div>
                       <div className="text-sm flex flex-col gap-1">
                         <div className="font-bold text-slate-700 flex items-center gap-2">
                           {format(new Date(record.record_date), 'yyyy.MM.dd')}

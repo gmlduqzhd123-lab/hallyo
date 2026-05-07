@@ -211,15 +211,7 @@ export default function AthletesPage() {
     return <div className="p-8 text-center text-slate-500 font-bold">로딩 중...</div>
   }
 
-  if (userRole !== 'admin' && userRole !== 'coach') {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-        <AlertCircle className="w-16 h-16 text-rose-500 mb-2" />
-        <h2 className="text-2xl font-bold text-slate-800">접근 권한이 없습니다</h2>
-        <p className="text-slate-500">선수 명단은 관리자 및 코치만 열람할 수 있습니다.</p>
-      </div>
-    )
-  }
+
 
   return (
     <div className="space-y-6">
@@ -230,53 +222,57 @@ export default function AthletesPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          <input 
-            type="file" 
-            accept=".xlsx, .xls, .csv" 
-            className="hidden" 
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-          />
-          <button 
-            onClick={handleDownloadTemplate}
-            className="px-4 py-2.5 rounded-2xl bg-emerald-50 text-emerald-600 font-bold hover:bg-emerald-100 transition-colors flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">양식 다운로드</span>
-          </button>
+          {(userRole === 'admin' || userRole === 'coach') && (
+            <>
+              <input 
+                type="file" 
+                accept=".xlsx, .xls, .csv" 
+                className="hidden" 
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+              />
+              <button 
+                onClick={handleDownloadTemplate}
+                className="px-4 py-2.5 rounded-2xl bg-emerald-50 text-emerald-600 font-bold hover:bg-emerald-100 transition-colors flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">양식 다운로드</span>
+              </button>
 
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            disabled={bulkMutation.isPending}
-            className="px-4 py-2.5 rounded-2xl bg-secondary/15 text-primary font-bold hover:bg-secondary/25 transition-colors flex items-center gap-2 disabled:opacity-50"
-          >
-            <Upload className="w-4 h-4" />
-            <span className="hidden sm:inline">{bulkMutation.isPending ? '처리중...' : '일괄 등록'}</span>
-          </button>
-          
-          <button 
-            onClick={handleExport}
-            className="px-4 py-2.5 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">엑셀 다운로드</span>
-          </button>
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={bulkMutation.isPending}
+                className="px-4 py-2.5 rounded-2xl bg-secondary/15 text-primary font-bold hover:bg-secondary/25 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">{bulkMutation.isPending ? '처리중...' : '일괄 등록'}</span>
+              </button>
+              
+              <button 
+                onClick={handleExport}
+                className="px-4 py-2.5 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">엑셀 다운로드</span>
+              </button>
 
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-5 py-2.5 rounded-2xl bg-primary text-white font-bold hover:bg-primary-hover transition-colors shadow-lg shadow-primary/30 flex items-center gap-2"
-          >
-            <UserPlus className="w-4 h-4" />
-            선수 추가
-          </button>
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-5 py-2.5 rounded-2xl bg-primary text-white font-bold hover:bg-primary-hover transition-colors shadow-lg shadow-primary/30 flex items-center gap-2"
+              >
+                <UserPlus className="w-4 h-4" />
+                선수 추가
+              </button>
 
-          <button 
-            onClick={handleDeleteAll}
-            className="px-4 py-2.5 rounded-2xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors flex items-center gap-2"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">전체 삭제</span>
-          </button>
+              <button 
+                onClick={handleDeleteAll}
+                className="px-4 py-2.5 rounded-2xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden sm:inline">전체 삭제</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -294,6 +290,7 @@ export default function AthletesPage() {
           data={athletes || []} 
           onRowClick={(athlete) => setSelectedAthlete(athlete)}
           onEdit={(athlete) => setEditingAthlete(athlete)}
+          userRole={userRole}
         />
       )}
 

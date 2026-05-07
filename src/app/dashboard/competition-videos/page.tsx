@@ -3,8 +3,8 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Film, Plus, Trash2, Loader2, Upload, Link2, Edit2 } from 'lucide-react'
-import { addCompetitionVideo, softDeleteCompetitionVideo, updateCompetitionVideo } from '@/app/actions/competition-videos'
+import { Film, Plus, Trash2, Loader2, Upload, Link2, Edit2, Check } from 'lucide-react'
+import { addCompetitionVideo, softDeleteCompetitionVideo, updateCompetitionVideo, approveCompetitionVideo } from '@/app/actions/competition-videos'
 import { toast } from 'sonner'
 
 type VideoData = {
@@ -29,6 +29,16 @@ export default function CompetitionVideosPage() {
   
   const queryClient = useQueryClient()
   const supabase = createClient()
+
+  const { data: userRole, isPending: rolePending } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      const { data } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+      return data?.role
+    }
+  })
 
   const { data: videos, isPending } = useQuery({
     queryKey: ['competition_videos'],
@@ -108,6 +118,23 @@ export default function CompetitionVideosPage() {
       queryClient.invalidateQueries({ queryKey: ['competition_videos'] })
     }
   }
+
+  const approveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await approveCompetitionVideo(id)
+      if (res.error) throw new Error(res.error)
+      return res
+    },
+    onSuccess: () => {
+      toast.success('영상이 승인되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['competition_videos'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
+  const visibleVideos = videos?.filter(v => userRole === 'admin' || (v as any).status === 'approved') || []
 
   return (
     <main className="space-y-6">
@@ -234,12 +261,12 @@ export default function CompetitionVideosPage() {
         </div>
       )}
 
-      {isPending ? (
+      {isPending || rolePending ? (
         <div className="py-20 text-center text-slate-400 font-medium bg-white rounded-3xl border border-slate-100">
           <Loader2 className="w-10 h-10 text-purple-500 animate-spin mx-auto mb-4" />
           영상을 불러오는 중입니다...
         </div>
-      ) : videos?.length === 0 ? (
+      ) : visibleVideos.length === 0 ? (
         <div className="bg-white p-20 rounded-3xl shadow-sm border border-slate-100 text-center flex flex-col items-center gap-4">
           <div className="bg-purple-50 p-6 rounded-full inline-block">
             <Film className="w-12 h-12 text-purple-300" />
@@ -248,13 +275,27 @@ export default function CompetitionVideosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {videos?.map((video) => {
+          {visibleVideos.map((video: any) => {
             const embedUrl = getEmbedUrl(video.url)
             
             return (
-              <div key={video.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+              <div key={video.id} className="relative bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+                {video.status === 'pending' && (
+                  <div className="absolute top-4 right-4 bg-rose-500 text-white px-3 py-1.5 text-sm font-bold rounded-xl z-10 flex items-center gap-2">
+                    승인 대기
+                    {userRole === 'admin' && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); approveMutation.mutate(video.id) }}
+                        className="ml-2 p-1.5 bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
+                        title="영상 승인"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
                 {embedUrl ? (
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm">
+                  <div className={`aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                     <iframe
                       className="w-full h-full"
                       src={embedUrl}
@@ -264,7 +305,7 @@ export default function CompetitionVideosPage() {
                     />
                   </div>
                 ) : video.url.includes('drive.google.com') ? (
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm">
+                  <div className={`aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                     <iframe
                       className="w-full h-full"
                       src={video.url.replace(/\/view.*$/, '/preview')}
@@ -273,7 +314,7 @@ export default function CompetitionVideosPage() {
                     />
                   </div>
                 ) : (
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm flex items-center justify-center">
+                  <div className={`aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm flex items-center justify-center ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                     <a href={video.url} target="_blank" rel="noreferrer" className="text-purple-400 hover:text-purple-300 font-bold flex items-center gap-2">
                       <Link2 className="w-5 h-5" />
                       영상 링크 열기
@@ -291,20 +332,24 @@ export default function CompetitionVideosPage() {
                     )}
                   </div>
                   <div className="flex items-center">
-                    <button
-                      onClick={() => handleEditClick(video)}
-                      className="p-2.5 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-xl transition-colors shrink-0"
-                      title="수정"
-                    >
-                      <Edit2 className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(video.id)}
-                      className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
-                      title="삭제"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                    {(userRole === 'admin' || userRole === 'coach') && (
+                      <>
+                        <button
+                          onClick={() => handleEditClick(video)}
+                          className="p-2.5 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-xl transition-colors shrink-0"
+                          title="수정"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(video.id)}
+                          className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

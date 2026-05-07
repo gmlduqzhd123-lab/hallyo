@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Settings, UserCheck, Users, CheckCircle, Clock, Trash2, Edit2, Type } from 'lucide-react'
-import { approveUser, deleteUser, updateUserRole } from '@/app/actions/admin'
+import { Settings, UserCheck, Users, CheckCircle, Clock, Trash2, Edit2, Type, Key } from 'lucide-react'
+import { approveUser, deleteUser, updateUserRole, resetUserPassword } from '@/app/actions/admin'
 import { updateGlobalFont } from '@/app/actions/settings'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -80,6 +80,20 @@ export default function SettingsPage() {
     onSuccess: () => {
       toast.success('사용자 권한이 변경되었습니다.')
       queryClient.invalidateQueries({ queryKey: ['all_users'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const result = await resetUserPassword(userId)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: (data) => {
+      toast.success(`비밀번호가 '${data.newPassword}'(으)로 초기화되었습니다.`, { duration: 5000 })
     },
     onError: (err: Error) => {
       toast.error(err.message)
@@ -246,12 +260,24 @@ export default function SettingsPage() {
                         </div>
                         
                         <div className="flex flex-col">
+                          <label className="text-xs font-bold text-slate-400 mb-1 ml-1 opacity-0">초기화</label>
+                          <button
+                            onClick={() => resetPasswordMutation.mutate(user.id)}
+                            disabled={resetPasswordMutation.isPending}
+                            className="p-2.5 text-amber-500 hover:text-white hover:bg-amber-500 bg-amber-50 rounded-xl transition-colors disabled:opacity-50"
+                            title="비밀번호 12341234로 초기화"
+                          >
+                            <Key className="w-5 h-5" />
+                          </button>
+                        </div>
+                        
+                        <div className="flex flex-col">
                           <label className="text-xs font-bold text-slate-400 mb-1 ml-1 opacity-0">삭제</label>
                           <button
-                            onClick={() => { if(confirm('정말 이 사용자를 삭제하시겠습니까?')) deleteMutation.mutate(user.id) }}
+                            onClick={() => deleteMutation.mutate(user.id)}
                             disabled={deleteMutation.isPending}
                             className="p-2.5 text-rose-400 hover:text-white hover:bg-rose-500 bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
-                            title="사용자 삭제"
+                            title="사용자 즉시 삭제"
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>

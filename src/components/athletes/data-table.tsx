@@ -40,10 +40,13 @@ interface DataTableProps {
   data: Athlete[]
   onRowClick: (athlete: Athlete) => void
   onEdit: (athlete: Athlete) => void
+  userRole?: string | null
 }
 
-export function DataTable({ data, onRowClick, onEdit }: DataTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
+export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps) {
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'grade', desc: true }
+  ])
   const [globalFilter, setGlobalFilter] = useState('')
   const queryClient = useQueryClient()
 
@@ -66,7 +69,7 @@ export function DataTable({ data, onRowClick, onEdit }: DataTableProps) {
     }
   })
 
-  const columns: ColumnDef<Athlete>[] = [
+  const allColumns: ColumnDef<Athlete>[] = [
     {
       accessorKey: 'category',
       header: '종별',
@@ -85,44 +88,6 @@ export function DataTable({ data, onRowClick, onEdit }: DataTableProps) {
       },
     },
     {
-      accessorKey: 'name',
-      header: '이름',
-      cell: ({ row }) => <span className="font-bold text-accent-navy whitespace-nowrap">{row.getValue('name')}</span>,
-    },
-    {
-      accessorKey: 'hanja_name',
-      header: '한자 이름',
-      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('hanja_name') || '-'}</span>,
-    },
-    {
-      accessorKey: 'is_registered',
-      header: '등록 여부',
-      cell: ({ row }) => {
-        const val = row.getValue('is_registered')
-        return <span className={`px-2 py-1 text-xs font-bold rounded-lg ${val ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{val ? 'O' : 'X'}</span>
-      },
-    },
-    {
-      accessorKey: 'birth_date',
-      header: '생년월일',
-      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('birth_date') || '-'}</span>,
-    },
-    {
-      accessorKey: 'attendance_start_date',
-      header: '재학 시작일',
-      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('attendance_start_date') || '-'}</span>,
-    },
-    {
-      accessorKey: 'attendance_end_date',
-      header: '재학 종료일',
-      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('attendance_end_date') || '-'}</span>,
-    },
-    {
-      accessorKey: 'join_date',
-      header: '입단 날짜',
-      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('join_date') || '-'}</span>,
-    },
-    {
       accessorKey: 'grade',
       header: '학년',
       cell: ({ row }) => <span className="font-semibold text-slate-600">{row.getValue('grade') ? `${row.getValue('grade')}학년` : '-'}</span>,
@@ -136,6 +101,35 @@ export function DataTable({ data, onRowClick, onEdit }: DataTableProps) {
       accessorKey: 'student_number',
       header: '번호',
       cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('student_number') ? `${row.getValue('student_number')}번` : '-'}</span>,
+    },
+    {
+      accessorKey: 'name',
+      header: '이름',
+      cell: ({ row }) => <span className="font-bold text-accent-navy whitespace-nowrap">{row.getValue('name')}</span>,
+    },
+    {
+      accessorKey: 'hanja_name',
+      header: '한자 이름',
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('hanja_name') || '-'}</span>,
+    },
+    {
+      accessorKey: 'is_registered',
+      header: '선수 등록 여부',
+      cell: ({ row }) => {
+        const val = row.getValue('is_registered')
+        return <span className={`px-2 py-1 text-xs font-bold rounded-lg ${val ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{val ? 'O' : 'X'}</span>
+      },
+    },
+    {
+      accessorKey: 'birth_date',
+      header: '생년월일',
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('birth_date') || '-'}</span>,
+    },
+
+    {
+      accessorKey: 'join_date',
+      header: '입단 날짜',
+      cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('join_date') || '-'}</span>,
     },
     {
       accessorKey: 'homeroom_teacher',
@@ -163,13 +157,15 @@ export function DataTable({ data, onRowClick, onEdit }: DataTableProps) {
         const athlete = row.original
         return (
           <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-            <button 
-              onClick={() => onEdit(athlete)}
-              className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
-              title="선수 정보 수정"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
+            {(userRole === 'admin' || userRole === 'coach') && (
+              <button 
+                onClick={() => onEdit(athlete)}
+                className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
+                title="선수 정보 수정"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+            )}
             <button 
               onClick={() => onRowClick(athlete)}
               className="p-2 text-primary hover:bg-primary/10 rounded-xl transition-colors"
@@ -177,23 +173,33 @@ export function DataTable({ data, onRowClick, onEdit }: DataTableProps) {
             >
               <LineChart className="w-4 h-4" />
             </button>
-            <button 
-              onClick={() => {
-                if (confirm(`${athlete.name} 선수를 명단에서 삭제하시겠습니까?`)) {
-                  deleteMutation.mutate(athlete.id)
-                }
-              }}
-              disabled={deleteMutation.isPending}
-              className="p-2 text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-colors disabled:opacity-50"
-              title="삭제"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {(userRole === 'admin' || userRole === 'coach') && (
+              <button 
+                onClick={() => {
+                  if (confirm(`${athlete.name} 선수를 명단에서 삭제하시겠습니까?`)) {
+                    deleteMutation.mutate(athlete.id)
+                  }
+                }}
+                disabled={deleteMutation.isPending}
+                className="p-2 text-rose-400 hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-colors disabled:opacity-50"
+                title="삭제"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         )
       }
     }
   ]
+
+  const columns = allColumns.filter(col => {
+    // Hide contact details if not admin
+    if (userRole !== 'admin' && ['student_phone', 'parent_name', 'parent_phone'].includes((col as any).accessorKey)) {
+      return false
+    }
+    return true
+  })
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

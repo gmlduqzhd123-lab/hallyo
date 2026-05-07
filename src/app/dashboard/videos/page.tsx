@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Video, Plus, Trash2, Loader2 } from 'lucide-react'
-import { addVideo, softDeleteVideo } from '@/app/actions/videos'
+import { Video, Plus, Trash2, Loader2, Check } from 'lucide-react'
+import { addVideo, softDeleteVideo, approveVideo } from '@/app/actions/videos'
 import { toast } from 'sonner'
 
 type VideoData = {
@@ -25,6 +25,16 @@ export default function TrainingVideosPage() {
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const queryClient = useQueryClient()
+
+  const { data: userRole, isPending: rolePending } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      const { data } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+      return data?.role
+    }
+  })
 
   const { data: videos, isPending } = useQuery({
     queryKey: ['training_videos'],
@@ -57,6 +67,23 @@ export default function TrainingVideosPage() {
     }
     setIsSubmitting(false)
   }
+
+  const approveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await approveVideo(id)
+      if (res.error) throw new Error(res.error)
+      return res
+    },
+    onSuccess: () => {
+      toast.success('영상이 승인되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['training_videos'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
+  const visibleVideos = videos?.filter(v => userRole === 'admin' || (v as any).status === 'approved') || []
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말 이 영상을 삭제하시겠습니까?')) return
@@ -148,12 +175,12 @@ export default function TrainingVideosPage() {
         </div>
       )}
 
-      {isPending ? (
+      {isPending || rolePending ? (
         <div className="flex flex-col items-center justify-center py-24">
           <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-4" />
           <p className="text-slate-500 font-medium">영상을 불러오는 중입니다...</p>
         </div>
-      ) : videos?.length === 0 ? (
+      ) : visibleVideos.length === 0 ? (
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-16 text-center">
           <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-5">
             <Video className="w-10 h-10 text-slate-300" />
@@ -170,13 +197,27 @@ export default function TrainingVideosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-8">
-          {videos?.map((video) => {
+          {visibleVideos.map((video: any) => {
             const embedUrl = getEmbedUrl(video.url)
             
             return (
-              <div key={video.id} className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <div key={video.id} className="relative bg-white p-6 sm:p-8 rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                {video.status === 'pending' && (
+                  <div className="absolute top-4 right-4 bg-rose-500 text-white px-3 py-1.5 text-sm font-bold rounded-xl z-10 flex items-center gap-2">
+                    승인 대기
+                    {userRole === 'admin' && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); approveMutation.mutate(video.id) }}
+                        className="ml-2 p-1.5 bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
+                        title="영상 승인"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
                 {embedUrl ? (
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm border border-slate-200">
+                  <div className={`aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm border border-slate-200 ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                     <iframe
                       className="w-full h-full"
                       src={embedUrl}
@@ -186,7 +227,7 @@ export default function TrainingVideosPage() {
                     />
                   </div>
                 ) : (
-                  <div className="aspect-video w-full rounded-2xl bg-slate-50 flex flex-col items-center justify-center border border-slate-200 text-slate-400">
+                  <div className={`aspect-video w-full rounded-2xl bg-slate-50 flex flex-col items-center justify-center border border-slate-200 text-slate-400 ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                     <Video className="w-10 h-10 mb-3 opacity-40" />
                     <p className="text-sm font-medium">유효하지 않은 유튜브 링크입니다.</p>
                   </div>
@@ -208,13 +249,17 @@ export default function TrainingVideosPage() {
                       </a>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleDelete(video.id)}
-                    className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all shrink-0 group self-start"
-                    title="이 영상 삭제하기"
-                  >
-                    <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  </button>
+                  <div className="flex items-center gap-2 self-start shrink-0">
+                    {(userRole === 'admin' || userRole === 'coach') && (
+                      <button 
+                        onClick={() => handleDelete(video.id)}
+                        className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all group"
+                        title="이 영상 삭제하기"
+                      >
+                        <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )
