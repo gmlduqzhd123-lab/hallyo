@@ -178,25 +178,25 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
         {/* Cute background decoration */}
         <div className="absolute -top-4 -right-4 w-24 h-24 bg-sky-100 rounded-full blur-2xl opacity-60"></div>
         <div className="absolute -bottom-4 right-12 w-20 h-20 bg-pink-100 rounded-full blur-2xl opacity-60"></div>
         
         <div className="flex items-center gap-3 relative z-10">
-          <div className="p-3 bg-gradient-to-br from-blue-100 to-sky-100 text-primary rounded-2xl shadow-sm">
+          <div className="p-3 bg-gradient-to-br from-blue-100 to-sky-100 text-primary rounded-2xl shadow-sm shrink-0">
             <CalendarIcon className="w-6 h-6" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-accent-navy">일정 관리 🗓️</h1>
-            <p className="text-sm text-slate-500 font-medium">훈련 및 대회 일정을 확인하고 관리하세요!</p>
+            <p className="text-sm text-slate-500 font-medium break-keep">훈련 및 대회 일정을 확인하고 관리하세요!</p>
           </div>
         </div>
 
         {isAuthorized && (
           <button 
             onClick={() => { setSelectedDate(undefined); setIsModalOpen(true); }}
-            className="relative z-10 flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30 active:scale-95"
+            className="relative z-10 w-full sm:w-auto flex justify-center items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30 active:scale-95 shrink-0 whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
             새 일정 추가

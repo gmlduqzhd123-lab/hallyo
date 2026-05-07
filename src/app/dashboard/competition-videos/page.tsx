@@ -138,20 +138,20 @@ export default function CompetitionVideosPage() {
 
   return (
     <main className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-purple-100 text-purple-500 rounded-xl">
+          <div className="p-3 bg-purple-100 text-purple-500 rounded-xl shrink-0">
             <Film className="w-6 h-6" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-accent-navy">대회 영상</h1>
-            <p className="text-sm text-slate-500 font-medium">유튜브 링크 또는 구글 드라이브 링크를 등록하여 대회 영상을 공유하세요.</p>
+            <p className="text-sm text-slate-500 font-medium break-keep">유튜브 링크 또는 구글 드라이브 링크를 등록하여 대회 영상을 공유하세요.</p>
           </div>
         </div>
 
         <button 
           onClick={() => { setIsAdding(!isAdding); setEditingVideo(null); }}
-          className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-purple-500/30"
+          className="w-full sm:w-auto flex justify-center items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-purple-500/30 shrink-0 whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />
           새 영상 등록

@@ -111,19 +111,19 @@ export default function DashboardPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       
       {/* Header Title */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-blue-600">홈 ✨</h1>
-          <p className="text-slate-500 mt-1 font-medium">여수한려초 수영부에 오신 것을 환영합니다! 🐬</p>
+          <p className="text-slate-500 mt-1 font-medium text-sm sm:text-base break-keep">여수한려초 수영부에 오신 것을 환영합니다! 🐬</p>
         </div>
 
         {/* 앱 설치 버튼 */}
         <button 
           onClick={handleInstallApp}
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white px-4 py-2 rounded-full font-bold shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1 active:scale-95"
+          className="flex-shrink-0 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-sky-500 hover:from-blue-600 hover:to-sky-600 text-white w-auto px-5 py-3 sm:px-4 sm:py-2 rounded-2xl sm:rounded-full font-bold shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1 active:scale-95"
         >
-          <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">앱 설치</span>
+          <Download className="w-5 h-5 sm:w-4 sm:h-4" />
+          <span>앱 설치</span>
         </button>
       </div>
 

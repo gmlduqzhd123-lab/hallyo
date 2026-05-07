@@ -138,18 +138,18 @@ export default function PhotosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-indigo-100 text-indigo-500 rounded-xl">
+          <div className="p-3 bg-indigo-100 text-indigo-500 rounded-xl shrink-0">
             <ImageIcon className="w-6 h-6" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-accent-navy">활동 사진</h1>
-            <p className="text-sm text-slate-500 font-medium">선수들의 다양한 활동 사진을 갤러리 형태로 확인하세요.</p>
+            <p className="text-sm text-slate-500 font-medium break-keep">선수들의 다양한 활동 사진을 갤러리 형태로 확인하세요.</p>
           </div>
         </div>
 
-        <div>
+        <div className="w-full sm:w-auto">
           <input 
             type="file" 
             ref={fileInputRef}
@@ -161,7 +161,7 @@ export default function PhotosPage() {
           <button 
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-300 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-indigo-500/30"
+            className="w-full sm:w-auto flex justify-center items-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-300 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-indigo-500/30 shrink-0 whitespace-nowrap"
           >
             <Upload className="w-5 h-5" />
             {isUploading ? '업로드 중...' : '사진 올리기'}

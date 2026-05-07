@@ -90,20 +90,20 @@ export default function CounselingPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-secondary/20 text-primary rounded-xl">
+          <div className="p-3 bg-secondary/20 text-primary rounded-xl shrink-0">
             <BookOpen className="w-6 h-6" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-accent-navy">상담 일지</h1>
-            <p className="text-sm text-slate-500 font-medium">선수별 개별 상담 내역을 관리하세요.</p>
+            <p className="text-sm text-slate-500 font-medium break-keep">선수별 개별 상담 내역을 관리하세요.</p>
           </div>
         </div>
 
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30"
+          className="w-full sm:w-auto flex justify-center items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30 shrink-0 whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />
           새 일지 작성
