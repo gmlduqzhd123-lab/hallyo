@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import React, { useState, useEffect } from 'react'
-import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote, BookOpen, Download } from 'lucide-react'
+import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote, BookOpen, Download, Share, PlusSquare, MoreVertical, X } from 'lucide-react'
 import Link from 'next/link'
 import { quotes } from '@/lib/quotes'
 import { poems } from '@/data/poems'
@@ -79,7 +79,17 @@ export default function DashboardPage() {
   const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay' | 'letter'>('essay')
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
+  const [showInstallGuide, setShowInstallGuide] = useState(false)
+  const [isIOS, setIsIOS] = useState(false)
+
   useEffect(() => {
+    // Check if device is iOS
+    const checkIsIOS = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase()
+      return /iphone|ipad|ipod/.test(userAgent)
+    }
+    setIsIOS(checkIsIOS())
+
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
     setQuote(randomQuote)
     
@@ -91,7 +101,7 @@ export default function DashboardPage() {
 
     const randomLetter = letters[Math.floor(Math.random() * letters.length)]
     setLetter(randomLetter)
-
+    
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault()
       setDeferredPrompt(e)
@@ -102,7 +112,7 @@ export default function DashboardPage() {
 
   const handleInstallApp = async () => {
     if (!deferredPrompt) {
-      alert('현재 브라우저에서는 자동 설치를 지원하지 않습니다.\n\n스마트폰의 공유 메뉴(또는 메뉴 버튼)에서 [홈 화면에 추가]를 선택해 설치해 주세요! 📱✨')
+      setShowInstallGuide(true)
       return
     }
     deferredPrompt.prompt()
@@ -415,6 +425,82 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Install Guide Modal */}
+      {showInstallGuide && (
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowInstallGuide(false)}>
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setShowInstallGuide(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <div className="flex flex-col items-center text-center mt-2">
+              <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-2xl flex items-center justify-center mb-4">
+                <Download className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">앱 설치 안내</h3>
+              <p className="text-slate-500 text-sm mb-6 leading-relaxed break-keep">
+                현재 접속하신 환경(인앱 브라우저 등)에서는 자동 설치를 지원하지 않습니다. 
+                아래 방법에 따라 <b>홈 화면에 추가</b>해 주세요! 📱✨
+              </p>
+
+              {isIOS ? (
+                <div className="bg-slate-50 rounded-2xl p-5 w-full text-left space-y-4 border border-slate-100">
+                  <div>
+                    <h4 className="font-bold text-slate-700 flex items-center gap-2 mb-2 text-sm">
+                      <span className="bg-blue-100 text-blue-600 w-5 h-5 rounded-full flex items-center justify-center text-xs">1</span> 
+                      사파리(Safari) 하단의 공유 버튼 누르기
+                    </h4>
+                    <div className="flex justify-center text-blue-500 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                      <Share className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-700 flex items-center gap-2 mb-2 text-sm">
+                      <span className="bg-blue-100 text-blue-600 w-5 h-5 rounded-full flex items-center justify-center text-xs">2</span> 
+                      메뉴에서 홈 화면에 추가 선택
+                    </h4>
+                    <div className="flex justify-center text-slate-600 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                      <PlusSquare className="w-6 h-6" />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-slate-50 rounded-2xl p-5 w-full text-left space-y-4 border border-slate-100">
+                  <div>
+                    <h4 className="font-bold text-slate-700 flex items-center gap-2 mb-2 text-sm">
+                      <span className="bg-blue-100 text-blue-600 w-5 h-5 rounded-full flex items-center justify-center text-xs">1</span> 
+                      브라우저 상단/하단의 메뉴 버튼 누르기
+                    </h4>
+                    <div className="flex justify-center text-slate-600 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                      <MoreVertical className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-700 flex items-center gap-2 mb-2 text-sm">
+                      <span className="bg-blue-100 text-blue-600 w-5 h-5 rounded-full flex items-center justify-center text-xs">2</span> 
+                      홈 화면에 추가(또는 앱 설치) 선택
+                    </h4>
+                    <div className="flex justify-center text-slate-600 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                      <PlusSquare className="w-6 h-6" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button 
+                onClick={() => setShowInstallGuide(false)}
+                className="mt-6 w-full py-3.5 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/30"
+              >
+                확인했습니다
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )
