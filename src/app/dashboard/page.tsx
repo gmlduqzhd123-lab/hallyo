@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { quotes } from '@/lib/quotes'
 import { poems } from '@/data/poems'
 import { essays } from '@/data/essays'
+import { letters } from '@/data/letters'
 
 // Fetch athletes (is_deleted = false)
 async function fetchActiveAthletes() {
@@ -74,7 +75,8 @@ export default function DashboardPage() {
   const [quote, setQuote] = useState<string>('')
   const [poem, setPoem] = useState<{title: string, page: string, content: string} | null>(null)
   const [essay, setEssay] = useState<{title: string, content: string} | null>(null)
-  const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay'>('essay')
+  const [letter, setLetter] = useState<{title: string, content: string} | null>(null)
+  const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay' | 'letter'>('essay')
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   useEffect(() => {
@@ -86,6 +88,9 @@ export default function DashboardPage() {
 
     const randomEssay = essays[Math.floor(Math.random() * essays.length)]
     setEssay(randomEssay)
+
+    const randomLetter = letters[Math.floor(Math.random() * letters.length)]
+    setLetter(randomLetter)
 
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault()
@@ -290,6 +295,16 @@ export default function DashboardPage() {
           >
             🌸 마음의 목소리
           </button>
+          <button
+            onClick={() => setActiveReadingTab('letter')}
+            className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base transition-all shadow-sm ${
+              activeReadingTab === 'letter'
+                ? 'bg-amber-500 text-white shadow-amber-500/30 border border-amber-500'
+                : 'bg-white text-amber-400 hover:bg-amber-50 border border-amber-100'
+            }`}
+          >
+            💌 사랑의 편지
+          </button>
         </div>
 
         {/* Voice of Mind - Poems */}
@@ -360,6 +375,40 @@ export default function DashboardPage() {
                 
                 <div className="text-base md:text-lg text-slate-700 leading-[2.2] font-medium whitespace-pre-wrap max-w-2xl text-center md:text-left break-keep">
                   {essay.content}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Love Letters */}
+        {activeReadingTab === 'letter' && letter && (
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-[32px] p-6 md:p-8 border border-amber-100/50 shadow-sm shadow-amber-500/5 relative overflow-hidden group animate-in fade-in zoom-in-95 duration-500">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 relative z-10">
+              <h3 className="font-extrabold text-xl md:text-2xl text-amber-900 flex items-center gap-3">
+                <span className="bg-white p-2.5 rounded-xl shadow-sm text-amber-500 shrink-0">
+                  <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
+                </span>
+                <span className="break-keep">
+                  사랑의 편지(물빛의 약속들, 엽쌤) 💌
+                </span>
+              </h3>
+              <button 
+                onClick={() => setLetter(letters[Math.floor(Math.random() * letters.length)])}
+                className="shrink-0 text-xs md:text-sm font-bold text-amber-500 hover:text-white bg-white hover:bg-amber-400 px-4 py-2 rounded-full transition-all shadow-sm flex items-center gap-2 border border-amber-100"
+              >
+                다른 편지 읽기 📖
+              </button>
+            </div>
+            
+            <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 md:p-10 border border-white shadow-inner relative z-10">
+              <div className="flex flex-col items-center text-center">
+                <h4 className="text-xl md:text-2xl font-black text-slate-800 mb-8 break-keep">{letter.title}</h4>
+                
+                <div className="text-base md:text-lg text-slate-700 leading-[2.2] font-medium whitespace-pre-wrap max-w-2xl text-center md:text-left break-keep">
+                  {letter.content}
                 </div>
               </div>
             </div>
