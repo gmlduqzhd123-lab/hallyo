@@ -81,14 +81,16 @@ export default function DashboardPage() {
 
   const [showInstallGuide, setShowInstallGuide] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false)
 
   useEffect(() => {
-    // Check if device is iOS
-    const checkIsIOS = () => {
+    // Check if device is iOS and in-app browser
+    const checkEnvironment = () => {
       const userAgent = window.navigator.userAgent.toLowerCase()
-      return /iphone|ipad|ipod/.test(userAgent)
+      setIsIOS(/iphone|ipad|ipod/.test(userAgent))
+      setIsInAppBrowser(/kakaotalk|instagram|naver|line/.test(userAgent))
     }
-    setIsIOS(checkIsIOS())
+    checkEnvironment()
 
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
     setQuote(randomQuote)
@@ -442,12 +444,22 @@ export default function DashboardPage() {
                 <Download className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-2">앱 설치 안내</h3>
-              <p className="text-slate-500 text-sm mb-6 leading-relaxed break-keep">
-                현재 접속하신 환경(인앱 브라우저 등)에서는 자동 설치를 지원하지 않습니다. 
-                아래 방법에 따라 <b>홈 화면에 추가</b>해 주세요! 📱✨
-              </p>
+              
+              {isInAppBrowser ? (
+                <div className="text-slate-500 text-sm mb-6 leading-relaxed break-keep">
+                  <p className="text-rose-500 font-bold mb-2">🚨 카카오톡 등에서는 앱 설치가 불가능합니다.</p>
+                  화면 우측 하단(또는 상단)의 메뉴 버튼 <MoreVertical className="w-4 h-4 inline" /> 을 눌러<br/>
+                  <b>'다른 브라우저로 열기(Safari/Chrome)'</b>를 선택하신 후 다시 시도해주세요!
+                </div>
+              ) : (
+                <p className="text-slate-500 text-sm mb-6 leading-relaxed break-keep">
+                  {isIOS 
+                    ? "아이폰(iOS) 보안 정책상 자동 설치를 지원하지 않습니다. 아래 방법에 따라 수동으로 진행해 주세요! 📱✨"
+                    : "현재 환경에서는 자동 설치를 지원하지 않습니다. 아래 방법에 따라 홈 화면에 추가해 주세요! 📱✨"}
+                </p>
+              )}
 
-              {isIOS ? (
+              {!isInAppBrowser && isIOS && (
                 <div className="bg-slate-50 rounded-2xl p-5 w-full text-left space-y-4 border border-slate-100">
                   <div>
                     <h4 className="font-bold text-slate-700 flex items-center gap-2 mb-2 text-sm">
@@ -468,7 +480,9 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-              ) : (
+              )}
+              
+              {!isInAppBrowser && !isIOS && (
                 <div className="bg-slate-50 rounded-2xl p-5 w-full text-left space-y-4 border border-slate-100">
                   <div>
                     <h4 className="font-bold text-slate-700 flex items-center gap-2 mb-2 text-sm">
