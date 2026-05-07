@@ -77,7 +77,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
       cell: ({ row }) => {
         const val = row.getValue('gender')
         return (
-          <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${val === 'M' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>
+          <span className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-bold ${val === 'M' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>
             {val === 'M' ? '남' : '여'}
           </span>
         )
@@ -101,7 +101,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
     {
       accessorKey: 'name',
       header: '이름',
-      cell: ({ row }) => <span className="font-bold text-accent-navy whitespace-nowrap">{row.getValue('name')}</span>,
+      cell: ({ row }) => <span className="font-bold text-accent-navy whitespace-nowrap text-sm sm:text-base">{row.getValue('name')}</span>,
     },
     {
       accessorKey: 'category',
@@ -235,14 +235,14 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
       {/* Table */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+          <table className="w-full text-[13px] sm:text-sm text-left">
+            <thead className="text-[11px] sm:text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
                     <th 
                       key={header.id} 
-                      className="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap"
+                      className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap"
                       onClick={header.column.getToggleSortingHandler()}
                     >
                       <div className="flex items-center gap-1 font-bold">
@@ -251,8 +251,8 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
                           header.getContext()
                         )}
                         {{
-                          asc: <ChevronUp className="w-4 h-4 text-primary" />,
-                          desc: <ChevronDown className="w-4 h-4 text-primary" />,
+                          asc: <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />,
+                          desc: <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />,
                         }[header.column.getIsSorted() as string] ?? null}
                       </div>
                     </th>
@@ -269,7 +269,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
                     onClick={() => onEdit(row.original)}
                   >
                     {row.getVisibleCells().map(cell => (
-                      <td key={cell.id} className="px-6 py-4 whitespace-nowrap">
+                      <td key={cell.id} className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
@@ -277,7 +277,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
                 ))
               ) : (
                 <tr>
-                  <td colSpan={columns.length} className="px-6 py-8 text-center text-slate-500 font-medium">
+                  <td colSpan={columns.length} className="px-2 sm:px-4 md:px-6 py-8 text-center text-slate-500 font-medium">
                     등록된 선수가 없거나 검색 결과가 없습니다.
                   </td>
                 </tr>
