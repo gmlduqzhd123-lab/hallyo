@@ -70,11 +70,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
   })
 
   const allColumns: ColumnDef<Athlete>[] = [
-    {
-      accessorKey: 'category',
-      header: '종별',
-      cell: ({ row }) => <span className="text-slate-600 font-medium whitespace-nowrap">{row.getValue('category') || '-'}</span>,
-    },
+
     {
       accessorKey: 'gender',
       header: '성별',
@@ -106,6 +102,11 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
       accessorKey: 'name',
       header: '이름',
       cell: ({ row }) => <span className="font-bold text-accent-navy whitespace-nowrap">{row.getValue('name')}</span>,
+    },
+    {
+      accessorKey: 'category',
+      header: '종별',
+      cell: ({ row }) => <span className="text-slate-600 font-medium whitespace-nowrap">{row.getValue('category') || '-'}</span>,
     },
     {
       accessorKey: 'hanja_name',
