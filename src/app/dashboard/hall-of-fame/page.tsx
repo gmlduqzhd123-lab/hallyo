@@ -410,6 +410,33 @@ export default function HallOfFamePage() {
                   </div>
                 )}
 
+                {(record.principal || record.vice_principal || record.supervisor || record.coach || record.assistant_coach || record.parent_president || record.captain || record.vice_captain) && (
+                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-y-4 gap-x-2 text-xs border-t border-slate-100 pt-6">
+                    {record.principal && <div><span className="text-slate-400 block mb-1 font-medium">교장 선생님</span><span className="text-slate-700 font-bold">{record.principal}</span></div>}
+                    {record.vice_principal && <div><span className="text-slate-400 block mb-1 font-medium">교감 선생님</span><span className="text-slate-700 font-bold">{record.vice_principal}</span></div>}
+                    {record.supervisor && <div><span className="text-slate-400 block mb-1 font-medium">감독 교사</span><span className="text-slate-700 font-bold">{record.supervisor}</span></div>}
+                    {record.coach && <div><span className="text-slate-400 block mb-1 font-medium">코치</span><span className="text-slate-700 font-bold">{record.coach}</span></div>}
+                    {record.assistant_coach && <div><span className="text-slate-400 block mb-1 font-medium">보조 코치</span><span className="text-slate-700 font-bold">{record.assistant_coach}</span></div>}
+                    {record.parent_president && <div><span className="text-slate-400 block mb-1 font-medium">학부모 회장</span><span className="text-slate-700 font-bold">{record.parent_president}</span></div>}
+                    {record.captain && <div><span className="text-slate-400 block mb-1 font-medium">주장</span><span className="text-slate-700 font-bold">{record.captain}</span></div>}
+                    {record.vice_captain && <div><span className="text-slate-400 block mb-1 font-medium">부주장</span><span className="text-slate-700 font-bold">{record.vice_captain}</span></div>}
+                  </div>
+                )}
+
+                {record.article_url && (
+                  <div className="mt-4">
+                    <a 
+                      href={record.article_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-amber-500 hover:text-amber-600 font-bold text-sm transition-colors bg-amber-50 px-3 py-1.5 rounded-lg"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      관련 기사 보기
+                    </a>
+                  </div>
+                )}
+
                 {userRole === 'admin' && (
                   <div className="mt-6 flex justify-end gap-2 border-t border-slate-100 pt-6">
                     <button 
