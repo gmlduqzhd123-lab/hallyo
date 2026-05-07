@@ -14,6 +14,14 @@ type HallOfFameData = {
   story: string | null
   photo_url: string | null
   article_url?: string | null
+  principal?: string | null
+  vice_principal?: string | null
+  supervisor?: string | null
+  coach?: string | null
+  assistant_coach?: string | null
+  parent_president?: string | null
+  captain?: string | null
+  vice_captain?: string | null
   created_at: string
 }
 
@@ -88,16 +96,26 @@ export default function HallOfFamePage() {
       const achievement = formData.get('achievement') as string
       const story = formData.get('story') as string
       const article_url = formData.get('article_url') as string
+      const principal = formData.get('principal') as string
+      const vice_principal = formData.get('vice_principal') as string
+      const supervisor = formData.get('supervisor') as string
+      const coach = formData.get('coach') as string
+      const assistant_coach = formData.get('assistant_coach') as string
+      const parent_president = formData.get('parent_president') as string
+      const captain = formData.get('captain') as string
+      const vice_captain = formData.get('vice_captain') as string
 
       if (editingRecord) {
         const result = await updateHallOfFameRecord(editingRecord.id, { 
-          athlete_name, achievement, story, photo_url: previewUrl || editingRecord.photo_url, article_url 
+          athlete_name, achievement, story, photo_url: previewUrl || editingRecord.photo_url, article_url,
+          principal, vice_principal, supervisor, coach, assistant_coach, parent_president, captain, vice_captain
         })
         if (result.error) throw new Error(result.error)
         toast.success('기록이 성공적으로 수정되었습니다.')
       } else {
         const result = await addHallOfFameRecord({ 
-          athlete_name, achievement, story, photo_url: previewUrl, article_url 
+          athlete_name, achievement, story, photo_url: previewUrl, article_url,
+          principal, vice_principal, supervisor, coach, assistant_coach, parent_president, captain, vice_captain
         })
         if (result.error) throw new Error(result.error)
         toast.success('명예의 전당에 성공적으로 등록되었습니다. 🎉')
@@ -250,6 +268,44 @@ export default function HallOfFamePage() {
                 accept="image/*"
                 onChange={handleImageUpload}
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-amber-900 ml-1">함께한 사람들 <span className="text-slate-400 font-normal">(선택)</span></label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-amber-50/50 rounded-2xl border border-amber-100">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 ml-1">교장 선생님</label>
+                  <input name="principal" defaultValue={editingRecord?.principal || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-white" placeholder="이름" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 ml-1">교감 선생님</label>
+                  <input name="vice_principal" defaultValue={editingRecord?.vice_principal || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-white" placeholder="이름" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 ml-1">감독 교사</label>
+                  <input name="supervisor" defaultValue={editingRecord?.supervisor || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-white" placeholder="이름" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 ml-1">코치</label>
+                  <input name="coach" defaultValue={editingRecord?.coach || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-white" placeholder="이름" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 ml-1">보조 코치</label>
+                  <input name="assistant_coach" defaultValue={editingRecord?.assistant_coach || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-white" placeholder="이름" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 ml-1">학부모 회장</label>
+                  <input name="parent_president" defaultValue={editingRecord?.parent_president || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-white" placeholder="이름" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 ml-1">주장</label>
+                  <input name="captain" defaultValue={editingRecord?.captain || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-white" placeholder="이름" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 ml-1">부주장</label>
+                  <input name="vice_captain" defaultValue={editingRecord?.vice_captain || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all font-medium text-slate-700 bg-white" placeholder="이름" />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -416,14 +472,30 @@ export default function HallOfFamePage() {
 
           {/* Info Overlay */}
           <div 
-            className="mt-6 max-w-lg w-full text-center" 
+            className="mt-6 max-w-2xl w-full text-center bg-black/40 p-6 rounded-3xl backdrop-blur-md" 
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-white text-2xl font-black mb-2">{viewingRecord.athlete_name}</h3>
-            <p className="text-amber-400 font-bold text-lg mb-3">{viewingRecord.achievement}</p>
+            <h3 className="text-white text-2xl md:text-3xl font-black mb-2">{viewingRecord.athlete_name}</h3>
+            <p className="text-amber-400 font-bold text-lg md:text-xl mb-6">{viewingRecord.achievement}</p>
+            
             {viewingRecord.story && (
-              <p className="text-white/70 text-sm leading-relaxed italic mb-4">"{viewingRecord.story}"</p>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed italic mb-6">"{viewingRecord.story}"</p>
             )}
+
+            {/* People Involved */}
+            {(viewingRecord.principal || viewingRecord.vice_principal || viewingRecord.supervisor || viewingRecord.coach || viewingRecord.assistant_coach || viewingRecord.parent_president || viewingRecord.captain || viewingRecord.vice_captain) && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-4 gap-x-2 text-xs md:text-sm mb-6 border-t border-white/10 pt-6">
+                {viewingRecord.principal && <div><span className="text-white/50 block mb-1">교장 선생님</span><span className="text-white font-medium">{viewingRecord.principal}</span></div>}
+                {viewingRecord.vice_principal && <div><span className="text-white/50 block mb-1">교감 선생님</span><span className="text-white font-medium">{viewingRecord.vice_principal}</span></div>}
+                {viewingRecord.supervisor && <div><span className="text-white/50 block mb-1">감독 교사</span><span className="text-white font-medium">{viewingRecord.supervisor}</span></div>}
+                {viewingRecord.coach && <div><span className="text-white/50 block mb-1">코치</span><span className="text-white font-medium">{viewingRecord.coach}</span></div>}
+                {viewingRecord.assistant_coach && <div><span className="text-white/50 block mb-1">보조 코치</span><span className="text-white font-medium">{viewingRecord.assistant_coach}</span></div>}
+                {viewingRecord.parent_president && <div><span className="text-white/50 block mb-1">학부모 회장</span><span className="text-white font-medium">{viewingRecord.parent_president}</span></div>}
+                {viewingRecord.captain && <div><span className="text-white/50 block mb-1">주장</span><span className="text-white font-medium">{viewingRecord.captain}</span></div>}
+                {viewingRecord.vice_captain && <div><span className="text-white/50 block mb-1">부주장</span><span className="text-white font-medium">{viewingRecord.vice_captain}</span></div>}
+              </div>
+            )}
+
             {viewingRecord.article_url && (
               <a 
                 href={viewingRecord.article_url} 
