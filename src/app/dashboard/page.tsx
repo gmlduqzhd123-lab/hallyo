@@ -165,14 +165,14 @@ export default function DashboardPage() {
                 </div>
               </div>
               
-              <div className="flex gap-3">
-                <div className="bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md px-5 py-3 rounded-2xl flex items-center gap-2 border border-white/20 shadow-lg shadow-black/5">
-                  <span className="text-2xl drop-shadow-sm">👦</span>
-                  <span className="font-bold text-lg text-white whitespace-nowrap">남 ( {boys} )명</span>
+              <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 md:mt-0">
+                <div className="bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md px-4 sm:px-5 py-2 sm:py-3 rounded-2xl flex items-center gap-2 border border-white/20 shadow-lg shadow-black/5 flex-1 min-w-[120px] justify-center">
+                  <span className="text-xl sm:text-2xl drop-shadow-sm">👦</span>
+                  <span className="font-bold text-base sm:text-lg text-white whitespace-nowrap">남 ( {boys} )명</span>
                 </div>
-                <div className="bg-pink-400/30 hover:bg-pink-400/40 transition-colors backdrop-blur-md px-5 py-3 rounded-2xl flex items-center gap-2 border border-pink-300/30 shadow-lg shadow-black/5">
-                  <span className="text-2xl drop-shadow-sm">👧</span>
-                  <span className="font-bold text-lg text-white whitespace-nowrap">여 ( {girls} )명</span>
+                <div className="bg-pink-400/30 hover:bg-pink-400/40 transition-colors backdrop-blur-md px-4 sm:px-5 py-2 sm:py-3 rounded-2xl flex items-center gap-2 border border-pink-300/30 shadow-lg shadow-black/5 flex-1 min-w-[120px] justify-center">
+                  <span className="text-xl sm:text-2xl drop-shadow-sm">👧</span>
+                  <span className="font-bold text-base sm:text-lg text-white whitespace-nowrap">여 ( {girls} )명</span>
                 </div>
               </div>
             </React.Fragment>
