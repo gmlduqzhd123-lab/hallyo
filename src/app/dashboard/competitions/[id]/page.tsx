@@ -3,13 +3,13 @@
 import { useState, use } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { ArrowLeft, Trophy, Plus, Trash2, MapPin, Calendar as CalendarIcon, Users, UserPlus, Check } from 'lucide-react'
+import { ArrowLeft, Trophy, Plus, Trash2, MapPin, Calendar as CalendarIcon, Users, UserPlus, Check, Building, Utensils, ExternalLink, Edit2 } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { addRecord, deleteRecord } from '@/app/actions/records'
-import { updateScheduleParticipants } from '@/app/actions/schedules'
+import { updateScheduleParticipants, updateSchedulePlaces } from '@/app/actions/schedules'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -24,12 +24,31 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
+interface Place {
+  id: string
+  name: string
+  address: string
+  contact?: string
+  link?: string
+}
+
+const placeSchema = z.object({
+  name: z.string().min(1, '명칭을 입력해주세요.'),
+  address: z.string().min(1, '주소를 입력해주세요.'),
+  contact: z.string().optional(),
+  link: z.string().url('유효한 링크(URL)를 입력해주세요.').or(z.literal('')).optional(),
+})
+
 export default function CompetitionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const id = resolvedParams.id
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false)
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([])
+  
+  const [infoTab, setInfoTab] = useState<'accommodations' | 'restaurants'>('accommodations')
+  const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false)
+  const [editingPlace, setEditingPlace] = useState<Place | null>(null)
   const supabase = createClient()
   const queryClient = useQueryClient()
 
@@ -76,6 +95,10 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
 
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormValues>({
     resolver: zodResolver(schema),
+  })
+
+  const { register: registerPlace, handleSubmit: handleSubmitPlace, formState: { errors: placeErrors }, reset: resetPlace, setValue: setPlaceValue } = useForm<z.infer<typeof placeSchema>>({
+    resolver: zodResolver(placeSchema),
   })
 
   const selectedEventName = watch('event_name')
@@ -139,6 +162,20 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     onError: (err: Error) => toast.error(err.message)
   })
 
+  const updatePlacesMutation = useMutation({
+    mutationFn: async ({ type, places }: { type: 'accommodations' | 'restaurants', places: any[] }) => {
+      const result = await updateSchedulePlaces(id, type, places)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('정보가 업데이트 되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['competition', id] })
+      setIsPlaceModalOpen(false)
+    },
+    onError: (err: Error) => toast.error(err.message)
+  })
+
   const handleToggleParticipant = (athleteId: string) => {
     setSelectedParticipants(prev => 
       prev.includes(athleteId) 
@@ -154,6 +191,45 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const onSubmit = (data: FormValues) => {
     const parsedData = { ...data, record_time: parseTimeInput(data.record_time) }
     addMutation.mutate(parsedData)
+  }
+
+  const handleOpenPlaceModal = (place?: Place) => {
+    if (place) {
+      setEditingPlace(place)
+      setPlaceValue('name', place.name)
+      setPlaceValue('address', place.address)
+      setPlaceValue('contact', place.contact || '')
+      setPlaceValue('link', place.link || '')
+    } else {
+      setEditingPlace(null)
+      resetPlace({ name: '', address: '', contact: '', link: '' })
+    }
+    setIsPlaceModalOpen(true)
+  }
+
+  const onSubmitPlace = (data: any) => {
+    const currentPlaces = infoTab === 'accommodations' 
+      ? (competition?.accommodations || []) 
+      : (competition?.restaurants || [])
+      
+    let newPlaces
+    if (editingPlace) {
+      newPlaces = currentPlaces.map((p: any) => p.id === editingPlace.id ? { ...data, id: editingPlace.id } : p)
+    } else {
+      newPlaces = [...currentPlaces, { ...data, id: Math.random().toString(36).substring(7) }]
+    }
+    
+    updatePlacesMutation.mutate({ type: infoTab, places: newPlaces })
+  }
+
+  const handleDeletePlace = (placeId: string) => {
+    if (!confirm('정말 삭제하시겠습니까?')) return
+    const currentPlaces = infoTab === 'accommodations' 
+      ? (competition?.accommodations || []) 
+      : (competition?.restaurants || [])
+    
+    const newPlaces = currentPlaces.filter((p: any) => p.id !== placeId)
+    updatePlacesMutation.mutate({ type: infoTab, places: newPlaces })
   }
 
   // Set default date when opening modal
@@ -246,7 +322,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         </button>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm mb-12">
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 text-sm font-bold">
             <tr>
@@ -286,6 +362,119 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Places Information Tabs */}
+      <div className="mt-12 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="flex border-b border-slate-100">
+          <button
+            onClick={() => setInfoTab('accommodations')}
+            className={`flex-1 py-4 font-bold flex items-center justify-center gap-2 transition-colors ${
+              infoTab === 'accommodations' 
+                ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/50' 
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <Building className="w-5 h-5" />
+            숙소 정보
+          </button>
+          <button
+            onClick={() => setInfoTab('restaurants')}
+            className={`flex-1 py-4 font-bold flex items-center justify-center gap-2 transition-colors ${
+              infoTab === 'restaurants' 
+                ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50/50' 
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <Utensils className="w-5 h-5" />
+            식당 정보
+          </button>
+        </div>
+
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-accent-navy">
+              {infoTab === 'accommodations' ? '등록된 숙소' : '등록된 식당'}
+            </h3>
+            <button 
+              onClick={() => handleOpenPlaceModal()}
+              className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl font-bold transition-all text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              {infoTab === 'accommodations' ? '숙소 추가' : '식당 추가'}
+            </button>
+          </div>
+
+          {infoTab === 'accommodations' ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              {(!competition.accommodations || competition.accommodations.length === 0) ? (
+                <p className="text-slate-400 text-center py-8 col-span-full">등록된 숙소 정보가 없습니다.</p>
+              ) : (
+                competition.accommodations.map((place: Place) => (
+                  <div key={place.id} className="border border-slate-100 rounded-2xl p-5 hover:border-indigo-100 hover:shadow-md transition-all group">
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-black text-lg text-slate-800">{place.name}</h4>
+                      <div className="flex gap-2 opacity-0 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleOpenPlaceModal(place)} className="text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 p-1.5 rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                        <button onClick={() => handleDeletePlace(place.id)} className="text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 p-1.5 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <p className="flex items-start gap-2 text-slate-600">
+                        <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>{place.address}</span>
+                      </p>
+                      {place.contact && (
+                        <p className="text-slate-600">
+                          <span className="font-bold text-slate-400 mr-2">연락처</span>{place.contact}
+                        </p>
+                      )}
+                      {place.link && (
+                        <a href={place.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-500 hover:text-indigo-700 font-bold mt-2">
+                          네이버 지도 보기 <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {(!competition.restaurants || competition.restaurants.length === 0) ? (
+                <p className="text-slate-400 text-center py-8 col-span-full">등록된 식당 정보가 없습니다.</p>
+              ) : (
+                competition.restaurants.map((place: Place) => (
+                  <div key={place.id} className="border border-slate-100 rounded-2xl p-5 hover:border-orange-100 hover:shadow-md transition-all group">
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-black text-lg text-slate-800">{place.name}</h4>
+                      <div className="flex gap-2 opacity-0 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleOpenPlaceModal(place)} className="text-slate-400 hover:text-orange-600 bg-slate-50 hover:bg-orange-50 p-1.5 rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                        <button onClick={() => handleDeletePlace(place.id)} className="text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 p-1.5 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <p className="flex items-start gap-2 text-slate-600">
+                        <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>{place.address}</span>
+                      </p>
+                      {place.contact && (
+                        <p className="text-slate-600">
+                          <span className="font-bold text-slate-400 mr-2">연락처</span>{place.contact}
+                        </p>
+                      )}
+                      {place.link && (
+                        <a href={place.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-orange-500 hover:text-orange-700 font-bold mt-2">
+                          네이버 지도 보기 <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="대회 기록 등록">
@@ -389,6 +578,63 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             </button>
           </div>
         </div>
+      </Modal>
+
+      <Modal isOpen={isPlaceModalOpen} onClose={() => setIsPlaceModalOpen(false)} title={infoTab === 'accommodations' ? '숙소 정보 등록' : '식당 정보 등록'}>
+        <form onSubmit={handleSubmitPlace(onSubmitPlace)} className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">
+              {infoTab === 'accommodations' ? '숙소 명칭' : '식당 명칭'}
+            </label>
+            <input 
+              type="text" 
+              {...registerPlace('name')} 
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50" 
+              placeholder={infoTab === 'accommodations' ? '예: 한려 호텔' : '예: 맛있는 식당'} 
+            />
+            {placeErrors.name && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{placeErrors.name.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">주소</label>
+            <input 
+              type="text" 
+              {...registerPlace('address')} 
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50" 
+              placeholder="예: 부산광역시 해운대구..." 
+            />
+            {placeErrors.address && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{placeErrors.address.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">연락처 <span className="text-slate-400 text-xs font-normal ml-1">(선택)</span></label>
+            <input 
+              type="text" 
+              {...registerPlace('contact')} 
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50" 
+              placeholder="예: 051-123-4567" 
+            />
+            {placeErrors.contact && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{placeErrors.contact.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">네이버 지도 링크 <span className="text-slate-400 text-xs font-normal ml-1">(선택)</span></label>
+            <input 
+              type="text" 
+              {...registerPlace('link')} 
+              className="w-full px-4 py-3 rounded-2xl border bg-slate-50" 
+              placeholder="예: https://map.naver.com/..." 
+            />
+            {placeErrors.link && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{placeErrors.link.message}</p>}
+          </div>
+
+          <div className="pt-4 flex gap-3">
+            <button type="button" onClick={() => setIsPlaceModalOpen(false)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">취소</button>
+            <button type="submit" disabled={updatePlacesMutation.isPending} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-accent-navy hover:bg-blue-900 shadow-lg shadow-blue-900/30">
+              {editingPlace ? '수정하기' : '등록하기'}
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   )

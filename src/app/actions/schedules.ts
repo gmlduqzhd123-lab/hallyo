@@ -130,3 +130,31 @@ export async function updateScheduleParticipants(id: string, participants: strin
   revalidatePath(`/dashboard/competitions/${id}`)
   return { success: true }
 }
+
+export async function updateSchedulePlaces(id: string, type: 'accommodations' | 'restaurants', places: any[]) {
+  const supabase = await createClient()
+  
+  const { data: authData, error: userError } = await supabase.auth.getUser()
+  if (userError || !authData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: userRecord } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+  if (userRecord?.role !== 'admin' && userRecord?.role !== 'coach') {
+    return { error: '권한이 없습니다.' }
+  }
+
+  const updateData = type === 'accommodations' ? { accommodations: places } : { restaurants: places }
+
+  const { error } = await supabase
+    .from('schedules')
+    .update(updateData)
+    .eq('id', id)
+
+  if (error) {
+    return { error: `${type === 'accommodations' ? '숙소' : '식당'} 정보 수정에 실패했습니다: ` + error.message }
+  }
+
+  await logAudit('UPDATE', 'schedules', { id, action: `update_${type}` })
+
+  revalidatePath(`/dashboard/competitions/${id}`)
+  return { success: true }
+}
