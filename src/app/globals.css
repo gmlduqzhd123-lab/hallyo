@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
-@font-face { font-family: 'BMDOHYEON'; src: url('/fonts/BMDOHYEON.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'BMJUA'; src: url('/fonts/BMJUA.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'GangwonEduAllB'; src: url('/fonts/GangwonEduAllB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Jalnan'; src: url('/fonts/Jalnan.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'KyoboHandwriting2019'; src: url('/fonts/KyoboHandwriting2019.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'MaplestoryB'; src: url('/fonts/MaplestoryB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'MaplestoryL'; src: url('/fonts/MaplestoryL.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'SchoolSafeNadeuriB'; src: url('/fonts/SchoolSafeNadeuriB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'SchoolSafeNadeuriL'; src: url('/fonts/SchoolSafeNadeuriL.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'SweetMuffin'; src: url('/fonts/SweetMuffin.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'aBabo'; src: url('/fonts/aBabo.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'BMDOHYEON'; src: url('/fonts/BMDOHYEON.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'BMJUA'; src: url('/fonts/BMJUA.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'GangwonEduAllB'; src: url('/fonts/GangwonEduAllB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'Jalnan'; src: url('/fonts/Jalnan.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'KyoboHandwriting2019'; src: url('/fonts/KyoboHandwriting2019.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'MaplestoryB'; src: url('/fonts/MaplestoryB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'MaplestoryL'; src: url('/fonts/MaplestoryL.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'SchoolSafeNadeuriB'; src: url('/fonts/SchoolSafeNadeuriB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'SchoolSafeNadeuriL'; src: url('/fonts/SchoolSafeNadeuriL.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'SweetMuffin'; src: url('/fonts/SweetMuffin.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
+@font-face { font-family: 'aBabo'; src: url('/fonts/aBabo.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: block; }
 @theme {
   --color-primary: #0047AB; /* Cobalt Blue */
   --color-primary-hover: #003685;

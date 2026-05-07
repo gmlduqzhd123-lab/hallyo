@@ -3,21 +3,33 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { GlobalFontProvider } from "@/components/global-font-provider";
 import { PwaRegistry } from "@/components/pwa-registry";
+import { createClient } from "@/utils/supabase/server";
 
 export const metadata: Metadata = {
   title: "Hallyoswim | 여수한려초 수영부 관리",
   description: "여수한려초등학교 수영부 선수단 및 훈련 관리 플랫폼",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let font = 'MaplestoryL';
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.from('system_settings').select('value').eq('key', 'global_font').single();
+    if (data?.value) {
+      font = data.value;
+    }
+  } catch (e) {
+    // Ignore error, fallback to default font
+  }
+
   return (
-    <html lang="ko">
+    <html lang="ko" style={{ '--global-font': `"${font}"` } as React.CSSProperties}>
       <body className={`min-h-screen bg-[#F8FAFC] text-slate-800 antialiased font-sans`}>
-        <GlobalFontProvider />
+        <GlobalFontProvider initialFont={font} />
         <PwaRegistry />
         <Providers>
           {children}

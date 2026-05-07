@@ -3,25 +3,15 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 
-export function GlobalFontProvider() {
-  const [fontFamily, setFontFamily] = useState('MaplestoryL')
+export function GlobalFontProvider({ initialFont = 'MaplestoryL' }: { initialFont?: string }) {
+  const [fontFamily, setFontFamily] = useState(initialFont)
   const supabase = createClient()
 
   useEffect(() => {
-    // Initial fetch
-    const fetchFont = async () => {
-      const { data } = await supabase
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'global_font')
-        .single()
-      
-      if (data) {
-        setFontFamily(data.value)
-      }
-    }
-    fetchFont()
-
+    // We already have the initial font from the server.
+    // If we wanted to ensure it's up-to-date we could fetch it here,
+    // but the server render will handle the initial load.
+    
     // Realtime subscription
     const channel = supabase.channel('system_settings_changes')
       .on(
@@ -41,10 +31,10 @@ export function GlobalFontProvider() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [supabase])
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--global-font', `'${fontFamily}', sans-serif`)
+    document.documentElement.style.setProperty('--global-font', `"${fontFamily}"`)
   }, [fontFamily])
 
   return null
