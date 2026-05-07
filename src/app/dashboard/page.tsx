@@ -74,7 +74,7 @@ export default function DashboardPage() {
   const [quote, setQuote] = useState<string>('')
   const [poem, setPoem] = useState<{title: string, page: string, content: string} | null>(null)
   const [essay, setEssay] = useState<{title: string, content: string} | null>(null)
-  const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay'>('poem')
+  const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay'>('essay')
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   useEffect(() => {
@@ -271,16 +271,6 @@ export default function DashboardPage() {
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 md:gap-4 justify-start">
           <button
-            onClick={() => setActiveReadingTab('poem')}
-            className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base transition-all shadow-sm ${
-              activeReadingTab === 'poem'
-                ? 'bg-fuchsia-500 text-white shadow-fuchsia-500/30 border border-fuchsia-500'
-                : 'bg-white text-fuchsia-400 hover:bg-fuchsia-50 border border-fuchsia-100'
-            }`}
-          >
-            🌸 마음의 목소리
-          </button>
-          <button
             onClick={() => setActiveReadingTab('essay')}
             className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base transition-all shadow-sm ${
               activeReadingTab === 'essay'
@@ -289,6 +279,16 @@ export default function DashboardPage() {
             }`}
           >
             🏊‍♂️ 수영부 에세이
+          </button>
+          <button
+            onClick={() => setActiveReadingTab('poem')}
+            className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base transition-all shadow-sm ${
+              activeReadingTab === 'poem'
+                ? 'bg-fuchsia-500 text-white shadow-fuchsia-500/30 border border-fuchsia-500'
+                : 'bg-white text-fuchsia-400 hover:bg-fuchsia-50 border border-fuchsia-100'
+            }`}
+          >
+            🌸 마음의 목소리
           </button>
         </div>
 
