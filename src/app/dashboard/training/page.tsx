@@ -374,7 +374,7 @@ export default function SchedulePage() {
             components={{
               event: EventComponent
             }}
-            messages={{
+            messages={({
               next: "다음 ❯",
               previous: "❮ 이전",
               today: "오늘",
@@ -383,7 +383,7 @@ export default function SchedulePage() {
               day: "일간",
               year: "연간",
               noEventsInRange: "이 기간에는 일정이 없어요! 🏖️"
-            }}
+            }) as any}
           />
         )}
       </div>
