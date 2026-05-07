@@ -29,6 +29,7 @@ export default function TrainingVideosPage() {
   const { data: userRole, isPending: rolePending } = useQuery({
     queryKey: ['user_role'],
     queryFn: async () => {
+      const supabase = createClient()
       const { data: authData } = await supabase.auth.getUser()
       if (!authData.user) return null
       const { data } = await supabase.from('users').select('role').eq('id', authData.user.id).single()

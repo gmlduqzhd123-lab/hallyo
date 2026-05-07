@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { AlertCircle, Plus, Trash2, Check, X } from 'lucide-react'
+import { addRecord, deleteRecord } from '@/app/actions/records'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { formatTimeSeconds, parseTimeInput } from '@/utils/time'
@@ -204,7 +205,7 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
                   domain={['auto', 'auto']}
                 />
                 <Tooltip 
-                  formatter={(value: number) => [formatTimeSeconds(value), '기록']}
+                  formatter={(value: any) => [formatTimeSeconds(value), '기록']}
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                   labelStyle={{ fontWeight: 'bold', color: '#0047AB', marginBottom: '4px' }}
                 />

@@ -382,7 +382,6 @@ export default function SchedulePage() {
               week: "주간",
               day: "일간",
               agenda: "목록",
-              year: "연간",
               noEventsInRange: "이 기간에는 일정이 없어요! 🏖️"
             }}
           />
