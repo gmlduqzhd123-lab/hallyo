@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { logAudit } from './audit'
 import { revalidatePath } from 'next/cache'
 
-export async function addPhotos(urls: string[]) {
+export async function addPhotos(urls: string[], description?: string) {
   const supabase = await createClient()
   
   const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -17,6 +17,7 @@ export async function addPhotos(urls: string[]) {
 
   const inserts = urls.map(url => ({
     url,
+    description: description || null,
     created_by: userData.user.id,
     is_deleted: false,
     status

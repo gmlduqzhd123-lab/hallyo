@@ -9,7 +9,10 @@ import { addPhotos, softDeletePhoto, approvePhoto } from '@/app/actions/photos'
 
 export default function PhotosPage() {
   const [isUploading, setIsUploading] = useState(false)
-  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
+  const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
+  const [photoDescription, setPhotoDescription] = useState('')
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -61,7 +64,7 @@ export default function PhotosPage() {
   const visiblePhotos = photos?.filter(p => userRole === 'admin' || p.status === 'approved') || []
 
   const uploadMutation = useMutation({
-    mutationFn: async (files: FileList) => {
+    mutationFn: async ({ files, description }: { files: FileList, description: string }) => {
       setIsUploading(true)
       const uploadedUrls: string[] = []
 
@@ -83,7 +86,7 @@ export default function PhotosPage() {
         uploadedUrls.push(data.publicUrl)
       }
 
-      const res = await addPhotos(uploadedUrls)
+      const res = await addPhotos(uploadedUrls, description)
       if (res.error) throw new Error(res.error)
       return res
     },
@@ -91,6 +94,9 @@ export default function PhotosPage() {
       toast.success('사진이 성공적으로 업로드되었습니다.', { style: { background: '#0047AB', color: 'white' } })
       queryClient.invalidateQueries({ queryKey: ['photos'] })
       if (fileInputRef.current) fileInputRef.current.value = ''
+      setIsUploadModalOpen(false)
+      setSelectedFiles(null)
+      setPhotoDescription('')
     },
     onError: (err: Error) => {
       toast.error(err.message)
@@ -132,7 +138,9 @@ export default function PhotosPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      uploadMutation.mutate(e.target.files)
+      setSelectedFiles(e.target.files)
+      setPhotoDescription('')
+      setIsUploadModalOpen(true)
     }
   }
 
@@ -194,38 +202,45 @@ export default function PhotosPage() {
                 alt="활동 사진" 
                 className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${photo.status === 'pending' ? 'opacity-50 grayscale' : ''}`}
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100">
-                <button 
-                  onClick={() => setSelectedPhoto(photo.url)}
-                  className="p-3 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
-                  title="사진 크게 보기"
-                >
-                  <Maximize2 className="w-5 h-5" />
-                </button>
-                <button 
-                  onClick={(e) => handleDownload(photo.url, e)}
-                  className="p-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
-                  title="사진 다운로드"
-                >
-                  <Download className="w-5 h-5" />
-                </button>
-                {photo.status === 'pending' && userRole === 'admin' && (
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100">
+                <div className="flex items-center gap-4">
                   <button 
-                    onClick={(e) => { e.stopPropagation(); approveMutation.mutate(photo.id) }}
-                    className="p-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
-                    title="사진 승인"
+                    onClick={() => setSelectedPhoto(photo)}
+                    className="p-3 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                    title="사진 크게 보기"
                   >
-                    <Check className="w-5 h-5" />
+                    <Maximize2 className="w-5 h-5" />
                   </button>
-                )}
-                {(userRole === 'admin' || userRole === 'coach') && (
                   <button 
-                    onClick={() => { if(confirm('이 사진을 정말 삭제하시겠습니까?')) deleteMutation.mutate(photo.id) }}
-                    className="p-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
-                    title="사진 삭제"
+                    onClick={(e) => handleDownload(photo.url, e)}
+                    className="p-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                    title="사진 다운로드"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Download className="w-5 h-5" />
                   </button>
+                  {photo.status === 'pending' && userRole === 'admin' && (
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); approveMutation.mutate(photo.id) }}
+                      className="p-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                      title="사진 승인"
+                    >
+                      <Check className="w-5 h-5" />
+                    </button>
+                  )}
+                  {(userRole === 'admin' || userRole === 'coach') && (
+                    <button 
+                      onClick={() => { if(confirm('이 사진을 정말 삭제하시겠습니까?')) deleteMutation.mutate(photo.id) }}
+                      className="p-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                      title="사진 삭제"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+                {photo.description && (
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                    <p className="text-white text-sm font-medium text-center line-clamp-2">{photo.description}</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -242,7 +257,7 @@ export default function PhotosPage() {
           <div className="absolute top-6 right-6 flex items-center gap-3">
             <button 
               className="p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/30 rounded-full transition-all"
-              onClick={(e) => handleDownload(selectedPhoto, e)}
+              onClick={(e) => handleDownload(selectedPhoto.url, e)}
               title="다운로드"
             >
               <Download className="w-6 h-6" />
@@ -256,11 +271,84 @@ export default function PhotosPage() {
             </button>
           </div>
           <img 
-            src={selectedPhoto} 
+            src={selectedPhoto.url} 
             alt="확대된 사진" 
             className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
+          {selectedPhoto.description && (
+            <div className="absolute bottom-6 left-6 right-6 text-center pointer-events-none">
+              <p className="text-white text-base md:text-lg font-bold bg-black/50 inline-block px-6 py-3 rounded-2xl backdrop-blur-sm pointer-events-auto max-w-3xl whitespace-pre-wrap text-left md:text-center">
+                {selectedPhoto.description}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Upload Details Modal */}
+      {isUploadModalOpen && selectedFiles && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h2 className="text-xl font-bold text-accent-navy flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-indigo-500" />
+                사진 업로드 ({selectedFiles.length}장)
+              </h2>
+              <button 
+                onClick={() => {
+                  setIsUploadModalOpen(false);
+                  setSelectedFiles(null);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500"
+                disabled={isUploading}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  사진 내용 설명 (선택사항)
+                </label>
+                <textarea
+                  value={photoDescription}
+                  onChange={(e) => setPhotoDescription(e.target.value)}
+                  placeholder="어떤 활동이었는지 간단히 적어주세요!"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none min-h-[100px] text-sm"
+                  disabled={isUploading}
+                />
+              </div>
+            </div>
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsUploadModalOpen(false);
+                  setSelectedFiles(null);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="px-5 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+                disabled={isUploading}
+              >
+                취소
+              </button>
+              <button
+                onClick={() => uploadMutation.mutate({ files: selectedFiles, description: photoDescription })}
+                disabled={isUploading}
+                className="px-6 py-2.5 rounded-xl font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/30 flex items-center gap-2 disabled:bg-indigo-300"
+              >
+                {isUploading ? (
+                  <>업로드 중...</>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    올리기
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
