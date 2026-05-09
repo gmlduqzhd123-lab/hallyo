@@ -198,6 +198,88 @@ export default function NationwideRecordsPage() {
                   <th className="px-6 py-4 whitespace-nowrap">소속(학교)</th>
                   <th className="px-6 py-4 whitespace-nowrap">기록</th>
                   <th className="px-6 py-4 whitespace-nowrap text-right">기준 년도</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {(() => {
+                  let currentGroup = '';
+                  let currentRank = 1;
+                  let currentRecord = '';
+                  let itemsInCurrentRank = 0;
+
+                  return filteredRankings.map((ranking, idx) => {
+                    if (!ranking || typeof ranking !== 'object') return null;
+                    
+                    const eventStr = typeof ranking.event === 'string' ? ranking.event : String(ranking.event || '');
+                    const genderStr = typeof ranking.gender === 'string' ? ranking.gender : String(ranking.gender || '');
+                    const safeEvent = eventStr.trim();
+                    const safeGender = genderStr.trim();
+                    const isMale = ['남', 'm', '남자'].includes(safeGender.toLowerCase());
+                    
+                    const recordStr = typeof ranking.record === 'string' ? ranking.record : String(ranking.record || '');
+                    const safeRecord = recordStr.trim();
+
+                    const groupKey = `${safeEvent}-${safeGender}`;
+                    if (groupKey !== currentGroup) {
+                      currentGroup = groupKey;
+                      currentRank = 1;
+                      currentRecord = safeRecord;
+                      itemsInCurrentRank = 1;
+                    } else {
+                      if (safeRecord === currentRecord) {
+                        itemsInCurrentRank++;
+                      } else {
+                        currentRank += itemsInCurrentRank;
+                        currentRecord = safeRecord;
+                        itemsInCurrentRank = 1;
+                      }
+                    }
+
+                    const displayRank = currentRank;
+                    const gradeNum = ranking.grade ? Number(ranking.grade) : null;
+                    const athleteName = typeof ranking.athlete_name === 'string' ? ranking.athlete_name : String(ranking.athlete_name || '');
+                    const schoolName = typeof ranking.school === 'string' ? ranking.school : String(ranking.school || '');
+                    const yearNum = Number(ranking.year) || new Date().getFullYear();
+
+                    return (
+                      <tr key={ranking.id || `fallback-key-${idx}`} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
+                          {safeEvent}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            isMale ? 'bg-blue-100 text-blue-600' : 'bg-rose-100 text-rose-600'
+                          }`}>
+                            {safeGender}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
+                          {gradeNum ? `${gradeNum}학년` : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
+                            displayRank === 1 ? 'bg-amber-100 text-amber-600' :
+                            displayRank === 2 ? 'bg-slate-200 text-slate-600' :
+                            displayRank === 3 ? 'bg-orange-100 text-orange-700' :
+                            'bg-slate-100 text-slate-500'
+                          }`}>
+                            {displayRank > 0 ? displayRank : '-'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900">
+                          {athleteName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-600">
+                          {schoolName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap font-mono font-bold text-amber-600">
+                          {safeRecord}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-slate-400">
+                          {yearNum}
+                        </td>
+                      </tr>
+                    );
                   });
                 })()}
               </tbody>
