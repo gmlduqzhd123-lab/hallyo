@@ -407,6 +407,33 @@ export default function RecordAnalysisPage() {
                     {selectedAthleteData.eventDetails.map((ed: any, idx: number) => {
                       const diff = ed.myBest - ed.nwAvg;
                       const isGood = diff <= 0;
+                      
+                      let statusText = '';
+                      let statusBadgeClass = '';
+                      let StatusIcon = null;
+
+                      if (ed.ratio >= 1.10) {
+                        statusText = '최고 수준';
+                        statusBadgeClass = 'bg-indigo-100 text-indigo-700';
+                        StatusIcon = Medal;
+                      } else if (ed.ratio >= 1.02) {
+                        statusText = '평균 이상';
+                        statusBadgeClass = 'bg-emerald-100 text-emerald-700';
+                        StatusIcon = TrendingUp;
+                      } else if (ed.ratio >= 0.98) {
+                        statusText = '평균 수준';
+                        statusBadgeClass = 'bg-blue-100 text-blue-700';
+                        StatusIcon = CheckCircle;
+                      } else if (ed.ratio >= 0.90) {
+                        statusText = '단축 필요';
+                        statusBadgeClass = 'bg-amber-100 text-amber-700';
+                        StatusIcon = Target;
+                      } else {
+                        statusText = '노력 요함';
+                        statusBadgeClass = 'bg-rose-100 text-rose-700';
+                        StatusIcon = AlertCircle;
+                      }
+
                       return (
                         <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                           <td className="p-4 font-bold text-slate-700">{ed.event}</td>
@@ -419,15 +446,9 @@ export default function RecordAnalysisPage() {
                             </span>
                           </td>
                           <td className="p-4">
-                            {isGood ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
-                                <CheckCircle className="w-3 h-3" /> 평균 이상
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
-                                단축 필요
-                              </span>
-                            )}
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${statusBadgeClass}`}>
+                              <StatusIcon className="w-3 h-3" /> {statusText}
+                            </span>
                           </td>
                         </tr>
                       )
