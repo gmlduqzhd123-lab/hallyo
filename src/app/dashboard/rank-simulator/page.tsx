@@ -21,24 +21,60 @@ const GENDER_OPTIONS = [
 ]
 
 // --- Helpers ---
+/**
+ * Parse user-input record string into total seconds.
+ * Supported formats:
+ *   "00:30.50"  → 30.50 sec  (MM:SS.ms - colon separator)
+ *   "1:02.28"   → 62.28 sec  (M:SS.ms)
+ *   "1.02.28"   → 62.28 sec  (M.SS.ms - dot separator, 3 parts)
+ *   "30.50"     → 30.50 sec  (SS.ms - no minutes)
+ *   "30"        → 30.00 sec  (SS only)
+ */
 const parseRecordToSeconds = (record: string): number | null => {
   if (!record || !record.trim()) return null
   const trimmed = record.trim()
 
-  // "MM:SS.ss" format
+  // Format 1: "MM:SS.ss" or "M:SS.ss" (colon separator)
   if (trimmed.includes(':')) {
     const parts = trimmed.split(':')
     if (parts.length !== 2) return null
     const mins = parseInt(parts[0], 10)
     const secs = parseFloat(parts[1])
-    if (isNaN(mins) || isNaN(secs)) return null
-    return mins * 60 + secs
+    if (isNaN(mins) || isNaN(secs) || mins < 0 || secs < 0 || secs >= 60) return null
+    const result = mins * 60 + secs
+    return result > 0 ? result : null
   }
 
-  // "SS.ss" format
-  const val = parseFloat(trimmed)
-  if (isNaN(val)) return null
-  return val
+  // Count dots to distinguish formats
+  const dotCount = (trimmed.match(/\./g) || []).length
+
+  // Format 2: "M.SS.ms" or "MM.SS.ms" (2 dots = minutes.seconds.hundredths)
+  if (dotCount === 2) {
+    const parts = trimmed.split('.')
+    if (parts.length !== 3) return null
+    const mins = parseInt(parts[0], 10)
+    const secs = parseInt(parts[1], 10)
+    const ms = parseInt(parts[2], 10)
+    if (isNaN(mins) || isNaN(secs) || isNaN(ms) || mins < 0 || secs < 0 || secs >= 60 || ms < 0 || ms > 99) return null
+    const result = mins * 60 + secs + ms / 100
+    return result > 0 ? result : null
+  }
+
+  // Format 3: "SS.ms" (1 dot = seconds.hundredths, no minutes)
+  if (dotCount === 1) {
+    const val = parseFloat(trimmed)
+    if (isNaN(val) || val <= 0) return null
+    return val
+  }
+
+  // Format 4: "SS" (no dot = seconds only)
+  if (dotCount === 0) {
+    const val = parseInt(trimmed, 10)
+    if (isNaN(val) || val <= 0) return null
+    return val
+  }
+
+  return null
 }
 
 const formatSecondsToRecord = (seconds: number): string => {
@@ -226,7 +262,7 @@ export default function RankSimulatorPage() {
 
     const inputSec = parseRecordToSeconds(recordInput)
     if (inputSec === null || inputSec <= 0) {
-      setInputError('올바른 기록 형식이 아닙니다. (예: 00:30.50 또는 30.50)')
+      setInputError('올바른 기록 형식이 아닙니다. (예: 1:02.28 또는 1.02.28 또는 30.50)')
       return
     }
 
@@ -324,9 +360,27 @@ export default function RankSimulatorPage() {
               value={recordInput}
               onChange={e => { setRecordInput(e.target.value); setInputError('') }}
               onKeyDown={e => { if (e.key === 'Enter') handleSimulate() }}
-              placeholder="예: 00:30.50 또는 30.50"
+              placeholder="예: 1:02.28 또는 1.02.28 또는 30.50"
               className="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-2xl font-mono font-bold text-lg text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all text-center"
             />
+            {/* Live parsed preview */}
+            {recordInput.trim() && (() => {
+              const parsed = parseRecordToSeconds(recordInput)
+              if (parsed !== null) {
+                return (
+                  <p className="text-xs font-bold text-emerald-600 mt-2 text-center">
+                    ✅ 인식된 기록: <span className="font-mono bg-emerald-50 px-2 py-0.5 rounded-lg">{formatSecondsToRecord(parsed)}</span>
+                    <span className="text-slate-400 ml-1">({parsed.toFixed(2)}초)</span>
+                  </p>
+                )
+              } else {
+                return (
+                  <p className="text-xs font-bold text-rose-500 mt-2 text-center">
+                    ❌ 형식을 인식할 수 없습니다 (예: 1:02.28 또는 1.02.28)
+                  </p>
+                )
+              }
+            })()}
           </div>
 
           {/* Error Message */}
