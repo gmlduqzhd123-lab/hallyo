@@ -30,6 +30,23 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
     return acc
   }, {})
 
+  // Sort within each group
+  Object.keys(recordsByEvent || {}).forEach(event => {
+    recordsByEvent[event].sort((a: any, b: any) => {
+      const dateA = new Date(a.record_date).getTime();
+      const dateB = new Date(b.record_date).getTime();
+      if (dateB !== dateA) return dateB - dateA; // Descending by date
+
+      // Same date, sort by match_type.
+      // We want '결승' to be at the top (before '예선')
+      if (a.match_type === '결승' && b.match_type !== '결승') return -1;
+      if (a.match_type !== '결승' && b.match_type === '결승') return 1;
+
+      // If both or neither are '결승', sort by record_time (faster time first)
+      return parseFloat(a.record_time) - parseFloat(b.record_time);
+    });
+  });
+
   return (
     <div className="space-y-6">
       <Link href="/dashboard/records" className="inline-flex items-center text-slate-500 hover:text-accent-navy transition-colors font-bold gap-2">
@@ -82,6 +99,8 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
                 <thead className="border-b border-slate-100 text-slate-500 text-sm font-bold">
                   <tr>
                     <th className="px-6 py-4">대회명 / 일정</th>
+                    <th className="px-6 py-4 text-center">경기 구분</th>
+                    <th className="px-6 py-4 text-center">순위</th>
                     <th className="px-6 py-4">기록일</th>
                     <th className="px-6 py-4 text-right">기록</th>
                   </tr>
@@ -93,6 +112,33 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
                         <div className="font-bold text-slate-800">{record.schedules?.title || '기타 기록'}</div>
                         {record.schedules?.location && (
                           <div className="text-slate-400 text-xs mt-1">{record.schedules.location}</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {record.match_type ? (
+                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                            record.match_type === '결승' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}>
+                            {record.match_type}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {record.rank ? (
+                          <div className="flex justify-center">
+                            <span className={`flex items-center justify-center w-7 h-7 rounded-full font-black text-xs ${
+                              record.rank === 1 ? 'bg-yellow-100 text-yellow-600 border-2 border-yellow-200 shadow-sm' :
+                              record.rank === 2 ? 'bg-slate-100 text-slate-500 border-2 border-slate-200' :
+                              record.rank === 3 ? 'bg-orange-50 text-orange-600 border-2 border-orange-200' :
+                              'text-slate-500'
+                            }`}>
+                              {record.rank}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-300">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-slate-500 flex items-center gap-2">

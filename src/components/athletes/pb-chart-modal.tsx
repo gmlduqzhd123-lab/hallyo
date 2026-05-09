@@ -106,12 +106,27 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
     onError: (err: Error) => toast.error(err.message)
   })
 
-  // Extract unique events
+  // Extract unique events for chart lines
   const uniqueEvents = useMemo(() => {
     if (!records) return []
     const events = new Set(records.map(r => r.event_name))
     return Array.from(events)
   }, [records])
+
+  // Combine preset events and actual events for the filter buttons
+  const allEvents = useMemo(() => {
+    const preset = [
+      '자유형 50M', '자유형 100M', '자유형 200M', '자유형 400M',
+      '배영 50M', '배영 100M', '배영 200M',
+      '평영 50M', '평영 100M', '평영 200M',
+      '접영 50M', '접영 100M', '개인혼영 200M'
+    ];
+    const events = new Set(preset);
+    if (records) {
+      records.forEach(r => events.add(r.event_name));
+    }
+    return Array.from(events);
+  }, [records]);
 
   // Process data for chart
   const chartData = useMemo(() => {
@@ -143,28 +158,29 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
         <div className="space-y-2">
           <label className="text-sm font-bold text-accent-navy">종목 선택:</label>
           <div className="flex flex-wrap gap-2">
-            {[
-              { key: 'all', label: '전체' },
-              { key: '자유형50M', label: '자유형 50M' },
-              { key: '자유형100M', label: '자유형 100M' },
-              { key: '자유형200M', label: '자유형 200M' },
-              { key: '배영50M', label: '배영 50M' },
-              { key: '평영50M', label: '평영 50M' },
-              { key: '평영100M', label: '평영 100M' },
-              { key: '접영50M', label: '접영 50M' },
-              { key: '접영100M', label: '접영 100M' },
-            ].map(event => (
+            <button
+              type="button"
+              onClick={() => setSelectedEvent('all')}
+              className={`px-4 py-2 rounded-2xl text-sm font-bold transition-all ${
+                selectedEvent === 'all'
+                  ? 'bg-primary text-white shadow-md shadow-primary/30 scale-105'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+              }`}
+            >
+              전체
+            </button>
+            {allEvents.map(event => (
               <button
-                key={event.key}
+                key={event}
                 type="button"
-                onClick={() => setSelectedEvent(event.key)}
+                onClick={() => setSelectedEvent(event)}
                 className={`px-4 py-2 rounded-2xl text-sm font-bold transition-all ${
-                  selectedEvent === event.key
+                  selectedEvent === event
                     ? 'bg-primary text-white shadow-md shadow-primary/30 scale-105'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
                 }`}
               >
-                {event.label}
+                {event}
               </button>
             ))}
           </div>

@@ -10,13 +10,21 @@ interface EventRecordChartProps {
 
 export default function EventRecordChart({ records }: EventRecordChartProps) {
   // Sort records by date ascending for the chart so time moves left to right
-  const sortedRecords = [...records].sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
+  const sortedRecords = [...records].sort((a, b) => {
+    const diff = new Date(a.record_date).getTime() - new Date(b.record_date).getTime()
+    if (diff !== 0) return diff
+    // same date, '예선' comes before '결승'
+    if (a.match_type === '결승' && b.match_type !== '결승') return 1
+    if (a.match_type !== '결승' && b.match_type === '결승') return -1
+    return 0
+  })
 
   const data = sortedRecords.map(r => ({
     date: format(new Date(r.record_date), 'yy.MM.dd'),
     time: r.record_time,
     title: r.schedules?.title || '기타 기록',
-    fullDate: format(new Date(r.record_date), 'yyyy.MM.dd')
+    fullDate: format(new Date(r.record_date), 'yyyy.MM.dd'),
+    match_type: r.match_type
   }))
 
   return (
@@ -47,10 +55,18 @@ export default function EventRecordChart({ records }: EventRecordChartProps) {
             ]}
             labelFormatter={(label, payload) => {
               if (payload && payload.length > 0) {
+                const item = payload[0].payload;
                 return (
                   <div className="mb-2 border-b border-slate-100 pb-2">
-                    <div className="font-bold text-slate-800 text-sm">{payload[0].payload.title}</div>
-                    <div className="text-slate-400 text-xs mt-0.5">{payload[0].payload.fullDate}</div>
+                    <div className="font-bold text-slate-800 text-sm">
+                      {item.title}
+                      {item.match_type && (
+                        <span className="ml-2 text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
+                          {item.match_type}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-slate-400 text-xs mt-0.5">{item.fullDate}</div>
                   </div>
                 )
               }
