@@ -40,33 +40,29 @@ export default function NationwideRecordsPage() {
     staleTime: 0, // 캐시 무효화: 항상 최신 데이터를 요청
     gcTime: 0,
     queryFn: async () => {
-      let query = supabase
-        .from('nationwide_rankings')
-        .select('*')
-        .eq('is_deleted', false)
-      
+      let query = supabase.from('nationwide_rankings').select('*').eq('is_deleted', false);
+
       let debugFilters: any = {}
 
-      if (selectedGender !== 'all') {
-        query = query.eq('gender', selectedGender)
-        debugFilters.gender = selectedGender
+      if (selectedGender && selectedGender !== 'all') {
+        query = query.eq('gender', selectedGender);
+        debugFilters.gender = selectedGender;
       }
 
-      if (selectedGrade !== 'all') {
-        // 정규식을 이용해 숫자만 추출하여 정수형(Number)으로 변환
-        const gradeStr = selectedGrade.replace(/[^0-9]/g, '')
-        const gradeNum = Number(gradeStr)
-        if (gradeStr && !isNaN(gradeNum)) {
-          query = query.eq('grade', gradeNum)
-          debugFilters.grade = gradeNum
+      if (selectedGrade && selectedGrade !== 'all') {
+        // '6학년'에서 숫자만 추출하여 정수형으로 변환 (예: '6학년' -> 6)
+        const gradeNumber = parseInt(selectedGrade.replace(/[^0-9]/g, ''), 10);
+        if (!isNaN(gradeNumber)) {
+          query = query.eq('grade', gradeNumber);
+          debugFilters.grade = gradeNumber;
         }
       }
 
-      if (selectedEvent !== 'all') {
-        // 띄어쓰기 제거 후 eq로 검색
-        const cleanEvent = selectedEvent.replace(/\s+/g, '')
-        query = query.eq('event', cleanEvent)
-        debugFilters.event = cleanEvent
+      if (selectedEvent && selectedEvent !== 'all') {
+        // '자유형 50m'에서 모든 공백 제거 (예: '자유형 50m' -> '자유형50m')
+        const formattedEvent = selectedEvent.replace(/\s+/g, '');
+        query = query.eq('event', formattedEvent);
+        debugFilters.event = formattedEvent;
       }
 
       console.log('🚀 [Supabase Request] Filters applied:', debugFilters)
