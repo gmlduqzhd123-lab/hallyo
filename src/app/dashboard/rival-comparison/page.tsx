@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Swords, Search, Loader2, Trophy, X, User } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import { PageHeader } from '@/components/ui/page-header'
 
 // --- Types ---
 type RankingRow = {
@@ -252,19 +253,12 @@ export default function RivalComparisonPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-red-500 p-6 md:p-8 rounded-[32px] shadow-xl text-white relative overflow-hidden border border-white/20">
-        <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="hidden md:block absolute bottom-0 left-10 w-40 h-40 bg-red-300/20 rounded-full blur-2xl translate-y-1/2" />
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner shrink-0">
-            <Swords className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black drop-shadow-md break-keep">라이벌 전력 비교 ⚔️</h1>
-            <p className="text-white/80 mt-1 font-medium text-sm md:text-base break-keep">소년체전 대비! 우리 선수와 라이벌의 기록을 비교해 보세요</p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="라이벌 전력 비교 ⚔️"
+        settingKey="rival_comparison_desc"
+        defaultDescription="소년체전 대비! 우리 선수와 라이벌의 기록을 비교해 보세요"
+        icon={<Swords className="w-8 h-8 text-primary" />}
+      />
 
       {/* Athlete Selection */}
       <div className="bg-white rounded-[32px] p-6 md:p-8 shadow-sm border border-slate-100">
