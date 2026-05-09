@@ -69,7 +69,7 @@ function VideoItem({ video, userRole, userId, approveMutation, handleDelete, han
           ) : (
             <iframe
               className="w-full h-full"
-              src={embedUrl}
+              src={embedUrl || undefined}
               title={video.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
