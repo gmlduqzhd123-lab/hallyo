@@ -52,6 +52,14 @@ export async function addAthlete(formData: FormData) {
     return { error: validatedFields.error.errors[0].message }
   }
 
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData?.user) return { error: '인증에 실패했습니다. 다시 로그인해주세요.' }
+
+  const { data: profile } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  if (!['admin', 'developer'].includes(profile?.role as string)) {
+    return { error: '관리자 또는 개발자만 선수를 등록할 수 있습니다.' }
+  }
+
   const { error } = await supabase.from('athletes').insert([
     {
       category: validatedFields.data.category || null,
@@ -87,6 +95,14 @@ export async function addAthlete(formData: FormData) {
 export async function softDeleteAthlete(id: string) {
   const supabase = await createClient()
   
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: profile } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  if (!['admin', 'developer'].includes(profile?.role as string)) {
+    return { error: '관리자 또는 개발자만 선수를 삭제할 수 있습니다.' }
+  }
+
   const { error } = await supabase
     .from('athletes')
     .update({ is_deleted: true })
@@ -104,6 +120,14 @@ export async function softDeleteAthlete(id: string) {
 
 export async function updateAthlete(id: string, data: Record<string, any>) {
   const supabase = await createClient()
+
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: profile } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  if (!['admin', 'developer'].includes(profile?.role as string)) {
+    return { error: '관리자 또는 개발자만 선수 정보를 수정할 수 있습니다.' }
+  }
 
   const toNullStr  = (v: any) => { const s = String(v ?? '').trim(); return s === '' || s === 'undefined' || s === 'null' ? null : s }
   const toNullDate = (v: any) => { const s = String(v ?? '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null }
@@ -145,6 +169,14 @@ export async function updateAthlete(id: string, data: Record<string, any>) {
 
 export async function bulkAddAthletes(athletes: Record<string, any>[]) {
   const supabase = await createClient()
+
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: profile } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  if (!['admin', 'developer'].includes(profile?.role as string)) {
+    return { error: '관리자 또는 개발자만 선수를 일괄 등록할 수 있습니다.' }
+  }
 
   // Minimal validation: name and gender are required
   const cleanedRows = []
@@ -248,6 +280,14 @@ export async function bulkAddAthletes(athletes: Record<string, any>[]) {
 
 export async function bulkDeleteAllAthletes() {
   const supabase = await createClient()
+
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: profile } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  if (!['admin', 'developer'].includes(profile?.role as string)) {
+    return { error: '관리자 또는 개발자만 선수를 삭제할 수 있습니다.' }
+  }
 
   const { data: athletes } = await supabase
     .from('athletes')

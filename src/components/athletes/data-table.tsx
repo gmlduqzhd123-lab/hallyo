@@ -178,9 +178,9 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
         const athlete = row.original
         return (
           <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-            {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
+            {(['admin', 'developer'].includes(userRole as string)) && (
               <button 
-                onClick={() => onEdit(athlete)}
+                onClick={(e) => { e.stopPropagation(); onEdit(athlete); }}
                 className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
                 title="선수 정보 수정"
               >
@@ -188,9 +188,10 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
               </button>
             )}
 
-            {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
+            {(['admin', 'developer'].includes(userRole as string)) && (
               <button 
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (confirm(`${athlete.name} 선수를 명단에서 삭제하시겠습니까?`)) {
                     deleteMutation.mutate(athlete.id)
                   }
@@ -209,8 +210,8 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
   ]
 
   const columns = allColumns.filter(col => {
-    // Hide contact details if not admin
-    if (!['admin', 'developer'].includes(userRole as string) && ['student_phone', 'parent_name', 'parent_phone'].includes((col as any).accessorKey)) {
+    // Hide contact details if not admin, developer, or coach
+    if (!['admin', 'developer', 'coach'].includes(userRole as string) && ['student_phone', 'parent_name', 'parent_phone'].includes((col as any).accessorKey)) {
       return false
     }
     return true
@@ -279,8 +280,12 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
                 table.getRowModel().rows.map(row => (
                   <tr 
                     key={row.id} 
-                    className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group cursor-pointer"
-                    onClick={() => onEdit(row.original)}
+                    className={`border-b border-slate-50 hover:bg-slate-50/50 transition-colors group ${['admin', 'developer'].includes(userRole as string) ? 'cursor-pointer' : ''}`}
+                    onClick={() => {
+                      if (['admin', 'developer'].includes(userRole as string)) {
+                        onEdit(row.original)
+                      }
+                    }}
                   >
                     {row.getVisibleCells().map(cell => (
                       <td key={cell.id} className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">

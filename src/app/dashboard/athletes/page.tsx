@@ -224,7 +224,19 @@ export default function AthletesPage() {
         />
 
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
+          {/* 엑셀 다운로드: 관리자, 개발자, 코치 */}
+          {(['admin', 'developer', 'coach'].includes(userRole as string)) && (
+            <button 
+              onClick={handleExport}
+              className="px-4 py-2.5 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">엑셀 다운로드</span>
+            </button>
+          )}
+
+          {/* 명단 수정 (등록, 삭제 등): 관리자, 개발자 */}
+          {(['admin', 'developer'].includes(userRole as string)) && (
             <>
               <input 
                 type="file" 
@@ -250,14 +262,6 @@ export default function AthletesPage() {
                 <span className="hidden sm:inline">{bulkMutation.isPending ? '처리중...' : '일괄 등록'}</span>
               </button>
               
-              <button 
-                onClick={handleExport}
-                className="px-4 py-2.5 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">엑셀 다운로드</span>
-              </button>
-
               <button 
                 onClick={() => setIsAddModalOpen(true)}
                 className="px-5 py-2.5 rounded-2xl bg-primary text-white font-bold hover:bg-primary-hover transition-colors shadow-lg shadow-primary/30 flex items-center gap-2"
