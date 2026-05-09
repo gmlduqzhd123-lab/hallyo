@@ -15,43 +15,70 @@ type NationwideRanking = {
   school: string
   record: string
   year: number
+  grade?: number
   created_at: string
 }
+
+const EVENT_OPTIONS = [
+  '자유형 50m', '자유형 100m', '자유형 200m', '자유형 400m', '자유형 800m', '자유형 1500m',
+  '배영 50m', '배영 100m', '배영 200m',
+  '평영 50m', '평영 100m', '평영 200m',
+  '접영 50m', '접영 100m', '접영 200m',
+  '개인혼영 200m', '개인혼영 400m'
+]
+const GENDER_OPTIONS = ['남자', '여자']
+const GRADE_OPTIONS = ['1학년', '2학년', '3학년', '4학년', '5학년', '6학년']
 
 export default function NationwideRecordsPage() {
   const [selectedGender, setSelectedGender] = useState<string>('all')
   const [selectedEvent, setSelectedEvent] = useState<string>('all')
+  const [selectedGrade, setSelectedGrade] = useState<string>('all')
   const supabase = createClient()
 
   const { data: rankings, isPending } = useQuery({
-    queryKey: ['nationwide_rankings'],
+    queryKey: ['nationwide_rankings', selectedGender, selectedEvent, selectedGrade],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('nationwide_rankings')
         .select('*')
         .eq('is_deleted', false)
+      
+      if (selectedGender !== 'all') {
+        query = query.eq('gender', selectedGender)
+      }
+
+      if (selectedGrade !== 'all') {
+        // UI에서는 '6학년' -> Supabase에는 숫자 6
+        const gradeNum = parseInt(selectedGrade.replace('학년', ''), 10)
+        if (!isNaN(gradeNum)) {
+          query = query.eq('grade', gradeNum)
+        }
+      }
+
+      if (selectedEvent !== 'all') {
+        // DB에는 띄어쓰기 없이 저장되어 있을 수 있으므로 공백 제거
+        const cleanEvent = selectedEvent.replace(/\s+/g, '')
+        query = query.ilike('event', `%${cleanEvent}%`)
+      }
+
+      // Supabase 기본 제한이 1000건이므로, 필터가 적용된 상태에서 데이터를 가져와야 정확함
+      const { data, error } = await query
         .order('event', { ascending: true })
         .order('gender', { ascending: true })
         .order('rank', { ascending: true })
+        .limit(1000)
       
       if (error) throw error
+      
+      // 임시로 쿼리 결과를 확인하기 위한 console.log
+      console.log('Supabase Query Result (Nationwide Rankings):', data)
+      
       return data as NationwideRanking[]
     }
   })
 
-  // Get unique events and genders for filters, removing any trailing/leading whitespaces
-  const events = rankings ? Array.from(new Set(rankings.map(r => (r.event || '').trim()))).filter(Boolean).sort() : []
-  const genders = rankings ? Array.from(new Set(rankings.map(r => (r.gender || '').trim()))).filter(Boolean).sort() : []
-
-  // Filter rankings based on selected filters
-  const filteredRankings = rankings?.filter(r => {
-    const rGender = (r.gender || '').trim()
-    const rEvent = (r.event || '').trim()
-    
-    if (selectedGender !== 'all' && rGender !== selectedGender) return false
-    if (selectedEvent !== 'all' && rEvent !== selectedEvent) return false
-    return true
-  }) || []
+  // Since filtering is done on the server, rankings is already filtered
+  const filteredRankings = rankings || []
 
   return (
     <div className="space-y-6">
@@ -88,7 +115,7 @@ export default function NationwideRecordsPage() {
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-700"
             >
               <option value="all">전체 종목</option>
-              {events.map(event => (
+              {EVENT_OPTIONS.map(event => (
                 <option key={event} value={event}>{event}</option>
               ))}
             </select>
@@ -98,8 +125,18 @@ export default function NationwideRecordsPage() {
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-700"
             >
               <option value="all">전체 성별</option>
-              {genders.map(gender => (
+              {GENDER_OPTIONS.map(gender => (
                 <option key={gender} value={gender}>{gender}</option>
+              ))}
+            </select>
+            <select
+              value={selectedGrade}
+              onChange={(e) => setSelectedGrade(e.target.value)}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-700"
+            >
+              <option value="all">전체 학년</option>
+              {GRADE_OPTIONS.map(grade => (
+                <option key={grade} value={grade}>{grade}</option>
               ))}
             </select>
           </div>
@@ -121,6 +158,7 @@ export default function NationwideRecordsPage() {
                 <tr>
                   <th className="px-6 py-4 whitespace-nowrap">종목</th>
                   <th className="px-6 py-4 whitespace-nowrap">성별</th>
+                  <th className="px-6 py-4 whitespace-nowrap">학년</th>
                   <th className="px-6 py-4 whitespace-nowrap">순위</th>
                   <th className="px-6 py-4 whitespace-nowrap">이름</th>
                   <th className="px-6 py-4 whitespace-nowrap">소속(학교)</th>
@@ -142,6 +180,9 @@ export default function NationwideRecordsPage() {
                       }`}>
                         {(ranking.gender || '').trim()}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
+                      {ranking.grade ? `${ranking.grade}학년` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
