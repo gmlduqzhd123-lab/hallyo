@@ -28,15 +28,17 @@ const EVENT_OPTIONS = [
 ]
 const GENDER_OPTIONS = ['남자', '여자']
 const GRADE_OPTIONS = ['1학년', '2학년', '3학년', '4학년', '5학년', '6학년']
+const YEAR_OPTIONS = ['2024', '2025', '2026']
 
 export default function NationwideRecordsPage() {
   const [selectedGender, setSelectedGender] = useState<string>('all')
   const [selectedEvent, setSelectedEvent] = useState<string>('all')
   const [selectedGrade, setSelectedGrade] = useState<string>('all')
+  const [selectedYear, setSelectedYear] = useState<string>('all')
   const supabase = createClient()
 
   const { data: rankings, isPending } = useQuery({
-    queryKey: ['nationwide_rankings', selectedGender, selectedEvent, selectedGrade],
+    queryKey: ['nationwide_rankings', selectedGender, selectedEvent, selectedGrade, selectedYear],
     staleTime: 0, // 캐시 무효화: 항상 최신 데이터를 요청
     gcTime: 0,
     queryFn: async () => {
@@ -55,6 +57,14 @@ export default function NationwideRecordsPage() {
         if (!isNaN(gradeNumber)) {
           query = query.eq('grade', gradeNumber);
           debugFilters.grade = gradeNumber;
+        }
+      }
+
+      if (selectedYear && selectedYear !== 'all') {
+        const yearNumber = parseInt(selectedYear, 10);
+        if (!isNaN(yearNumber)) {
+          query = query.eq('year', yearNumber);
+          debugFilters.year = yearNumber;
         }
       }
 
@@ -171,6 +181,16 @@ export default function NationwideRecordsPage() {
               <option value="all">전체 학년</option>
               {GRADE_OPTIONS.map(grade => (
                 <option key={grade} value={grade}>{grade}</option>
+              ))}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-700"
+            >
+              <option value="all">전체 년도</option>
+              {YEAR_OPTIONS.map(year => (
+                <option key={year} value={year}>{year}년</option>
               ))}
             </select>
           </div>
