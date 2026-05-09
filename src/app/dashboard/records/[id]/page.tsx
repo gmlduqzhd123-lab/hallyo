@@ -5,6 +5,7 @@ import { formatTimeSeconds } from '@/utils/time'
 import { format } from 'date-fns'
 import EventRecordChart from './EventRecordChart'
 import EventRecordTable from './EventRecordTable'
+import AddAthleteRecord from './AddAthleteRecord'
 
 export default async function AthleteRecordsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -31,6 +32,12 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
     .eq('athlete_id', id)
     .eq('is_deleted', false)
     .order('record_date', { ascending: false })
+
+  const { data: schedules } = await supabase
+    .from('schedules')
+    .select('id, title')
+    .eq('type', 'competition')
+    .order('start_date', { ascending: false })
 
   // Group records by event_name to show best times or progression
   const recordsByEvent = records?.reduce((acc: any, record: any) => {
@@ -67,18 +74,23 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
         <div className="absolute top-0 right-0 p-8 opacity-5">
           <Timer className="w-48 h-48" />
         </div>
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-sm font-black border border-indigo-200">
-              {athlete?.grade}학년
-            </span>
-            {athlete?.gender && (
-              <span className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200">
-                {athlete.gender === 'M' ? '남성' : athlete.gender === 'F' ? '여성' : athlete.gender}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-sm font-black border border-indigo-200">
+                {athlete?.grade}학년
               </span>
-            )}
+              {athlete?.gender && (
+                <span className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200">
+                  {athlete.gender === 'M' ? '남성' : athlete.gender === 'F' ? '여성' : athlete.gender}
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black text-accent-navy mb-2">{athlete?.name} 선수의 기록</h1>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-accent-navy mb-2">{athlete?.name} 선수의 기록</h1>
+          <div>
+            <AddAthleteRecord athleteId={id} userRole={userRole} schedules={schedules || []} />
+          </div>
         </div>
       </div>
 
