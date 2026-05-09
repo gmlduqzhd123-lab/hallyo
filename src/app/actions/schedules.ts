@@ -112,15 +112,20 @@ export async function updateSchedule(id: string, formData: FormData) {
     return { error: '관리자 또는 코치만 일정을 수정할 수 있습니다.' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('schedules')
     .update({
       ...validatedFields.data,
     })
     .eq('id', id)
+    .select()
 
   if (error) {
     return { error: '일정 수정에 실패했습니다: ' + error.message }
+  }
+
+  if (!data || data.length === 0) {
+    return { error: '권한이 부족하거나 존재하지 않는 일정입니다.' }
   }
 
   await logAudit('UPDATE', 'schedules', { id, title: validatedFields.data.title })
@@ -142,13 +147,18 @@ export async function softDeleteSchedule(id: string) {
     return { error: '권한이 없습니다.' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('schedules')
     .update({ is_deleted: true })
     .eq('id', id)
+    .select()
 
   if (error) {
     return { error: '일정 삭제에 실패했습니다: ' + error.message }
+  }
+
+  if (!data || data.length === 0) {
+    return { error: '권한이 부족하거나 존재하지 않는 일정입니다.' }
   }
 
   await logAudit('DELETE', 'schedules', { id })
@@ -168,13 +178,18 @@ export async function updateScheduleParticipants(id: string, participants: strin
     return { error: '권한이 없습니다.' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('schedules')
     .update({ participants })
     .eq('id', id)
+    .select()
 
   if (error) {
     return { error: '참여 선수 수정에 실패했습니다: ' + error.message }
+  }
+
+  if (!data || data.length === 0) {
+    return { error: '권한이 부족하거나 존재하지 않는 일정입니다.' }
   }
 
   await logAudit('UPDATE', 'schedules', { id, action: 'update_participants' })
@@ -195,13 +210,18 @@ export async function updateScheduleLocation(id: string, location: string) {
     return { error: '권한이 없습니다.' }
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('schedules')
     .update({ location })
     .eq('id', id)
+    .select()
 
   if (error) {
     return { error: '장소 수정에 실패했습니다: ' + error.message }
+  }
+
+  if (!data || data.length === 0) {
+    return { error: '권한이 부족하거나 존재하지 않는 일정입니다.' }
   }
 
   await logAudit('UPDATE', 'schedules', { id, action: 'update_location', location })
@@ -224,13 +244,18 @@ export async function updateSchedulePlaces(id: string, type: 'accommodations' | 
 
   const updateData = type === 'accommodations' ? { accommodations: places } : { restaurants: places }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('schedules')
     .update(updateData)
     .eq('id', id)
+    .select()
 
   if (error) {
     return { error: `${type === 'accommodations' ? '숙소' : '식당'} 정보 수정에 실패했습니다: ` + error.message }
+  }
+
+  if (!data || data.length === 0) {
+    return { error: '권한이 부족하거나 존재하지 않는 일정입니다.' }
   }
 
   await logAudit('UPDATE', 'schedules', { id, action: `update_${type}` })
