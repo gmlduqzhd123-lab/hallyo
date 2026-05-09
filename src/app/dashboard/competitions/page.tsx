@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Calendar, Plus, Trash2, MapPin, Edit2, List, Map as MapIcon } from 'lucide-react'
-import { CompetitionMap } from '@/components/competitions/CompetitionMap'
 import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -175,7 +174,14 @@ export default function CompetitionsPage() {
       </div>
 
       {view === 'map' ? (
-        <CompetitionMap competitions={competitions || []} />
+        <div className="w-full h-[600px] md:h-[800px] rounded-3xl overflow-hidden shadow-sm border border-slate-100 bg-white">
+          <iframe
+            src="https://padlet.com/embed/97ml0xr1y536n9bx"
+            frameBorder="0"
+            allow="camera;microphone;geolocation"
+            style={{ width: '100%', height: '100%', display: 'block', padding: 0, margin: 0 }}
+          />
+        </div>
       ) : (
         <div className="space-y-4">
         {isPending ? (
