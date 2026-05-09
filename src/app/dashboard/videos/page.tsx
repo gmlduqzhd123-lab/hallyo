@@ -14,10 +14,12 @@ type VideoData = {
   title: string
   description: string | null
   category: string
+  sub_category?: string | null
   created_at: string
 }
 
 const CATEGORIES = ['훈련 영상', '동기 유발', '수영 상식', '기타 수영 관련']
+const TRAINING_SUBCATEGORIES = ['전체', '자유형', '배영', '접영', '평영', '계영', '혼계영', '기타 영상']
 
 const getYoutubeVideoId = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -87,7 +89,14 @@ function VideoItem({ video, userRole, userId, approveMutation, handleDelete }: a
       
       <div className="mt-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div className="flex-1">
-          <h3 className="font-bold text-2xl text-slate-900 leading-tight">{video.title}</h3>
+          <h3 className="font-bold text-2xl text-slate-900 leading-tight">
+            {video.category === '훈련 영상' && video.sub_category && video.sub_category !== '전체' && (
+              <span className="inline-block px-2.5 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg mr-2 align-middle border border-blue-200">
+                {video.sub_category}
+              </span>
+            )}
+            <span className="align-middle">{video.title}</span>
+          </h3>
           {video.description && (
             <p className="text-slate-600 mt-3 leading-relaxed text-[15px] whitespace-pre-wrap">
               {video.description}
@@ -121,6 +130,8 @@ export default function TrainingVideosPage() {
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0])
+  const [activeSubCategory, setActiveSubCategory] = useState(TRAINING_SUBCATEGORIES[0])
+  const [formCategory, setFormCategory] = useState(CATEGORIES[0])
   const queryClient = useQueryClient()
 
   const { data: userProfile, isPending: rolePending } = useQuery({
@@ -192,6 +203,7 @@ export default function TrainingVideosPage() {
 
   const visibleVideos = videos
     ?.filter(v => v.category === activeCategory)
+    ?.filter(v => activeCategory === '훈련 영상' && activeSubCategory !== '전체' ? v.sub_category === activeSubCategory : true)
     ?.filter(v => ['admin', 'developer', 'coach'].includes(userRole as string) || (v as any).status === 'approved') || []
 
   const handleDelete = async (id: string) => {
@@ -247,22 +259,55 @@ export default function TrainingVideosPage() {
         ))}
       </div>
 
+      {/* Subcategory Tabs for 훈련 영상 */}
+      {activeCategory === '훈련 영상' && (
+        <div className="flex flex-wrap gap-2 mb-8 bg-blue-50/50 p-2 rounded-2xl shadow-sm border border-blue-100/50">
+          {TRAINING_SUBCATEGORIES.map(sub => (
+            <button
+              key={sub}
+              onClick={() => setActiveSubCategory(sub)}
+              className={`px-4 py-2 rounded-xl font-bold transition-all flex-1 sm:flex-none text-sm whitespace-nowrap ${
+                activeSubCategory === sub 
+                  ? 'bg-blue-100 text-blue-700 shadow-sm border border-blue-200' 
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-white border border-transparent'
+              }`}
+            >
+              {sub}
+            </button>
+          ))}
+        </div>
+      )}
+
       {isAdding && (
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 animate-in fade-in slide-in-from-top-4">
           <h2 className="text-lg font-bold text-slate-800 mb-4">새 영상 등록</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">카테고리</label>
-              <select
-                name="category"
-                required
-                defaultValue={activeCategory}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-800 bg-white"
-              >
-                {CATEGORIES.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select
+                  name="category"
+                  required
+                  value={formCategory}
+                  onChange={(e) => setFormCategory(e.target.value)}
+                  className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-800 bg-white"
+                >
+                  {CATEGORIES.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                {formCategory === '훈련 영상' && (
+                  <select
+                    name="sub_category"
+                    required
+                    className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-800 bg-white"
+                  >
+                    {TRAINING_SUBCATEGORIES.filter(s => s !== '전체').map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">영상 제목</label>
