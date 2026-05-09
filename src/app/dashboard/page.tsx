@@ -10,6 +10,7 @@ import { poems } from '@/data/poems'
 import { essays } from '@/data/essays'
 import { letters } from '@/data/letters'
 import { quizzes } from '@/data/quizzes'
+import { UpcomingCompetition } from '@/components/dashboard/upcoming-competition'
 
 // Fetch athletes (is_deleted = false)
 async function fetchActiveAthletes() {
@@ -194,6 +195,9 @@ export default function DashboardPage() {
           <span>앱 설치</span>
         </button>
       </div>
+
+      {/* Upcoming Competition D-Day Widget */}
+      <UpcomingCompetition />
 
       {/* Stats Widget */}
       <div className="bg-gradient-to-br from-sky-400 via-blue-400 to-indigo-500 rounded-[32px] p-6 md:p-8 text-white relative overflow-hidden shadow-xl shadow-blue-500/20 min-h-[160px] border border-white/20">
