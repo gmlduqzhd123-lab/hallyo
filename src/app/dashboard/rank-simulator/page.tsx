@@ -9,9 +9,9 @@ import { PageHeader } from '@/components/ui/page-header'
 // --- Constants ---
 const EVENT_OPTIONS = [
   '자유형50m', '자유형100m', '자유형200m', '자유형400m',
-  '배영50m', '배영100m', '배영200m',
+  '배영50m', '배영100m',
   '평영50m', '평영100m', '평영200m',
-  '접영50m', '접영100m', '접영200m',
+  '접영50m', '접영100m',
   '개인혼영200m'
 ]
 
