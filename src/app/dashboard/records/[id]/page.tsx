@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowLeft, Timer, Trophy, Calendar } from 'lucide-react'
 import { formatTimeSeconds } from '@/utils/time'
 import { format } from 'date-fns'
+import EventRecordChart from './EventRecordChart'
 
 export default async function AthleteRecordsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -68,6 +69,15 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
                 <Trophy className="w-5 h-5 text-indigo-500" />
                 <h2 className="text-lg font-black text-accent-navy">{event}</h2>
               </div>
+              
+              {/* Add the Chart here if there are at least 2 data points for a meaningful trend */}
+              {eventRecords.length > 1 && (
+                <div className="px-6 pt-6 pb-2 border-b border-slate-50">
+                  <h3 className="text-sm font-bold text-slate-500 mb-2">기록 성장 추이</h3>
+                  <EventRecordChart records={eventRecords} />
+                </div>
+              )}
+
               <table className="w-full text-left">
                 <thead className="border-b border-slate-100 text-slate-500 text-sm font-bold">
                   <tr>
