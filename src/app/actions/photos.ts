@@ -13,7 +13,7 @@ export async function addPhotos(urls: string[], description?: string) {
   }
 
   const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
-  const status = ['admin', 'developer'].includes(roleData?.role) ? 'approved' : 'pending'
+  const status = ['admin', 'developer'].includes(roleData?.role as string) ? 'approved' : 'pending'
 
   const inserts = urls.map(url => ({
     url,
@@ -60,7 +60,7 @@ export async function approvePhoto(id: string) {
   if (!userData?.user) return { error: '인증에 실패했습니다.' }
   
   const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
-  if (!['admin', 'developer'].includes(roleData?.role)) return { error: '권한이 없습니다.' }
+  if (!['admin', 'developer'].includes(roleData?.role as string)) return { error: '권한이 없습니다.' }
 
   const { error } = await supabase
     .from('photos')

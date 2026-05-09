@@ -16,7 +16,7 @@ export async function updateGlobalFont(fontFamily: string) {
     .eq('id', authData.user.id)
     .single()
     
-  if (!['admin', 'developer'].includes(userData?.role)) {
+  if (!['admin', 'developer'].includes(userData?.role as string)) {
     return { error: '관리자만 폰트를 변경할 수 있습니다.' }
   }
 

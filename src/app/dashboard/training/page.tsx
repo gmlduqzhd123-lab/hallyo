@@ -120,7 +120,7 @@ export default function SchedulePage() {
     }
   })
 
-  const isAuthorized = ['admin', 'developer'].includes(userRole) || userRole === 'coach'
+  const isAuthorized = ['admin', 'developer'].includes(userRole as string) || userRole === 'coach'
 
   const events: Event[] = schedules?.map((s: any) => {
     const startDate = new Date(s.date)

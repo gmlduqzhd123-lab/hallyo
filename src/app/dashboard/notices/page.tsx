@@ -98,7 +98,7 @@ export default function NoticesPage() {
           </div>
         </div>
 
-        {['admin', 'developer'].includes(profile?.role) && (
+        {['admin', 'developer'].includes(profile?.role as string) && (
           <button 
             onClick={() => setIsModalOpen(true)}
             className="w-full sm:w-auto flex justify-center items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30 shrink-0 whitespace-nowrap"
@@ -119,7 +119,7 @@ export default function NoticesPage() {
             <div key={notice.id} id={notice.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 scroll-mt-24">
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-lg font-bold text-accent-navy">{notice.title}</h2>
-                {['admin', 'developer'].includes(profile?.role) && (
+                {['admin', 'developer'].includes(profile?.role as string) && (
                   <button 
                     onClick={() => { if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(notice.id) }}
                     className="text-rose-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition-colors"

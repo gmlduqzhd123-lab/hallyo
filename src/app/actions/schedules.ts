@@ -56,7 +56,7 @@ export async function addSchedule(formData: FormData) {
     .eq('id', authData.user.id)
     .single()
 
-  if (!['admin', 'developer'].includes(userRecord?.role) && userRecord?.role !== 'coach') {
+  if (!['admin', 'developer'].includes(userRecord?.role as string) && userRecord?.role !== 'coach') {
     return { error: '관리자 또는 코치만 훈련 일정을 수정할 수 있습니다.' }
   }
 
@@ -108,7 +108,7 @@ export async function updateSchedule(id: string, formData: FormData) {
     .eq('id', authData.user.id)
     .single()
 
-  if (!['admin', 'developer'].includes(userRecord?.role) && userRecord?.role !== 'coach') {
+  if (!['admin', 'developer'].includes(userRecord?.role as string) && userRecord?.role !== 'coach') {
     return { error: '관리자 또는 코치만 일정을 수정할 수 있습니다.' }
   }
 
@@ -138,7 +138,7 @@ export async function softDeleteSchedule(id: string) {
   if (userError || !authData?.user) return { error: '인증에 실패했습니다.' }
 
   const { data: userRecord } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
-  if (!['admin', 'developer'].includes(userRecord?.role) && userRecord?.role !== 'coach') {
+  if (!['admin', 'developer'].includes(userRecord?.role as string) && userRecord?.role !== 'coach') {
     return { error: '권한이 없습니다.' }
   }
 
@@ -164,7 +164,7 @@ export async function updateScheduleParticipants(id: string, participants: strin
   if (userError || !authData?.user) return { error: '인증에 실패했습니다.' }
 
   const { data: userRecord } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
-  if (!['admin', 'developer'].includes(userRecord?.role) && userRecord?.role !== 'coach') {
+  if (!['admin', 'developer'].includes(userRecord?.role as string) && userRecord?.role !== 'coach') {
     return { error: '권한이 없습니다.' }
   }
 
@@ -191,7 +191,7 @@ export async function updateSchedulePlaces(id: string, type: 'accommodations' | 
   if (userError || !authData?.user) return { error: '인증에 실패했습니다.' }
 
   const { data: userRecord } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
-  if (!['admin', 'developer'].includes(userRecord?.role) && userRecord?.role !== 'coach') {
+  if (!['admin', 'developer'].includes(userRecord?.role as string) && userRecord?.role !== 'coach') {
     return { error: '권한이 없습니다.' }
   }
 

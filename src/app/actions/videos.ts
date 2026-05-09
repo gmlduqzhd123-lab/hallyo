@@ -28,7 +28,7 @@ export async function addVideo(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   
   const { data: roleData } = await supabase.from('users').select('role').eq('id', user?.id).single()
-  const status = ['admin', 'developer'].includes(roleData?.role) ? 'approved' : 'pending'
+  const status = ['admin', 'developer'].includes(roleData?.role as string) ? 'approved' : 'pending'
 
   const { error } = await supabase.from('training_videos').insert([
     {
@@ -72,7 +72,7 @@ export async function approveVideo(id: string) {
   if (!userData?.user) return { error: '인증에 실패했습니다.' }
   
   const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
-  if (!['admin', 'developer'].includes(roleData?.role)) return { error: '권한이 없습니다.' }
+  if (!['admin', 'developer'].includes(roleData?.role as string)) return { error: '권한이 없습니다.' }
 
   const { error } = await supabase
     .from('training_videos')

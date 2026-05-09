@@ -35,7 +35,7 @@ export async function addNotice(formData: FormData) {
     .eq('id', userData.user.id)
     .single()
 
-  if (!['admin', 'developer'].includes(profile?.role)) {
+  if (!['admin', 'developer'].includes(profile?.role as string)) {
     return { error: '관리자만 공지사항을 등록할 수 있습니다.' }
   }
 
@@ -71,7 +71,7 @@ export async function softDeleteNotice(id: string) {
     .eq('id', userData.user.id)
     .single()
 
-  if (!['admin', 'developer'].includes(profile?.role)) {
+  if (!['admin', 'developer'].includes(profile?.role as string)) {
     return { error: '관리자만 공지사항을 삭제할 수 있습니다.' }
   }
 

@@ -170,7 +170,7 @@ export default function DevelopersPage() {
           </div>
         </div>
 
-        {['admin', 'developer'].includes(userRole) && (
+        {['admin', 'developer'].includes(userRole as string) && (
           <button
             onClick={() => { setIsAdding(!isAdding); setEditingDev(null); setPreviewUrl(null); }}
             className="relative z-10 flex items-center justify-center gap-2 bg-white text-purple-600 hover:bg-purple-50 px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 shrink-0 whitespace-nowrap w-full md:w-auto"
@@ -182,7 +182,7 @@ export default function DevelopersPage() {
       </div>
 
       {/* Add / Edit Form */}
-      {(isAdding || editingDev) && ['admin', 'developer'].includes(userRole) && (
+      {(isAdding || editingDev) && ['admin', 'developer'].includes(userRole as string) && (
         <div className="bg-white p-8 rounded-[32px] shadow-sm border border-purple-100 animate-in fade-in slide-in-from-top-4 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
             <Code2 className="w-32 h-32" />
@@ -384,7 +384,7 @@ export default function DevelopersPage() {
                   )}
 
                   {/* Admin Actions */}
-                  {['admin', 'developer'].includes(userRole) && (
+                  {['admin', 'developer'].includes(userRole as string) && (
                     <div className="mt-6 flex justify-end gap-2 border-t border-slate-100 pt-6">
                       <button
                         onClick={() => handleEditClick(dev)}

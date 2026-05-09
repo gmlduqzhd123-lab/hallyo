@@ -84,7 +84,7 @@ export default function TrainingVideosPage() {
     }
   })
 
-  const visibleVideos = videos?.filter(v => ['admin', 'developer'].includes(userRole) || (v as any).status === 'approved') || []
+  const visibleVideos = videos?.filter(v => ['admin', 'developer'].includes(userRole as string) || (v as any).status === 'approved') || []
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말 이 영상을 삭제하시겠습니까?')) return
@@ -206,7 +206,7 @@ export default function TrainingVideosPage() {
                 {video.status === 'pending' && (
                   <div className="absolute top-4 right-4 bg-rose-500 text-white px-3 py-1.5 text-sm font-bold rounded-xl z-10 flex items-center gap-2">
                     승인 대기
-                    {['admin', 'developer'].includes(userRole) && (
+                    {['admin', 'developer'].includes(userRole as string) && (
                       <button 
                         onClick={(e) => { e.stopPropagation(); approveMutation.mutate(video.id) }}
                         className="ml-2 p-1.5 bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
@@ -251,7 +251,7 @@ export default function TrainingVideosPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 self-start shrink-0">
-                    {(['admin', 'developer'].includes(userRole) || userRole === 'coach') && (
+                    {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
                       <button 
                         onClick={() => handleDelete(video.id)}
                         className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all group"

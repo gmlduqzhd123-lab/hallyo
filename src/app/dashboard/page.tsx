@@ -60,7 +60,7 @@ export default function DashboardPage() {
     }
   })
   
-  const isAuthorized = ['admin', 'developer'].includes(userRole) || userRole === 'coach'
+  const isAuthorized = ['admin', 'developer'].includes(userRole as string) || userRole === 'coach'
 
   const { data: athletes, isPending, isError, error } = useQuery({
     queryKey: ['athletes', 'active'],
