@@ -12,8 +12,11 @@ type VideoData = {
   url: string
   title: string
   description: string | null
+  category: string
   created_at: string
 }
+
+const CATEGORIES = ['훈련 영상', '동기 유발', '수영 상식', '기타 수영 관련']
 
 const getEmbedUrl = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -24,6 +27,7 @@ const getEmbedUrl = (url: string) => {
 export default function TrainingVideosPage() {
   const [isAdding, setIsAdding] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0])
   const queryClient = useQueryClient()
 
   const { data: userProfile, isPending: rolePending } = useQuery({
@@ -87,7 +91,9 @@ export default function TrainingVideosPage() {
     }
   })
 
-  const visibleVideos = videos?.filter(v => ['admin', 'developer'].includes(userRole as string) || (v as any).status === 'approved') || []
+  const visibleVideos = videos
+    ?.filter(v => v.category === activeCategory)
+    ?.filter(v => ['admin', 'developer'].includes(userRole as string) || (v as any).status === 'approved') || []
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말 이 영상을 삭제하시겠습니까?')) return
@@ -122,10 +128,40 @@ export default function TrainingVideosPage() {
         </button>
       </div>
 
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-2 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+        {CATEGORIES.map(category => (
+          <button
+            key={category}
+            onClick={() => setActiveCategory(category)}
+            className={`px-5 py-2.5 rounded-xl font-bold transition-all flex-1 sm:flex-none text-sm whitespace-nowrap ${
+              activeCategory === category 
+                ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20' 
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+
       {isAdding && (
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 animate-in fade-in slide-in-from-top-4">
           <h2 className="text-lg font-bold text-slate-800 mb-4">새 영상 등록</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">카테고리</label>
+              <select
+                name="category"
+                required
+                defaultValue={activeCategory}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-800 bg-white"
+              >
+                {CATEGORIES.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">영상 제목</label>
               <input 

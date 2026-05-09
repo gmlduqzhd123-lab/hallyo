@@ -8,6 +8,7 @@ const videoSchema = z.object({
   url: z.string().url({ message: '올바른 URL을 입력해주세요.' }),
   title: z.string().min(1, { message: '제목을 입력해주세요.' }),
   description: z.string().optional(),
+  category: z.enum(['훈련 영상', '동기 유발', '수영 상식', '기타 수영 관련'], { message: '올바른 카테고리를 선택해주세요.' }),
 })
 
 export async function addVideo(formData: FormData) {
@@ -17,6 +18,7 @@ export async function addVideo(formData: FormData) {
     url: formData.get('url'),
     title: formData.get('title'),
     description: formData.get('description'),
+    category: formData.get('category'),
   }
 
   const validatedFields = videoSchema.safeParse(rawData)
@@ -35,6 +37,7 @@ export async function addVideo(formData: FormData) {
       url: validatedFields.data.url,
       title: validatedFields.data.title,
       description: validatedFields.data.description,
+      category: validatedFields.data.category,
       is_deleted: false,
       created_by: user?.id,
       status
