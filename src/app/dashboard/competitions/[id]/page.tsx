@@ -108,6 +108,25 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     }
   })
 
+  const { data: userRole } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+        
+      if (error) return null
+      return data.role
+    }
+  })
+  
+  const canEdit = ['admin', 'developer'].includes(userRole as string) || userRole === 'coach'
+
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormValues>({
     resolver: zodResolver(schema),
   })
@@ -357,13 +376,15 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
       </Link>
 
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
-        <button 
-          onClick={handleOpenEditCompModal}
-          className="absolute top-6 right-6 z-20 p-2 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 shadow-sm"
-          title="대회 정보 수정"
-        >
-          <Edit2 className="w-5 h-5" />
-        </button>
+        {canEdit && (
+          <button 
+            onClick={handleOpenEditCompModal}
+            className="absolute top-6 right-6 z-20 p-2 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+            title="대회 정보 수정"
+          >
+            <Edit2 className="w-5 h-5" />
+          </button>
+        )}
         <div className="absolute top-0 right-0 p-8 opacity-5 z-0">
           <Trophy className="w-48 h-48" />
         </div>
@@ -390,16 +411,18 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
           <Users className="w-6 h-6 text-indigo-500" />
           참여 선수
         </h2>
-        <button 
-          onClick={() => {
-            setSelectedParticipants(competition.participants || [])
-            setIsParticipantsModalOpen(true)
-          }}
-          className="flex items-center gap-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2.5 rounded-xl font-bold transition-all"
-        >
-          <UserPlus className="w-4 h-4" />
-          참여 선수 수정
-        </button>
+        {canEdit && (
+          <button 
+            onClick={() => {
+              setSelectedParticipants(competition.participants || [])
+              setIsParticipantsModalOpen(true)
+            }}
+            className="flex items-center gap-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2.5 rounded-xl font-bold transition-all"
+          >
+            <UserPlus className="w-4 h-4" />
+            참여 선수 수정
+          </button>
+        )}
       </div>
 
       <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-8">
@@ -421,13 +444,15 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
           <Trophy className="w-6 h-6 text-yellow-500" />
           대회 결과
         </h2>
-        <button 
-          onClick={handleOpenModal}
-          className="flex items-center gap-2 bg-accent-navy hover:bg-blue-900 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg"
-        >
-          <Plus className="w-5 h-5" />
-          기록 등록
-        </button>
+        {canEdit && (
+          <button 
+            onClick={handleOpenModal}
+            className="flex items-center gap-2 bg-accent-navy hover:bg-blue-900 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg"
+          >
+            <Plus className="w-5 h-5" />
+            기록 등록
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm mb-12">
@@ -441,7 +466,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
               <th className="px-6 py-4 text-center">순위</th>
               <th className="px-6 py-4">기록 (초)</th>
               <th className="px-6 py-4">기록일</th>
-              <th className="px-6 py-4 text-right">관리</th>
+              {canEdit && <th className="px-6 py-4 text-right">관리</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm">
@@ -487,22 +512,24 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                   </td>
                   <td className="px-6 py-4 text-blue-600 font-black">{formatTimeSeconds(record.record_time)}</td>
                   <td className="px-6 py-4 text-slate-500">{format(new Date(record.record_date), 'yyyy.MM.dd')}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-1">
-                      <button 
-                        onClick={() => handleOpenEditRecordModal(record)}
-                        className="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors inline-flex"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => { if(confirm('기록을 삭제하시겠습니까?')) delMutation.mutate(record.id) }}
-                        className="text-rose-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition-colors inline-flex"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+                  {canEdit && (
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-1">
+                        <button 
+                          onClick={() => handleOpenEditRecordModal(record)}
+                          className="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-indigo-50 transition-colors inline-flex"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => { if(confirm('기록을 삭제하시겠습니까?')) delMutation.mutate(record.id) }}
+                          className="text-rose-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition-colors inline-flex"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
@@ -543,13 +570,15 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             <h3 className="text-xl font-bold text-accent-navy">
               {infoTab === 'accommodations' ? '등록된 숙소' : '등록된 식당'}
             </h3>
-            <button 
-              onClick={() => handleOpenPlaceModal()}
-              className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl font-bold transition-all text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              {infoTab === 'accommodations' ? '숙소 추가' : '식당 추가'}
-            </button>
+            {canEdit && (
+              <button 
+                onClick={() => handleOpenPlaceModal()}
+                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl font-bold transition-all text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                {infoTab === 'accommodations' ? '숙소 추가' : '식당 추가'}
+              </button>
+            )}
           </div>
 
           {infoTab === 'accommodations' ? (
@@ -561,10 +590,12 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                   <div key={place.id} className="border border-slate-100 rounded-2xl p-5 hover:border-indigo-100 hover:shadow-md transition-all group">
                     <div className="flex justify-between items-start mb-3">
                       <h4 className="font-black text-lg text-slate-800">{place.name}</h4>
-                      <div className="flex gap-2 opacity-0 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleOpenPlaceModal(place)} className="text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 p-1.5 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                        <button onClick={() => handleDeletePlace(place.id)} className="text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 p-1.5 rounded-lg"><Trash2 className="w-4 h-4" /></button>
-                      </div>
+                      {canEdit && (
+                        <div className="flex gap-2 opacity-0 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleOpenPlaceModal(place)} className="text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 p-1.5 rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                          <button onClick={() => handleDeletePlace(place.id)} className="text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 p-1.5 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2 text-sm">
                       <p className="flex items-start gap-2 text-slate-600">
@@ -595,10 +626,12 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                   <div key={place.id} className="border border-slate-100 rounded-2xl p-5 hover:border-orange-100 hover:shadow-md transition-all group">
                     <div className="flex justify-between items-start mb-3">
                       <h4 className="font-black text-lg text-slate-800">{place.name}</h4>
-                      <div className="flex gap-2 opacity-0 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleOpenPlaceModal(place)} className="text-slate-400 hover:text-orange-600 bg-slate-50 hover:bg-orange-50 p-1.5 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                        <button onClick={() => handleDeletePlace(place.id)} className="text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 p-1.5 rounded-lg"><Trash2 className="w-4 h-4" /></button>
-                      </div>
+                      {canEdit && (
+                        <div className="flex gap-2 opacity-0 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleOpenPlaceModal(place)} className="text-slate-400 hover:text-orange-600 bg-slate-50 hover:bg-orange-50 p-1.5 rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                          <button onClick={() => handleDeletePlace(place.id)} className="text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 p-1.5 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2 text-sm">
                       <p className="flex items-start gap-2 text-slate-600">

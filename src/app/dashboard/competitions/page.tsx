@@ -61,6 +61,25 @@ export default function CompetitionsPage() {
     }
   })
 
+  const { data: userRole } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+        
+      if (error) return null
+      return data.role
+    }
+  })
+  
+  const canEdit = ['admin', 'developer'].includes(userRole as string) || userRole === 'coach'
+
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { type: 'competition' }
@@ -138,14 +157,15 @@ export default function CompetitionsPage() {
             />
           </div>
         </div>
-
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-rose-500/30 shrink-0 whitespace-nowrap w-full sm:w-auto"
-        >
-          <Plus className="w-5 h-5 shrink-0" />
-          새 대회 등록
-        </button>
+        {canEdit && (
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-rose-500/30 shrink-0 whitespace-nowrap w-full sm:w-auto"
+          >
+            <Plus className="w-5 h-5 shrink-0" />
+            새 대회 등록
+          </button>
+        )}
       </div>
 
       {/* View Tabs */}
@@ -221,20 +241,22 @@ export default function CompetitionsPage() {
                       <MapPin className="w-4 h-4 shrink-0" />
                       <span className="break-keep underline-offset-4 hover:underline">{comp.location}</span>
                     </button>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        const newLocation = window.prompt('새로운 대회 장소를 입력하세요:', comp.location)
-                        if (newLocation && newLocation !== comp.location) {
-                          updateLocationMutation.mutate({ id: comp.id, location: newLocation })
-                        }
-                      }}
-                      className="p-1 hover:text-amber-600 hover:bg-amber-50 text-slate-400 rounded transition-colors"
-                      title="장소 수정"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          const newLocation = window.prompt('새로운 대회 장소를 입력하세요:', comp.location)
+                          if (newLocation && newLocation !== comp.location) {
+                            updateLocationMutation.mutate({ id: comp.id, location: newLocation })
+                          }
+                        }}
+                        className="p-1 hover:text-amber-600 hover:bg-amber-50 text-slate-400 rounded transition-colors"
+                        title="장소 수정"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 min-w-0">
@@ -252,12 +274,14 @@ export default function CompetitionsPage() {
                 <Link href={`/dashboard/competitions/${comp.id}`} className="p-2 sm:p-3 text-slate-300 group-hover:text-blue-500 transition-colors rounded-xl hover:bg-blue-50">
                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                 </Link>
-                <button 
-                  onClick={(e) => { e.preventDefault(); if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(comp.id) }}
-                  className="text-rose-400 hover:text-rose-600 p-2 sm:p-3 rounded-xl hover:bg-rose-50 transition-colors"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                {canEdit && (
+                  <button 
+                    onClick={(e) => { e.preventDefault(); if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(comp.id) }}
+                    className="text-rose-400 hover:text-rose-600 p-2 sm:p-3 rounded-xl hover:bg-rose-50 transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
               </div>
             </div>
           )})

@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems = [
     { name: '홈', icon: Home, href: '/dashboard' },
-    { name: '선수 명단', icon: Users, href: '/dashboard/athletes', restrictedTo: ['admin', 'developer', 'coach'] },
+    { name: '선수 명단', icon: Users, href: '/dashboard/athletes' },
     { name: '선수 기록', icon: Timer, href: '/dashboard/records' },
     { name: '기록 분석', icon: Activity, href: '/dashboard/record-analysis' },
     { name: '대회 일정', icon: Calendar, href: '/dashboard/competitions' },
