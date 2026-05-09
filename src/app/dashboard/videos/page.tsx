@@ -19,7 +19,7 @@ type VideoData = {
 }
 
 const CATEGORIES = ['훈련 영상', '동기 유발', '수영 상식', '기타 수영 관련']
-const TRAINING_SUBCATEGORIES = ['전체', '자유형', '배영', '접영', '평영', '계영', '혼계영', '기타 영상']
+const TRAINING_SUBCATEGORIES = ['전체', '자유형', '배영', '접영', '평영', '계영', '기타 영상']
 
 const getYoutubeVideoId = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;

@@ -16,7 +16,7 @@ type VideoData = {
   created_at: string
 }
 
-const CATEGORIES = ['전체', '자유형', '배영', '접영', '평영', '개인혼영', '혼계영', '기타'] as const
+const CATEGORIES = ['전체', '자유형', '배영', '접영', '평영', '개인혼영', '기타'] as const
 
 const getYoutubeVideoId = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
