@@ -148,13 +148,19 @@ export default function CompetitionVideosPage() {
     queryFn: async () => {
       const { data: authData } = await supabase.auth.getUser()
       if (!authData.user) return null
-      const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
-      return data
+      
+      let userData = null;
+      try {
+        const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
+        userData = data;
+      } catch (e) {}
+      
+      return { ...userData, auth_id: authData.user.id }
     }
   })
 
-  const userRole = userProfile?.role
-  const userId = userProfile?.id
+  const userRole = userProfile?.role || 'user'
+  const userId = userProfile?.auth_id || userProfile?.id
 
   const { data: videos, isPending } = useQuery({
     queryKey: ['competition_videos'],
