@@ -35,7 +35,7 @@ function RecordAnalysisContent() {
   const searchParams = useSearchParams()
   const athleteIdFromUrl = searchParams.get('athleteId')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | 'ALL'>(athleteIdFromUrl || 'ALL')
-  const [selectedHistoryEvent, setSelectedHistoryEvent] = useState<string>('ALL')
+  const [selectedHistoryEvent, setSelectedHistoryEvent] = useState<string>('')
 
   useEffect(() => {
     if (athleteIdFromUrl) {
@@ -534,29 +534,22 @@ function RecordAnalysisContent() {
               </h3>
               
               <div className="flex flex-wrap gap-2 mb-6">
-                <button
-                  onClick={() => setSelectedHistoryEvent('ALL')}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                    selectedHistoryEvent === 'ALL'
-                      ? 'bg-slate-800 text-white shadow-md'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                  }`}
-                >
-                  전체 보기
-                </button>
-                {selectedAthleteData.eventDetails.map((ed: any) => (
-                  <button
-                    key={ed.event}
-                    onClick={() => setSelectedHistoryEvent(ed.event)}
-                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                      selectedHistoryEvent === ed.event
-                        ? 'bg-primary text-white shadow-md shadow-primary/20'
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                  >
-                    {ed.event}
-                  </button>
-                ))}
+                {selectedAthleteData.eventDetails.map((ed: any) => {
+                  const isActive = selectedHistoryEvent ? selectedHistoryEvent === ed.event : selectedAthleteData.eventDetails[0]?.event === ed.event;
+                  return (
+                    <button
+                      key={ed.event}
+                      onClick={() => setSelectedHistoryEvent(ed.event)}
+                      className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                        isActive
+                          ? 'bg-primary text-white shadow-md shadow-primary/20'
+                          : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      }`}
+                    >
+                      {ed.event}
+                    </button>
+                  );
+                })}
               </div>
               
               <div className="h-[400px] w-full">
@@ -589,10 +582,9 @@ function RecordAnalysisContent() {
                     <Tooltip 
                       content={({ active, payload, label }: any) => {
                         if (active && payload && payload.length) {
-                          // If a specific event is selected, only show its tooltip, else show all
-                          const visiblePayload = selectedHistoryEvent === 'ALL' 
-                            ? payload 
-                            : payload.filter((p: any) => p.name === selectedHistoryEvent);
+                          // If a specific event is selected, only show its tooltip
+                          const activeEvent = selectedHistoryEvent || selectedAthleteData.eventDetails[0]?.event;
+                          const visiblePayload = payload.filter((p: any) => p.name === activeEvent);
                             
                           if (visiblePayload.length === 0) return null;
 
@@ -616,7 +608,10 @@ function RecordAnalysisContent() {
                     />
                     <Legend wrapperStyle={{ paddingTop: '20px' }} />
                     {selectedAthleteData.eventDetails
-                      .filter((ed: any) => selectedHistoryEvent === 'ALL' || selectedHistoryEvent === ed.event)
+                      .filter((ed: any) => {
+                        const activeEvent = selectedHistoryEvent || selectedAthleteData.eventDetails[0]?.event;
+                        return activeEvent === ed.event;
+                      })
                       .map((ed: any, index: number) => {
                         const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6', '#14B8A6'];
                         return (
