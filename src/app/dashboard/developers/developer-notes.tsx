@@ -35,7 +35,7 @@ export default function DeveloperNotes({ userRole }: { userRole: string }) {
         .from('developer_notes')
         .select(`
           *,
-          users ( name )
+          users!developer_notes_created_by_users_fkey ( name )
         `)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false })
