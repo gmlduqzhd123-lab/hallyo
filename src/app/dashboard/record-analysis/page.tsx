@@ -35,6 +35,7 @@ function RecordAnalysisContent() {
   const searchParams = useSearchParams()
   const athleteIdFromUrl = searchParams.get('athleteId')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | 'ALL'>(athleteIdFromUrl || 'ALL')
+  const [selectedHistoryEvent, setSelectedHistoryEvent] = useState<string>('ALL')
 
   useEffect(() => {
     if (athleteIdFromUrl) {
@@ -532,6 +533,32 @@ function RecordAnalysisContent() {
                 <TrendingUp className="w-6 h-6 text-primary" /> 나의 기록 단축 성장 곡선
               </h3>
               
+              <div className="flex flex-wrap gap-2 mb-6">
+                <button
+                  onClick={() => setSelectedHistoryEvent('ALL')}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                    selectedHistoryEvent === 'ALL'
+                      ? 'bg-slate-800 text-white shadow-md'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  }`}
+                >
+                  전체 보기
+                </button>
+                {selectedAthleteData.eventDetails.map((ed: any) => (
+                  <button
+                    key={ed.event}
+                    onClick={() => setSelectedHistoryEvent(ed.event)}
+                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                      selectedHistoryEvent === ed.event
+                        ? 'bg-primary text-white shadow-md shadow-primary/20'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    }`}
+                  >
+                    {ed.event}
+                  </button>
+                ))}
+              </div>
+              
               <div className="h-[400px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
@@ -562,10 +589,17 @@ function RecordAnalysisContent() {
                     <Tooltip 
                       content={({ active, payload, label }: any) => {
                         if (active && payload && payload.length) {
+                          // If a specific event is selected, only show its tooltip, else show all
+                          const visiblePayload = selectedHistoryEvent === 'ALL' 
+                            ? payload 
+                            : payload.filter((p: any) => p.name === selectedHistoryEvent);
+                            
+                          if (visiblePayload.length === 0) return null;
+
                           return (
                             <div className="bg-white p-4 rounded-2xl shadow-xl border border-slate-100">
                               <p className="font-bold text-slate-800 mb-2">{label}</p>
-                              {payload.map((p: any, index: number) => (
+                              {visiblePayload.map((p: any, index: number) => (
                                 <div key={index} className="flex items-center gap-2 mb-1">
                                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }}></div>
                                   <span className="text-sm font-medium text-slate-600">{p.name}:</span>
@@ -581,24 +615,26 @@ function RecordAnalysisContent() {
                       }}
                     />
                     <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                    {selectedAthleteData.eventDetails.map((ed: any, index: number) => {
-                      const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6', '#14B8A6'];
-                      return (
-                        <Line 
-                          key={ed.event} 
-                          type="monotone" 
-                          dataKey={ed.event} 
-                          stroke={colors[index % colors.length]} 
-                          strokeWidth={3}
-                          activeDot={{ r: 8, strokeWidth: 0 }}
-                          connectNulls={true}
-                        />
-                      );
+                    {selectedAthleteData.eventDetails
+                      .filter((ed: any) => selectedHistoryEvent === 'ALL' || selectedHistoryEvent === ed.event)
+                      .map((ed: any, index: number) => {
+                        const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6', '#14B8A6'];
+                        return (
+                          <Line 
+                            key={ed.event} 
+                            type="monotone" 
+                            dataKey={ed.event} 
+                            stroke={colors[index % colors.length]} 
+                            strokeWidth={3}
+                            activeDot={{ r: 8, strokeWidth: 0 }}
+                            connectNulls={true}
+                          />
+                        );
                     })}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              <p className="text-center text-xs text-slate-400 mt-4">* 기록이 짧아질수록(단축될수록) 그래프가 위를 향하도록 표기됩니다. (역순 Y축)</p>
+              <p className="text-center text-xs text-slate-400 mt-4">* 특정 종목을 선택하면 해당 종목의 기록 변화 폭을 더욱 크고 확실하게 확인할 수 있습니다.</p>
             </div>
           )}
 
