@@ -41,6 +41,8 @@ export default function RecordAnalysisPage() {
         .from('athletes')
         .select('*')
         .eq('is_deleted', false)
+        .order('grade', { ascending: false, nullsFirst: false })
+        .order('name', { ascending: true })
       if (error) throw error
       return data
     }
