@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Calendar, Plus, Trash2, MapPin, Edit2 } from 'lucide-react'
+import { Calendar, Plus, Trash2, MapPin, Edit2, List, Map as MapIcon } from 'lucide-react'
+import { CompetitionMap } from '@/components/competitions/CompetitionMap'
 import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,6 +28,7 @@ type FormValues = z.infer<typeof schema>
 
 export default function CompetitionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [view, setView] = useState<'list' | 'map'>('list')
   const supabase = createClient()
   const queryClient = useQueryClient()
 
@@ -142,7 +144,36 @@ export default function CompetitionsPage() {
         </button>
       </div>
 
-      <div className="space-y-4">
+      {/* View Tabs */}
+      <div className="flex p-1.5 bg-white rounded-2xl border border-slate-100 w-full sm:w-fit shadow-sm">
+        <button
+          onClick={() => setView('list')}
+          className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all ${
+            view === 'list' 
+              ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20' 
+              : 'text-slate-500 hover:bg-slate-50'
+          }`}
+        >
+          <List className="w-4 h-4" />
+          목록 보기
+        </button>
+        <button
+          onClick={() => setView('map')}
+          className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all ${
+            view === 'map' 
+              ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20' 
+              : 'text-slate-500 hover:bg-slate-50'
+          }`}
+        >
+          <MapIcon className="w-4 h-4" />
+          지도 보기
+        </button>
+      </div>
+
+      {view === 'map' ? (
+        <CompetitionMap competitions={competitions || []} />
+      ) : (
+        <div className="space-y-4">
         {isPending ? (
           <div className="py-12 text-center text-slate-400">불러오는 중...</div>
         ) : competitions?.length === 0 ? (
@@ -227,7 +258,8 @@ export default function CompetitionsPage() {
             </div>
           )})
         )}
-      </div>
+        </div>
+      )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="대회 일정 등록">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
