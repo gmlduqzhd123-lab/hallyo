@@ -109,6 +109,26 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
       cell: ({ row }) => <span className="text-slate-600 font-medium whitespace-nowrap">{row.getValue('category') || '-'}</span>,
     },
     {
+      id: 'personal_best',
+      header: '최고 기록',
+      cell: ({ row }) => {
+        const athlete = row.original
+        return (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation()
+              onRowClick(athlete)
+            }}
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors whitespace-nowrap w-fit"
+            title="개인 최고 기록 (PB) 보기"
+          >
+            <LineChart className="w-3.5 h-3.5" />
+            <span>기록 보기</span>
+          </button>
+        )
+      }
+    },
+    {
       accessorKey: 'hanja_name',
       header: '한자 이름',
       cell: ({ row }) => <span className="text-slate-600 whitespace-nowrap">{row.getValue('hanja_name') || '-'}</span>,
@@ -167,13 +187,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
                 <Edit2 className="w-4 h-4" />
               </button>
             )}
-            <button 
-              onClick={() => onRowClick(athlete)}
-              className="p-2 text-primary hover:bg-primary/10 rounded-xl transition-colors"
-              title="개인 최고 기록 (PB) 보기"
-            >
-              <LineChart className="w-4 h-4" />
-            </button>
+
             {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
               <button 
                 onClick={() => {
