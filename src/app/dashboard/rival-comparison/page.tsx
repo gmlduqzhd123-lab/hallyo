@@ -69,11 +69,12 @@ function CustomTooltip({ active, payload, label }: any) {
 
 // --- Autocomplete Component ---
 function AthleteSearchInput({
-  label, color, icon, athletes, value, onChange, onClear
+  label, color, icon, athletes, value, onChange, onClear, placeholder = '선수 이름 검색...'
 }: {
   label: string; color: 'blue' | 'red'; icon: string
   athletes: string[]; value: string
   onChange: (name: string) => void; onClear: () => void
+  placeholder?: string
 }) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
@@ -125,7 +126,7 @@ function AthleteSearchInput({
               value={query}
               onChange={e => { setQuery(e.target.value); setOpen(true) }}
               onFocus={() => setOpen(true)}
-              placeholder="선수 이름 검색..."
+              placeholder={placeholder}
               className="flex-1 outline-none font-medium text-slate-700 bg-transparent"
             />
           </div>
@@ -266,7 +267,7 @@ export default function RivalComparisonPage() {
           <Search className="w-5 h-5 text-indigo-500" /> 선수 선택
         </h2>
         <div className="flex flex-col md:flex-row gap-6 items-start">
-          <AthleteSearchInput label="우리 선수" color="blue" icon="A" athletes={athleteNames} value={athleteA} onChange={setAthleteA} onClear={() => setAthleteA('')} />
+          <AthleteSearchInput label="우리 선수" color="blue" icon="A" athletes={athleteNames} value={athleteA} onChange={setAthleteA} onClear={() => setAthleteA('')} placeholder="예: 임지율, 김루아, 신지유..." />
           <div className="hidden md:flex items-center justify-center self-end mb-3">
             <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center text-2xl font-black text-indigo-500 border-2 border-indigo-200 shadow-sm">
               VS
