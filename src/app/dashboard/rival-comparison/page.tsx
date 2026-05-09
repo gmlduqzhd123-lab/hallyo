@@ -100,7 +100,7 @@ function AthleteSearchInput({
   const badgeColor = color === 'blue' ? 'bg-blue-500' : 'bg-red-500'
 
   return (
-    <div ref={ref} className="flex-1 min-w-[250px]">
+    <div ref={ref} className="flex-1 w-full md:min-w-[250px]">
       <label className={`text-sm font-black ${textColor} ml-1 mb-2 flex items-center gap-2`}>
         <span className={`w-6 h-6 ${badgeColor} text-white rounded-full flex items-center justify-center text-xs`}>{icon}</span>
         {label}
@@ -111,9 +111,9 @@ function AthleteSearchInput({
             <div className={`w-10 h-10 rounded-full ${badgeColor} text-white flex items-center justify-center font-black text-lg`}>
               {value.substring(0, 1)}
             </div>
-            <span className={`font-black text-lg ${textColor}`}>{value}</span>
+            <span className={`font-black text-lg ${textColor} truncate`}>{value}</span>
           </div>
-          <button onClick={() => { onClear(); setQuery('') }} className="p-1.5 hover:bg-white/60 rounded-full transition-colors">
+          <button onClick={() => { onClear(); setQuery('') }} className="p-1.5 hover:bg-white/60 rounded-full transition-colors shrink-0">
             <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
@@ -127,7 +127,7 @@ function AthleteSearchInput({
               onChange={e => { setQuery(e.target.value); setOpen(true) }}
               onFocus={() => setOpen(true)}
               placeholder={placeholder}
-              className="flex-1 outline-none font-medium text-slate-700 bg-transparent"
+              className="flex-1 w-full min-w-0 outline-none font-medium text-slate-700 bg-transparent"
             />
           </div>
           {open && filtered.length > 0 && (
