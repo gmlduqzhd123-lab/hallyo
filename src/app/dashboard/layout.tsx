@@ -47,7 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '명예의 전당', icon: Trophy, href: '/dashboard/hall-of-fame' },
     { name: '개발자 소개', icon: Code2, href: '/dashboard/developers' },
     { name: '마이 페이지', icon: User, href: '/dashboard/mypage' },
-    { name: '환경 설정', icon: Settings, href: '/dashboard/settings', adminOnly: true },
+    { name: '환경 설정', icon: Settings, href: '/dashboard/settings', restrictedTo: ['developer'] },
   ]
 
   const handleNavClick = (e: React.MouseEvent, item: any) => {

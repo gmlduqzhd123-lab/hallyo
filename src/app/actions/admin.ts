@@ -98,3 +98,26 @@ export async function resetUserPassword(userId: string) {
   await logAudit('UPDATE', 'users_password', { reset_password_user_id: userId })
   return { success: true, newPassword }
 }
+
+export async function updateUserName(userId: string, newName: string) {
+  const supabase = await createClient()
+
+  // First check if current user is admin/developer
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData?.user) {
+    return { error: '인증에 실패했습니다.' }
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update({ name: newName })
+    .eq('id', userId)
+
+  if (error) {
+    return { error: '이름 변경에 실패했습니다: ' + error.message }
+  }
+
+  await logAudit('UPDATE', 'users', { updated_user_id: userId, new_name: newName })
+  revalidatePath('/dashboard/settings')
+  return { success: true }
+}

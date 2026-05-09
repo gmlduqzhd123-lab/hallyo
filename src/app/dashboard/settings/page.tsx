@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Settings, UserCheck, Users, CheckCircle, Clock, Trash2, Edit2, Type, Key } from 'lucide-react'
-import { approveUser, deleteUser, updateUserRole, resetUserPassword } from '@/app/actions/admin'
+import { approveUser, deleteUser, updateUserRole, resetUserPassword, updateUserName } from '@/app/actions/admin'
 import { updateGlobalFont } from '@/app/actions/settings'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -13,6 +14,31 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'approval' | 'users' | 'fonts'>('fonts')
   const supabase = createClient()
   const queryClient = useQueryClient()
+  const router = useRouter()
+
+  // Fetch current user role to restrict access
+  const { data: currentUserRole, isPending: isRoleLoading } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', authData.user.id)
+        .single()
+        
+      if (error) return null
+      return data.role
+    }
+  })
+
+  useEffect(() => {
+    if (!isRoleLoading && currentUserRole !== 'developer') {
+      router.push('/dashboard')
+    }
+  }, [isRoleLoading, currentUserRole, router])
 
   // Fetch pending users
   const { data: pendingUsers, isPending: isLoadingUsers } = useQuery({
@@ -100,6 +126,29 @@ export default function SettingsPage() {
     }
   })
 
+  const updateNameMutation = useMutation({
+    mutationFn: async ({ userId, name }: { userId: string, name: string }) => {
+      const result = await updateUserName(userId, name)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('사용자 이름이 변경되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['all_users'] })
+      queryClient.invalidateQueries({ queryKey: ['pending_users'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
+  const handleEditName = (userId: string, currentName: string) => {
+    const newName = window.prompt('수정할 이름을 입력하세요:', currentName)
+    if (newName && newName.trim() !== '' && newName !== currentName) {
+      updateNameMutation.mutate({ userId, name: newName.trim() })
+    }
+  }
+
   // Fetch current font
   const { data: currentFont } = useQuery({
     queryKey: ['global_font'],
@@ -142,6 +191,14 @@ export default function SettingsPage() {
     { name: '스위트머핀', family: 'SweetMuffin' },
     { name: 'a바보', family: 'aBabo' },
   ]
+
+  if (isRoleLoading || currentUserRole !== 'developer') {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -231,7 +288,12 @@ export default function SettingsPage() {
                     <div key={user.id} className="flex flex-col md:flex-row md:items-center justify-between p-5 border border-slate-100 rounded-2xl bg-white hover:border-primary/30 transition-colors shadow-sm">
                       <div className="mb-4 md:mb-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-lg text-accent-navy">{user.name}</h3>
+                          <div className="flex items-center gap-1">
+                            <h3 className="font-bold text-lg text-accent-navy">{user.name}</h3>
+                            <button onClick={() => handleEditName(user.id, user.name)} className="text-slate-300 hover:text-indigo-500 transition-colors p-1" title="이름 수정">
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                           <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                             user.status === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
                           }`}>
