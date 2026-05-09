@@ -67,6 +67,22 @@ function MapBounds({ markers }: { markers: GroupedMarker[] }) {
   return null
 }
 
+const PREDEFINED_LOCATIONS: Record<string, { lat: number, lng: number }> = {
+  '부산사직실내수영장': { lat: 35.1911, lng: 129.0602 },
+  '부산 사직실내수영장': { lat: 35.1911, lng: 129.0602 },
+  '부산': { lat: 35.1911, lng: 129.0602 }, // General fallback
+  '목포실내수영장': { lat: 34.8016, lng: 126.3920 },
+  '창원실내수영장': { lat: 35.2410, lng: 128.6750 },
+  '울산문수실내수영장': { lat: 35.5350, lng: 129.2560 },
+  '김천실내수영장': { lat: 36.1360, lng: 128.1060 },
+  '광주남부대국제수영장': { lat: 35.2155, lng: 126.8373 },
+  '남부대국제수영장': { lat: 35.2155, lng: 126.8373 },
+  '전주완산수영장': { lat: 35.8080, lng: 127.1230 },
+  '제주실내수영장': { lat: 33.4840, lng: 126.5160 },
+  '여수진남수영장': { lat: 34.7700, lng: 127.7020 },
+  '진남수영장': { lat: 34.7700, lng: 127.7020 }
+}
+
 export default function DynamicMap({ competitions }: DynamicMapProps) {
   const [groupedMarkers, setGroupedMarkers] = useState<GroupedMarker[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -98,8 +114,13 @@ export default function DynamicMap({ competitions }: DynamicMapProps) {
 
         try {
           let lat: number, lng: number
-
-          if (geocodeCache[cacheKey]) {
+          
+          // 1. Check predefined locations
+          const predefined = Object.keys(PREDEFINED_LOCATIONS).find(k => cacheKey.includes(k))
+          if (predefined) {
+            lat = PREDEFINED_LOCATIONS[predefined].lat
+            lng = PREDEFINED_LOCATIONS[predefined].lng
+          } else if (geocodeCache[cacheKey]) {
             lat = geocodeCache[cacheKey].lat
             lng = geocodeCache[cacheKey].lng
           } else {
