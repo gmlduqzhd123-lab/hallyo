@@ -161,13 +161,13 @@ export default function HallOfFamePage() {
         <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="hidden md:block absolute bottom-0 left-10 w-40 h-40 bg-orange-300/30 rounded-full blur-2xl translate-y-1/2"></div>
         
-        <div className="relative z-10 flex items-center gap-4">
+        <div className="relative z-10 flex items-center gap-4 w-full">
           <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner shrink-0">
             <Trophy className="w-8 h-8 text-yellow-100" />
           </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black drop-shadow-md break-keep">명예의 전당</h1>
-            <p className="text-amber-100 mt-1 font-medium text-base md:text-lg break-keep">빛나는 영광의 순간들, 자랑스러운 우리 선수들 ✨</p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl md:text-3xl font-black truncate">명예의 전당</h1>
+            <p className="text-amber-100 mt-1 font-medium text-sm md:text-lg break-keep">빛나는 영광의 순간들, 자랑스러운 우리 선수들 ✨</p>
           </div>
         </div>
 
@@ -235,7 +235,7 @@ export default function HallOfFamePage() {
                         className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110" 
                         style={{ backgroundImage: `url(${previewUrl})` }}
                       ></div>
-                      <img src={previewUrl} alt="Preview" className="w-full h-full object-contain relative z-10 drop-shadow-md" />
+                      <img src={previewUrl} alt="Preview" className="w-full h-full object-contain relative z-10" />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <span className="text-white font-bold text-sm bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">사진 변경</span>
                       </div>
@@ -379,7 +379,7 @@ export default function HallOfFamePage() {
                     className="hidden md:block absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" 
                     style={{ backgroundImage: `url(${record.photo_url})` }}
                   ></div>
-                  <img src={record.photo_url} alt={record.athlete_name} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105 relative z-10 drop-shadow-2xl" />
+                  <img src={record.photo_url} alt={record.athlete_name} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105 relative z-10" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20 pointer-events-none"></div>
                   <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1 z-30">
                     <Medal className="w-3 h-3" /> 영광의 얼굴
