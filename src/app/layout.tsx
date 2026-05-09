@@ -28,6 +28,15 @@ export default async function RootLayout({
 
   return (
     <html lang="ko" style={{ '--global-font': `"${font}"` } as React.CSSProperties}>
+      <head>
+        <link
+          rel="preload"
+          href={`/fonts/${font}.ttf`}
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={`min-h-screen bg-[#F8FAFC] text-slate-800 antialiased font-sans`}>
         <GlobalFontProvider initialFont={font} />
         <PwaRegistry />
