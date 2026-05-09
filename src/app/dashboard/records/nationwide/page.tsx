@@ -20,11 +20,11 @@ type NationwideRanking = {
 }
 
 const EVENT_OPTIONS = [
-  '자유형 50m', '자유형 100m', '자유형 200m', '자유형 400m', '자유형 800m', '자유형 1500m',
+  '자유형 50m', '자유형 100m', '자유형 200m', '자유형 400m',
   '배영 50m', '배영 100m', '배영 200m',
   '평영 50m', '평영 100m', '평영 200m',
   '접영 50m', '접영 100m', '접영 200m',
-  '개인혼영 200m', '개인혼영 400m'
+  '개인혼영 200m'
 ]
 const GENDER_OPTIONS = ['남자', '여자']
 const GRADE_OPTIONS = ['1학년', '2학년', '3학년', '4학년', '5학년', '6학년']
@@ -68,10 +68,9 @@ export default function NationwideRecordsPage() {
       console.log('🚀 [Supabase Request] Filters applied:', debugFilters)
 
       const { data, error } = await query
-        .order('event', { ascending: true })
         .order('gender', { ascending: true })
         .order('rank', { ascending: true })
-        .limit(1000)
+        .limit(5000)
       
       console.log('📥 [Supabase Response] Data:', data?.length ? `${data.length}건 반환됨` : '데이터 없음', data)
       if (error) {
@@ -83,9 +82,37 @@ export default function NationwideRecordsPage() {
     }
   })
 
+  // Normalize event names for comparison
+  const normalizeEvent = (e: string) => e.replace(/\s+/g, '');
+  const normalizedEventOptions = EVENT_OPTIONS.map(normalizeEvent);
 
   // Since filtering is done on the server, rankings is already filtered
-  const filteredRankings = rankings || []
+  // We sort them on the frontend to match the EVENT_OPTIONS order exactly
+  const filteredRankings = [...(rankings || [])].sort((a, b) => {
+    const aEvent = typeof a.event === 'string' ? normalizeEvent(a.event) : '';
+    const bEvent = typeof b.event === 'string' ? normalizeEvent(b.event) : '';
+    
+    const aIdx = normalizedEventOptions.indexOf(aEvent);
+    const bIdx = normalizedEventOptions.indexOf(bEvent);
+    
+    if (aIdx !== bIdx) {
+      if (aIdx === -1) return 1;
+      if (bIdx === -1) return -1;
+      return aIdx - bIdx;
+    }
+    
+    // Within same event, gender is already sorted by DB, but we ensure it
+    const aGender = typeof a.gender === 'string' ? a.gender.trim() : '';
+    const bGender = typeof b.gender === 'string' ? b.gender.trim() : '';
+    if (aGender !== bGender) {
+      if (aGender === '남자') return -1;
+      if (bGender === '남자') return 1;
+      return aGender.localeCompare(bGender);
+    }
+    
+    // Within same event and gender, rank is already sorted by DB
+    return (Number(a.rank) || 0) - (Number(b.rank) || 0);
+  });
 
   return (
     <div className="space-y-6">
