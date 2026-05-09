@@ -46,7 +46,6 @@ export default function EventRecordChart({ records }: EventRecordChartProps) {
             axisLine={false}
             tickLine={false}
             width={70}
-            reversed={true}
           />
           <Tooltip 
             formatter={(value: any) => [
