@@ -121,10 +121,12 @@ export default function RecordAnalysisPage() {
   const analysisData = useMemo(() => {
     if (!athletes || !localRecords || !nationwide) return null;
 
-    // 1. Process nationwide data to find average and top times per event/gender
+    // 1. Process nationwide data to find average and top times per event/gender/division
     const nwStats: Record<string, { total: number, count: number, min: number }> = {};
     nationwide.forEach(nw => {
-      const eventKey = `${nw.gender}_${normalizeEventName(nw.event)}`;
+      // 유년부 (1~4학년), 초등부 (5~6학년)
+      const division = (nw.grade && nw.grade <= 4) ? '유년부' : '초등부';
+      const eventKey = `${nw.gender}_${division}_${normalizeEventName(nw.event)}`;
       const timeInSec = parseTimeStringToSeconds(nw.record);
       if (timeInSec <= 0) return;
 
@@ -150,6 +152,8 @@ export default function RecordAnalysisPage() {
     const athleteAnalysis = athletes.map(athlete => {
       const aRecords = localRecords.filter(r => r.athlete_id === athlete.id);
       
+      const division = (athlete.grade && athlete.grade <= 4) ? '유년부' : '초등부';
+
       // Find best event based on comparison to nationwide average
       let bestEvent: any = null;
       let maxPercentile = -999;
@@ -157,8 +161,15 @@ export default function RecordAnalysisPage() {
 
       aRecords.forEach(r => {
         const aGender = athlete.gender === 'M' ? '남자' : '여자';
-        const eventKey = `${aGender}_${normalizeEventName(r.event_name)}`;
-        const benchmark = nwBenchmarks[eventKey];
+        const exactEventKey = `${aGender}_${division}_${normalizeEventName(r.event_name)}`;
+        let benchmark = nwBenchmarks[exactEventKey];
+        
+        // Fallback: If no division specific data, try finding any data for the event/gender
+        if (!benchmark) {
+          const fallbackKey = Object.keys(nwBenchmarks).find(k => k.includes(`${aGender}_`) && k.includes(`_${normalizeEventName(r.event_name)}`));
+          if (fallbackKey) benchmark = nwBenchmarks[fallbackKey];
+        }
+
         if (!benchmark) return;
 
         const myTime = Number(r.record_time);
@@ -473,6 +484,7 @@ export default function RecordAnalysisPage() {
                   <thead>
                     <tr className="bg-slate-50 text-slate-500 text-sm border-b border-slate-100">
                       <th className="p-4 font-bold whitespace-nowrap">참가 종목</th>
+                      <th className="p-4 font-bold whitespace-nowrap">부문</th>
                       <th className="p-4 font-bold whitespace-nowrap">최고 기록</th>
                       <th className="p-4 font-bold whitespace-nowrap">전국 평균</th>
                       <th className="p-4 font-bold whitespace-nowrap">전국 1위</th>
@@ -514,6 +526,7 @@ export default function RecordAnalysisPage() {
                       return (
                         <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                           <td className="p-4 font-bold text-slate-700">{ed.event}</td>
+                          <td className="p-4 font-bold text-indigo-500">{(selectedAthleteData.grade && selectedAthleteData.grade <= 4) ? '유년부' : '초등부'}</td>
                           <td className="p-4 font-bold text-primary">{formatSecondsToTime(ed.myBest)}</td>
                           <td className="p-4 font-medium text-slate-500">{formatSecondsToTime(ed.nwAvg)}</td>
                           <td className="p-4 font-bold text-amber-500">{formatSecondsToTime(ed.nwTop)}</td>
