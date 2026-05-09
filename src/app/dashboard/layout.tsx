@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '명예의 전당', icon: Trophy, href: '/dashboard/hall-of-fame' },
     { name: '상담 일지', icon: BookOpen, href: '/dashboard/counseling', adminOnly: true },
     { name: '공지사항', icon: Bell, href: '/dashboard/notices' },
-    { name: '개발자 소개', icon: Code2, href: '/dashboard/developers' },
+    { name: '개발 일지', icon: Code2, href: '/dashboard/developers' },
     { name: '마이 페이지', icon: User, href: '/dashboard/mypage' },
     { name: '환경 설정', icon: Settings, href: '/dashboard/settings', restrictedTo: ['developer'] },
   ]

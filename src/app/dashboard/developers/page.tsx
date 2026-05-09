@@ -167,8 +167,8 @@ export default function DevelopersPage() {
             <Code2 className="w-8 h-8 text-purple-100" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-black drop-shadow-md break-keep">개발자 소개</h1>
-            <p className="text-purple-100 mt-1 font-medium text-base md:text-lg break-keep">이 서비스를 만든 사람들을 소개합니다 💜</p>
+            <h1 className="text-2xl md:text-3xl font-black drop-shadow-md break-keep">개발 일지</h1>
+            <p className="text-purple-100 mt-1 font-medium text-base md:text-lg break-keep">서비스 개발 과정과 만든 사람들의 이야기를 기록합니다 💜</p>
           </div>
         </div>
 
@@ -194,7 +194,7 @@ export default function DevelopersPage() {
           }`}
         >
           <Users className="w-5 h-5" />
-          개발자 소개
+          개발 일지
         </button>
         <button
           onClick={() => setActiveTab('notes')}
