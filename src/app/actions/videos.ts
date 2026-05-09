@@ -30,7 +30,7 @@ export async function addVideo(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   
   const { data: roleData } = await supabase.from('users').select('role').eq('id', user?.id).single()
-  const status = ['admin', 'developer'].includes(roleData?.role as string) ? 'approved' : 'pending'
+  const status = ['admin', 'developer', 'coach'].includes(roleData?.role as string) ? 'approved' : 'pending'
 
   const { error } = await supabase.from('training_videos').insert([
     {
@@ -61,8 +61,8 @@ export async function softDeleteVideo(id: string) {
   const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
   const { data: video } = await supabase.from('training_videos').select('created_by').eq('id', id).single()
 
-  if (!['admin', 'developer'].includes(roleData?.role as string) && video?.created_by !== userData.user.id) {
-    return { error: '관리자, 개발자 또는 작성자 본인만 영상을 삭제할 수 있습니다.' }
+  if (!['admin', 'developer', 'coach'].includes(roleData?.role as string) && video?.created_by !== userData.user.id) {
+    return { error: '관리자, 개발자, 코치 또는 작성자 본인만 영상을 삭제할 수 있습니다.' }
   }
 
   const { error } = await supabase
@@ -72,6 +72,13 @@ export async function softDeleteVideo(id: string) {
 
   if (error) {
     return { error: '영상 삭제에 실패했습니다: ' + error.message }
+  }
+
+  // audit logging added for training videos
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { logAudit } = await import('./audit')
+    await logAudit('DELETE', 'training_videos', { id })
   }
 
   revalidatePath('/dashboard/videos')
@@ -85,7 +92,7 @@ export async function approveVideo(id: string) {
   if (!userData?.user) return { error: '인증에 실패했습니다.' }
   
   const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
-  if (!['admin', 'developer'].includes(roleData?.role as string)) return { error: '권한이 없습니다.' }
+  if (!['admin', 'developer', 'coach'].includes(roleData?.role as string)) return { error: '권한이 없습니다.' }
 
   const { error } = await supabase
     .from('training_videos')

@@ -34,7 +34,7 @@ function VideoItem({ video, userRole, userId, approveMutation, handleDelete, han
       {video.status === 'pending' && (
         <div className="absolute top-4 right-4 bg-rose-500 text-white px-3 py-1.5 text-sm font-bold rounded-xl z-10 flex items-center gap-2">
           승인 대기
-          {['admin', 'developer'].includes(userRole as string) && (
+          {['admin', 'developer', 'coach'].includes(userRole as string) && (
             <button 
               onClick={(e) => { e.stopPropagation(); approveMutation.mutate(video.id) }}
               className="ml-2 p-1.5 bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
@@ -258,7 +258,7 @@ export default function CompetitionVideosPage() {
   })
 
   const visibleVideos = videos?.filter(v => {
-    const isVisible = ['admin', 'developer'].includes(userRole as string) || (v as any).status === 'approved'
+    const isVisible = ['admin', 'developer', 'coach'].includes(userRole as string) || (v as any).status === 'approved'
     if (!isVisible) return false
     if (selectedCategory === '전체') return true
     return (v as any).category === selectedCategory
