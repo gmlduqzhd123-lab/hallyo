@@ -41,7 +41,7 @@ export default function EventRecordChart({ records }: EventRecordChartProps) {
             reversed={true}
           />
           <Tooltip 
-            formatter={(value: number) => [
+            formatter={(value: any) => [
               <span key="time" className="font-black text-indigo-600">{formatTimeSeconds(value)}</span>, 
               <span key="label" className="text-slate-500">기록</span>
             ]}
