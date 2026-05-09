@@ -18,6 +18,12 @@ const customIcon = new L.Icon({
   shadowSize: [41, 41]
 })
 
+// Define bounds for South Korea to prevent panning to other countries
+const SOUTH_KOREA_BOUNDS = L.latLngBounds(
+  [33.0, 124.5], // South West (below Jeju)
+  [39.0, 132.0]  // North East (above Seoul, includes Dokdo)
+)
+
 interface Competition {
   id: string
   title: string
@@ -30,23 +36,31 @@ interface DynamicMapProps {
   competitions: Competition[]
 }
 
-interface GeocodedMarker {
-  id: string
-  title: string
-  date: string
+interface GroupedMarker {
   location: string
   lat: number
   lng: number
+  competitions: {
+    id: string
+    title: string
+    date: string
+  }[]
 }
 
-// Component to automatically fit bounds to markers
-function MapBounds({ markers }: { markers: GeocodedMarker[] }) {
+// Component to automatically fit bounds to markers (only within Korea)
+function MapBounds({ markers }: { markers: GroupedMarker[] }) {
   const map = useMap()
   
   useEffect(() => {
     if (markers.length > 0) {
       const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]))
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 })
+      
+      // Ensure the calculated bounds don't exceed South Korea
+      if (!SOUTH_KOREA_BOUNDS.contains(bounds)) {
+         map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 })
+      } else {
+         map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 })
+      }
     }
   }, [markers, map])
   
@@ -54,7 +68,7 @@ function MapBounds({ markers }: { markers: GeocodedMarker[] }) {
 }
 
 export default function DynamicMap({ competitions }: DynamicMapProps) {
-  const [markers, setMarkers] = useState<GeocodedMarker[]>([])
+  const [groupedMarkers, setGroupedMarkers] = useState<GroupedMarker[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -62,62 +76,70 @@ export default function DynamicMap({ competitions }: DynamicMapProps) {
       setIsLoading(true)
       const validCompetitions = competitions.filter(c => c.location && c.location.trim() !== '')
       
-      const newMarkers: GeocodedMarker[] = []
-      
-      // Simple cache to avoid redundant API calls
+      // Cache coordinates to avoid redundant API calls
       const geocodeCache: Record<string, { lat: number, lng: number }> = {}
+      const groupMap = new Map<string, GroupedMarker>()
 
       for (const comp of validCompetitions) {
         if (!comp.location) continue
         
         const cacheKey = comp.location.trim()
         
-        try {
-          if (geocodeCache[cacheKey]) {
-            newMarkers.push({
-              id: comp.id,
-              title: comp.title,
-              date: comp.date,
-              location: cacheKey,
-              lat: geocodeCache[cacheKey].lat,
-              lng: geocodeCache[cacheKey].lng
-            })
-            continue
-          }
+        // Add competition to an existing group if location was already geocoded
+        if (groupMap.has(cacheKey)) {
+          const existingGroup = groupMap.get(cacheKey)!
+          existingGroup.competitions.push({
+            id: comp.id,
+            title: comp.title,
+            date: comp.date
+          })
+          continue
+        }
 
-          // Use Nominatim API for open-source geocoding
-          // Add '대한민국' to improve accuracy for local searches
-          const searchQuery = cacheKey.includes('한국') || cacheKey.includes('대한민국') 
-            ? cacheKey 
-            : `대한민국 ${cacheKey}`
+        try {
+          let lat: number, lng: number
+
+          if (geocodeCache[cacheKey]) {
+            lat = geocodeCache[cacheKey].lat
+            lng = geocodeCache[cacheKey].lng
+          } else {
+            // Use Nominatim API for open-source geocoding
+            const searchQuery = cacheKey.includes('한국') || cacheKey.includes('대한민국') 
+              ? cacheKey 
+              : `대한민국 ${cacheKey}`
+              
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
+            const data = await response.json()
             
-          const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
-          const data = await response.json()
-          
-          if (data && data.length > 0) {
-            const lat = parseFloat(data[0].lat)
-            const lng = parseFloat(data[0].lon)
-            
-            geocodeCache[cacheKey] = { lat, lng }
-            
-            newMarkers.push({
-              id: comp.id,
-              title: comp.title,
-              date: comp.date,
-              location: cacheKey,
-              lat,
-              lng
-            })
+            if (data && data.length > 0) {
+              lat = parseFloat(data[0].lat)
+              lng = parseFloat(data[0].lon)
+              geocodeCache[cacheKey] = { lat, lng }
+              
+              // Respect Nominatim API rate limits (1 request per second)
+              await new Promise(resolve => setTimeout(resolve, 1000))
+            } else {
+              continue // Skip if not found
+            }
           }
           
-          // Respect Nominatim API rate limits (1 request per second)
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          groupMap.set(cacheKey, {
+            location: cacheKey,
+            lat,
+            lng,
+            competitions: [{
+              id: comp.id,
+              title: comp.title,
+              date: comp.date
+            }]
+          })
+
         } catch (error) {
           console.error('Geocoding error for:', cacheKey, error)
         }
       }
       
-      setMarkers(newMarkers)
+      setGroupedMarkers(Array.from(groupMap.values()))
       setIsLoading(false)
     }
 
@@ -136,6 +158,9 @@ export default function DynamicMap({ competitions }: DynamicMapProps) {
       <MapContainer 
         center={[36.5, 127.5]} // Default center of South Korea
         zoom={7} 
+        minZoom={6} // Prevent zooming out too far
+        maxBounds={SOUTH_KOREA_BOUNDS} // Restrict panning to South Korea only
+        maxBoundsViscosity={1.0} // Make the bounds solid (no bounce)
         style={{ height: '100%', width: '100%', zIndex: 10 }}
       >
         <TileLayer
@@ -143,29 +168,41 @@ export default function DynamicMap({ competitions }: DynamicMapProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {markers.map((marker) => (
+        {groupedMarkers.map((group) => (
           <Marker 
-            key={marker.id} 
-            position={[marker.lat, marker.lng]}
+            key={group.location} 
+            position={[group.lat, group.lng]}
             icon={customIcon}
           >
-            <Popup className="rounded-2xl">
-              <div className="p-1">
-                <h3 className="font-black text-rose-600 mb-2 text-base">{marker.title}</h3>
-                <div className="flex items-center gap-2 text-xs text-slate-600 mb-1 font-medium">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{format(new Date(marker.date), 'yyyy년 M월 d일')}</span>
+            <Popup className="rounded-2xl min-w-[220px]">
+              <div className="p-1 max-h-[350px] overflow-y-auto custom-scrollbar">
+                <div className="sticky top-0 bg-white z-10 flex flex-col gap-1 pb-3 mb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-xs text-slate-500 font-bold">
+                    <MapPin className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{group.location}</span>
+                  </div>
+                  <div className="inline-flex w-fit bg-rose-50 text-rose-600 text-[10px] font-black px-2 py-0.5 rounded-full">
+                    총 {group.competitions.length}개 대회 개최
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>{marker.location}</span>
+                
+                <div className="space-y-2">
+                  {group.competitions.map(comp => (
+                    <div key={comp.id} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 hover:border-rose-200 transition-colors">
+                      <h3 className="font-black text-slate-800 mb-1.5 text-[13px] leading-tight">{comp.title}</h3>
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                        <Calendar className="w-3 h-3" />
+                        <span>{format(new Date(comp.date), 'yyyy년 M월 d일')}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </Popup>
           </Marker>
         ))}
         
-        <MapBounds markers={markers} />
+        <MapBounds markers={groupedMarkers} />
       </MapContainer>
     </div>
   )
