@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Image as ImageIcon, Upload, Trash2, Maximize2, X, Download, Check } from 'lucide-react'
+import { Image as ImageIcon, Upload, Trash2, Maximize2, X, Download, Check, Edit2 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
-import { addPhotos, softDeletePhoto, approvePhoto } from '@/app/actions/photos'
+import { addPhotos, softDeletePhoto, approvePhoto, updatePhotoDescription } from '@/app/actions/photos'
 
 export default function PhotosPage() {
   const [isUploading, setIsUploading] = useState(false)
@@ -13,6 +13,9 @@ export default function PhotosPage() {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
   const [photoDescription, setPhotoDescription] = useState('')
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingPhoto, setEditingPhoto] = useState<any | null>(null)
+  const [editDescription, setEditDescription] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -139,6 +142,23 @@ export default function PhotosPage() {
     }
   })
 
+  const editMutation = useMutation({
+    mutationFn: async ({ id, description }: { id: string, description: string }) => {
+      const res = await updatePhotoDescription(id, description)
+      if (res.error) throw new Error(res.error)
+      return res
+    },
+    onSuccess: () => {
+      toast.success('사진 설명이 수정되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['photos'] })
+      setIsEditModalOpen(false)
+      setEditingPhoto(null)
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFiles(e.target.files)
@@ -228,6 +248,20 @@ export default function PhotosPage() {
                       title="사진 승인"
                     >
                       <Check className="w-5 h-5" />
+                    </button>
+                  )}
+                  {(['admin', 'developer'].includes(userRole as string) || photo.created_by === userId) && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingPhoto(photo)
+                        setEditDescription(photo.description || '')
+                        setIsEditModalOpen(true)
+                      }}
+                      className="p-3 bg-amber-500 hover:bg-amber-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
+                      title="사진 설명 수정"
+                    >
+                      <Edit2 className="w-5 h-5" />
                     </button>
                   )}
                   {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach' || photo.created_by === userId) && (
@@ -349,6 +383,63 @@ export default function PhotosPage() {
                     올리기
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Description Modal */}
+      {isEditModalOpen && editingPhoto && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h2 className="text-xl font-bold text-accent-navy flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-amber-500" />
+                사진 설명 수정
+              </h2>
+              <button 
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingPhoto(null);
+                }}
+                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500"
+                disabled={editMutation.isPending}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  사진 내용 설명
+                </label>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="사진에 대한 설명을 수정해주세요."
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none min-h-[100px] text-sm"
+                  disabled={editMutation.isPending}
+                />
+              </div>
+            </div>
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingPhoto(null);
+                }}
+                className="px-5 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+                disabled={editMutation.isPending}
+              >
+                취소
+              </button>
+              <button
+                onClick={() => editMutation.mutate({ id: editingPhoto.id, description: editDescription })}
+                disabled={editMutation.isPending}
+                className="px-6 py-2.5 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/30 flex items-center gap-2 disabled:bg-amber-300"
+              >
+                {editMutation.isPending ? '수정 중...' : '저장하기'}
               </button>
             </div>
           </div>
