@@ -79,6 +79,8 @@ export default function DashboardPage() {
   const [letter, setLetter] = useState<{title: string, content: string} | null>(null)
   const [quiz, setQuiz] = useState<any>(null)
   const [showQuizAnswer, setShowQuizAnswer] = useState(false)
+  const [quizUserAnswer, setQuizUserAnswer] = useState('')
+  const [quizResult, setQuizResult] = useState<'correct' | 'wrong' | null>(null)
   const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay' | 'letter' | 'quiz'>('essay')
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
@@ -135,6 +137,34 @@ export default function DashboardPage() {
   const total = athletes?.length || 0
   const boys = athletes?.filter(a => a.gender === 'M').length || 0
   const girls = athletes?.filter(a => a.gender === 'F').length || 0
+  const resetQuiz = () => {
+    setQuiz(quizzes[Math.floor(Math.random() * quizzes.length)])
+    setShowQuizAnswer(false)
+    setQuizUserAnswer('')
+    setQuizResult(null)
+  }
+
+  const handleQuizSubmit = (answerStr: string) => {
+    if (!quiz) return
+    setQuizUserAnswer(answerStr)
+    let isCorrect = false
+    
+    if (quiz.type === '4지 선다형') {
+      isCorrect = answerStr.startsWith(quiz.answer)
+    } else if (quiz.type === 'OX형') {
+      isCorrect = answerStr === quiz.answer
+    } else {
+      const normalize = (s: string) => s.replace(/\s+/g, '').toLowerCase()
+      isCorrect = normalize(answerStr) === normalize(quiz.answer)
+    }
+    
+    if (isCorrect) {
+      setQuizResult('correct')
+      setShowQuizAnswer(true)
+    } else {
+      setQuizResult('wrong')
+    }
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -458,10 +488,7 @@ export default function DashboardPage() {
                 </span>
               </h3>
               <button 
-                onClick={() => {
-                  setQuiz(quizzes[Math.floor(Math.random() * quizzes.length)])
-                  setShowQuizAnswer(false)
-                }}
+                onClick={resetQuiz}
                 className="shrink-0 text-xs md:text-sm font-bold text-emerald-500 hover:text-white bg-white hover:bg-emerald-400 px-4 py-2 rounded-full transition-all shadow-sm flex items-center gap-2 border border-emerald-100"
               >
                 다른 퀴즈 풀기 🎲
@@ -477,28 +504,85 @@ export default function DashboardPage() {
                   Q. {quiz.question}
                 </h4>
                 
-                {quiz.options && (
+                {quiz.options ? (
                   <div className="flex flex-col gap-3 w-full max-w-lg mb-8">
-                    {quiz.options.map((opt: string, idx: number) => (
-                      <div key={idx} className="bg-white/80 p-4 rounded-xl border border-emerald-100 text-slate-700 font-medium text-center shadow-sm">
-                        {opt}
-                      </div>
-                    ))}
+                    {quiz.options.map((opt: string, idx: number) => {
+                      let btnClass = "bg-white/80 border-emerald-100 text-slate-700 hover:bg-emerald-50 hover:border-emerald-300"
+                      
+                      if (quizResult === 'correct') {
+                        const isCorrectOption = quiz.type === '4지 선다형' ? opt.startsWith(quiz.answer) : opt === quiz.answer
+                        if (isCorrectOption) {
+                          btnClass = "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                        } else {
+                          btnClass = "bg-slate-50 border-slate-200 text-slate-400 opacity-50"
+                        }
+                      } else if (quizResult === 'wrong' && quizUserAnswer === opt) {
+                        btnClass = "bg-rose-50 border-rose-200 text-rose-500"
+                      }
+
+                      return (
+                        <button 
+                          key={idx} 
+                          onClick={() => handleQuizSubmit(opt)}
+                          disabled={quizResult === 'correct'}
+                          className={`p-4 rounded-xl border font-medium text-center shadow-sm transition-all text-left px-6 ${btnClass}`}
+                        >
+                          {opt}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4 w-full max-w-lg mb-8">
+                    <input 
+                      type="text" 
+                      value={quizUserAnswer}
+                      onChange={(e) => {
+                        setQuizUserAnswer(e.target.value)
+                        if (quizResult === 'wrong') setQuizResult(null)
+                      }}
+                      disabled={quizResult === 'correct'}
+                      placeholder="정답을 입력하세요"
+                      className="w-full px-6 py-4 rounded-xl border border-emerald-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center font-bold text-lg disabled:bg-slate-50 disabled:text-slate-500"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && quizResult !== 'correct' && quizUserAnswer.trim()) {
+                          handleQuizSubmit(quizUserAnswer)
+                        }
+                      }}
+                    />
+                    {quizResult !== 'correct' && (
+                      <button 
+                        onClick={() => {
+                          if (quizUserAnswer.trim()) {
+                            handleQuizSubmit(quizUserAnswer)
+                          }
+                        }}
+                        disabled={!quizUserAnswer.trim()}
+                        className="bg-emerald-500 disabled:bg-emerald-300 hover:bg-emerald-600 text-white font-bold px-8 py-3.5 rounded-2xl transition-all shadow-lg shadow-emerald-500/30 w-full flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle className="w-5 h-5" />
+                        정답 확인하기
+                      </button>
+                    )}
                   </div>
                 )}
-                
-                {!showQuizAnswer ? (
-                  <button 
-                    onClick={() => setShowQuizAnswer(true)}
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-3.5 rounded-2xl transition-all shadow-lg shadow-emerald-500/30 flex items-center gap-2"
-                  >
-                    <CheckCircle className="w-5 h-5" />
-                    정답 확인하기
-                  </button>
-                ) : (
-                  <div className="w-full max-w-lg bg-emerald-500 text-white p-6 rounded-2xl flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 shadow-lg shadow-emerald-500/30">
-                    <span className="text-emerald-100 font-bold mb-2">정답</span>
-                    <span className="text-2xl md:text-3xl font-black break-keep text-center">{quiz.answer}</span>
+
+                {quizResult === 'correct' && (
+                  <div className="w-full max-w-lg bg-emerald-500 text-white p-6 rounded-2xl flex flex-col items-center justify-center animate-in fade-in zoom-in-95 shadow-lg shadow-emerald-500/30 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-8 h-8" />
+                      <span className="text-xl md:text-2xl font-black break-keep text-center">정답입니다! 🎉</span>
+                    </div>
+                    {!quiz.options && (
+                      <span className="text-emerald-100 font-bold break-keep text-center mt-2">입력한 정답: {quizUserAnswer}</span>
+                    )}
+                  </div>
+                )}
+
+                {quizResult === 'wrong' && (
+                  <div className="w-full max-w-lg bg-rose-50 text-rose-500 border border-rose-200 p-4 rounded-2xl flex items-center justify-center animate-in zoom-in-95 mt-2 gap-2">
+                    <X className="w-6 h-6" />
+                    <span className="text-lg font-bold">다시 생각해보세요! 🤔</span>
                   </div>
                 )}
               </div>
