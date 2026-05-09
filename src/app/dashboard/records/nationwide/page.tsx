@@ -39,14 +39,17 @@ export default function NationwideRecordsPage() {
     }
   })
 
-  // Get unique events and genders for filters
-  const events = rankings ? Array.from(new Set(rankings.map(r => r.event))).sort() : []
-  const genders = rankings ? Array.from(new Set(rankings.map(r => r.gender))).sort() : []
+  // Get unique events and genders for filters, removing any trailing/leading whitespaces
+  const events = rankings ? Array.from(new Set(rankings.map(r => (r.event || '').trim()))).filter(Boolean).sort() : []
+  const genders = rankings ? Array.from(new Set(rankings.map(r => (r.gender || '').trim()))).filter(Boolean).sort() : []
 
   // Filter rankings based on selected filters
   const filteredRankings = rankings?.filter(r => {
-    if (selectedGender !== 'all' && r.gender !== selectedGender) return false
-    if (selectedEvent !== 'all' && r.event !== selectedEvent) return false
+    const rGender = (r.gender || '').trim()
+    const rEvent = (r.event || '').trim()
+    
+    if (selectedGender !== 'all' && rGender !== selectedGender) return false
+    if (selectedEvent !== 'all' && rEvent !== selectedEvent) return false
     return true
   }) || []
 
@@ -129,15 +132,15 @@ export default function NationwideRecordsPage() {
                 {filteredRankings.map((ranking) => (
                   <tr key={ranking.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
-                      {ranking.event}
+                      {(ranking.event || '').trim()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        ranking.gender === '남' || ranking.gender === 'M' || ranking.gender === '남자'
+                        ['남', 'm', '남자'].includes((ranking.gender || '').trim().toLowerCase())
                           ? 'bg-blue-100 text-blue-600' 
                           : 'bg-rose-100 text-rose-600'
                       }`}>
-                        {ranking.gender}
+                        {(ranking.gender || '').trim()}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
