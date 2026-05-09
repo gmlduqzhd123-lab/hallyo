@@ -15,26 +15,26 @@ type Props = {
 }
 
 const LOCATION_COORDS: Record<string, { x: number, y: number, name: string }> = {
-  '서울': { x: 30, y: 22, name: '서울' },
-  '인천': { x: 23, y: 23, name: '인천' },
-  '김천': { x: 55, y: 52, name: '김천' },
-  '대전': { x: 45, y: 48, name: '대전' },
-  '광주': { x: 32, y: 78, name: '광주' },
-  '대구': { x: 68, y: 62, name: '대구' },
-  '울산': { x: 85, y: 68, name: '울산' },
-  '부산': { x: 80, y: 78, name: '부산' },
-  '제주': { x: 28, y: 95, name: '제주' },
-  '창원': { x: 65, y: 78, name: '창원' },
-  '전주': { x: 40, y: 65, name: '전주' },
-  '목포': { x: 22, y: 88, name: '목포' },
-  '광양': { x: 48, y: 85, name: '광양' },
-  '수원': { x: 33, y: 28, name: '수원' },
-  '고양': { x: 28, y: 18, name: '고양' },
-  '청주': { x: 50, y: 40, name: '청주' },
-  '천안': { x: 40, y: 38, name: '천안' },
-  '강릉': { x: 75, y: 15, name: '강릉' },
-  '춘천': { x: 55, y: 12, name: '춘천' },
-  '문수': { x: 85, y: 68, name: '울산' },
+  '서울': { x: 38, y: 28, name: '서울' },
+  '인천': { x: 30, y: 30, name: '인천' },
+  '김천': { x: 60, y: 55, name: '김천' },
+  '대전': { x: 50, y: 50, name: '대전' },
+  '광주': { x: 38, y: 78, name: '광주' },
+  '대구': { x: 70, y: 62, name: '대구' },
+  '울산': { x: 82, y: 68, name: '울산' },
+  '부산': { x: 78, y: 78, name: '부산' },
+  '제주': { x: 32, y: 110, name: '제주' },
+  '창원': { x: 68, y: 78, name: '창원' },
+  '전주': { x: 45, y: 65, name: '전주' },
+  '목포': { x: 25, y: 88, name: '목포' },
+  '광양': { x: 52, y: 82, name: '광양' },
+  '수원': { x: 40, y: 35, name: '수원' },
+  '고양': { x: 35, y: 22, name: '고양' },
+  '청주': { x: 55, y: 45, name: '청주' },
+  '천안': { x: 48, y: 42, name: '천안' },
+  '강릉': { x: 78, y: 25, name: '강릉' },
+  '춘천': { x: 62, y: 22, name: '춘천' },
+  '문수': { x: 82, y: 68, name: '울산' },
 }
 
 export function CompetitionMap({ competitions }: Props) {
@@ -85,9 +85,9 @@ export function CompetitionMap({ competitions }: Props) {
       {/* Map Section */}
       <div className="relative aspect-[3/4] bg-sky-50/50 rounded-2xl border border-sky-100 overflow-hidden group p-4 sm:p-8">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg viewBox="0 0 100 130" className="w-full h-full opacity-30 fill-blue-500/10 stroke-blue-600/30 stroke-[0.8] drop-shadow-sm">
-            <path d="M25,10 L45,10 L55,15 L65,15 L75,20 L80,30 L75,45 L85,60 L80,75 L85,85 L75,95 L60,95 L45,100 L30,110 L20,105 L10,100 L5,90 L15,75 L10,65 L15,50 L10,40 L15,25 L25,15 Z" />
-            <circle cx="28" cy="115" r="5" /> {/* Jeju */}
+          <svg viewBox="0 0 100 130" className="w-full h-full opacity-40 fill-blue-500/10 stroke-blue-600/40 stroke-[0.8] drop-shadow-sm">
+            <path d="M30.64,18.44 L37.28,16.52 L42.84,17.24 L48.84,14.84 L53.88,14.84 L58.92,16.28 L64.68,14.36 L68.04,18.20 L66.84,24.92 L64.68,29.96 L63.96,35.72 L66.12,41.48 L68.52,48.20 L73.80,51.56 L77.88,57.56 L82.92,62.12 L87.72,66.68 L88.92,72.44 L87.72,78.20 L84.12,81.32 L78.36,83.00 L71.88,81.80 L65.16,81.80 L59.16,83.96 L53.16,85.16 L47.16,87.08 L40.92,89.00 L34.92,93.32 L28.92,98.12 L24.60,96.20 L21.72,92.60 L18.60,86.12 L18.60,79.16 L14.76,74.60 L12.60,67.64 L10.44,61.16 L12.36,54.68 L16.44,48.20 L15.48,41.24 L13.80,34.28 L15.72,27.32 L20.76,22.76 L25.80,20.60 Z" />
+            <circle cx="32" cy="115" r="5" /> {/* Jeju */}
           </svg>
         </div>
 
