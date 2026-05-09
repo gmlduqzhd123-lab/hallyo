@@ -33,14 +33,56 @@ export function GlobalSearch() {
     queryFn: async () => {
       if (!debouncedQuery.trim()) return []
       
-      const { data, error } = await supabase
-        .from('nationwide_rankings')
-        .select('id, athlete_name, team_name, competition_name, event')
-        .or(`athlete_name.ilike.%${debouncedQuery}%,team_name.ilike.%${debouncedQuery}%,competition_name.ilike.%${debouncedQuery}%`)
-        .limit(10)
+      const searchStr = `%${debouncedQuery}%`;
 
-      if (error) throw error
-      return data || []
+      // 1. Local Team Athletes
+      const localPromise = supabase
+        .from('athletes')
+        .select('id, name, grade')
+        .eq('is_deleted', false)
+        .ilike('name', searchStr)
+        .limit(5);
+
+      // 2. Nationwide Athletes
+      const nationPromise = supabase
+        .from('nationwide_rankings')
+        .select('id, athlete_name, school, event, year')
+        .eq('is_deleted', false)
+        .or(`athlete_name.ilike.${searchStr},school.ilike.${searchStr},event.ilike.${searchStr}`)
+        .limit(5);
+
+      const [localRes, nationRes] = await Promise.all([localPromise, nationPromise]);
+      
+      const combined: any[] = [];
+
+      // Combine local team first
+      if (localRes.data) {
+        localRes.data.forEach((item: any) => {
+          combined.push({
+            id: `local_${item.id}`,
+            type: 'LOCAL',
+            name: item.name,
+            subtitle: `여수한려초 수영부 | ${item.grade}학년`,
+            route: `/dashboard/record-analysis?athleteId=${item.id}`
+          });
+        });
+      }
+
+      // Add nationwide results
+      if (nationRes.data) {
+        // Filter out duplicates if the local athlete is also in nationwide
+        nationRes.data.forEach((item: any) => {
+          combined.push({
+            id: `nation_${item.id}`,
+            type: 'NATIONWIDE',
+            name: item.athlete_name,
+            subtitle: `${item.school} | ${item.event} (${item.year}년)`,
+            route: `/dashboard/records/nationwide` 
+          });
+        });
+      }
+
+      return combined;
     },
     enabled: debouncedQuery.trim().length > 0
   })
@@ -48,11 +90,7 @@ export function GlobalSearch() {
   const handleResultClick = (result: any) => {
     setIsExpanded(false)
     setQuery('')
-    
-    // Redirecting to rankings/records page with the athlete name as filter.
-    // If you have a dedicated ranking page, adjust this URL. 
-    // Example: /dashboard/records?search={name}
-    router.push(`/dashboard/records?search=${encodeURIComponent(result.athlete_name)}`)
+    router.push(result.route)
   }
 
   const handleExpand = () => {
@@ -77,7 +115,7 @@ export function GlobalSearch() {
         <input 
           ref={inputRef}
           type="text"
-          placeholder="선수, 소속팀, 대회명 검색..."
+          placeholder="선수, 학교, 종목명 검색..."
           className={`bg-transparent outline-none text-sm ml-2 w-full transition-opacity duration-300 placeholder:text-slate-400 ${
             isExpanded ? 'opacity-100' : 'opacity-0 md:opacity-100'
           }`}
@@ -103,15 +141,17 @@ export function GlobalSearch() {
                     onClick={() => handleResultClick(result)}
                     className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors flex items-center gap-3 border-b border-slate-50 last:border-0"
                   >
-                    <div className="bg-indigo-50 p-2 rounded-full text-indigo-500 flex-shrink-0">
-                      <Trophy className="w-4 h-4" />
+                    <div className={`p-2 rounded-full flex-shrink-0 ${result.type === 'LOCAL' ? 'bg-blue-50 text-blue-500' : 'bg-amber-50 text-amber-500'}`}>
+                      {result.type === 'LOCAL' ? <User className="w-4 h-4" /> : <Trophy className="w-4 h-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-slate-800 text-sm truncate">
-                        {result.athlete_name} <span className="text-slate-400 font-normal ml-1">({result.event})</span>
+                        {result.name}
+                        {result.type === 'LOCAL' && <span className="ml-2 text-[10px] font-bold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-md">우리팀</span>}
+                        {result.type === 'NATIONWIDE' && <span className="ml-2 text-[10px] font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-md">전국</span>}
                       </p>
                       <p className="text-xs text-slate-500 truncate mt-0.5">
-                        {result.team_name} | {result.competition_name}
+                        {result.subtitle}
                       </p>
                     </div>
                   </button>
