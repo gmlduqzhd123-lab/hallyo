@@ -225,16 +225,28 @@ export default function DashboardPage() {
 
       {/* Main Navigation Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Competitions */}
-        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-[32px] p-8 border border-teal-100/50 shadow-sm shadow-teal-500/5 flex flex-col items-center justify-center min-h-[280px] text-center group hover:shadow-md hover:shadow-teal-500/10 transition-all cursor-pointer relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 text-teal-500/5 text-[120px] font-black pointer-events-none transform rotate-12">🏆</div>
-          <Link href="/dashboard/competitions" className="w-20 h-20 bg-white rounded-[24px] shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
-            <CalendarDays className="w-10 h-10 text-teal-500" />
+        {/* Left Column: Schedules */}
+        <div className="flex flex-col gap-6">
+          <Link href="/dashboard/competitions" className="flex-1 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-[32px] p-6 sm:p-8 border border-teal-100/50 shadow-sm shadow-teal-500/5 flex items-center group hover:shadow-md hover:shadow-teal-500/10 transition-all relative overflow-hidden">
+            <div className="absolute -bottom-10 -right-10 text-teal-500/5 text-[100px] font-black pointer-events-none transform -rotate-12">🏆</div>
+            <div className="w-16 h-16 bg-white rounded-[20px] shadow-sm flex items-center justify-center mr-4 sm:mr-6 group-hover:scale-110 transition-transform relative z-10 shrink-0">
+              <span className="text-3xl">🏆</span>
+            </div>
+            <div className="relative z-10">
+              <h3 className="font-extrabold text-xl text-teal-900 mb-1">대회 일정</h3>
+              <p className="text-teal-700/70 text-sm font-medium">다가오는 대회 및 준비물 체크</p>
+            </div>
           </Link>
-          <h3 className="font-extrabold text-xl text-teal-900 mb-3 relative z-10">대회 일정</h3>
-          <p className="text-teal-700/70 text-sm mb-8 max-w-[220px] font-medium leading-relaxed relative z-10">다가오는 대회 일정을 확인하고<br/>준비물을 챙겨보세요! 🎯</p>
-          <Link href="/dashboard/competitions" className="relative z-10 inline-flex items-center gap-2 text-white font-bold bg-teal-500 px-6 py-3 rounded-full hover:bg-teal-600 hover:-translate-y-1 transition-all shadow-md shadow-teal-500/30">
-            일정 확인하기 <ChevronRight className="w-4 h-4" />
+
+          <Link href="/dashboard/training" className="flex-1 bg-gradient-to-br from-amber-50 to-orange-50 rounded-[32px] p-6 sm:p-8 border border-amber-100/50 shadow-sm shadow-amber-500/5 flex items-center group hover:shadow-md hover:shadow-amber-500/10 transition-all relative overflow-hidden">
+            <div className="absolute -bottom-10 -right-10 text-amber-500/5 text-[100px] font-black pointer-events-none transform -rotate-12">💪</div>
+            <div className="w-16 h-16 bg-white rounded-[20px] shadow-sm flex items-center justify-center mr-4 sm:mr-6 group-hover:scale-110 transition-transform relative z-10 shrink-0">
+              <span className="text-3xl">💪</span>
+            </div>
+            <div className="relative z-10">
+              <h3 className="font-extrabold text-xl text-amber-900 mb-1">훈련 일정</h3>
+              <p className="text-amber-700/70 text-sm font-medium">오늘의 훈련 프로그램 및 스케줄</p>
+            </div>
           </Link>
         </div>
 
