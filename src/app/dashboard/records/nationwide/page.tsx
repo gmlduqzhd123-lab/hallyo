@@ -177,15 +177,15 @@ export default function NationwideRecordsPage() {
                 {filteredRankings.map((ranking) => (
                   <tr key={ranking.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
-                      {(ranking.event || '').trim()}
+                      {String(ranking.event || '').trim()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        ['남', 'm', '남자'].includes((ranking.gender || '').trim().toLowerCase())
+                        ['남', 'm', '남자'].includes(String(ranking.gender || '').trim().toLowerCase())
                           ? 'bg-blue-100 text-blue-600' 
                           : 'bg-rose-100 text-rose-600'
                       }`}>
-                        {(ranking.gender || '').trim()}
+                        {String(ranking.gender || '').trim()}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
