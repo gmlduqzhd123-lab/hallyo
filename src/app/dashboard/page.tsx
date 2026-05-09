@@ -80,7 +80,8 @@ export default function DashboardPage() {
   const [quiz, setQuiz] = useState<any>(null)
   const [showQuizAnswer, setShowQuizAnswer] = useState(false)
   const [quizUserAnswer, setQuizUserAnswer] = useState('')
-  const [quizResult, setQuizResult] = useState<'correct' | 'wrong' | null>(null)
+  const [quizResult, setQuizResult] = useState<'correct' | 'wrong' | 'revealed' | null>(null)
+  const [wrongCount, setWrongCount] = useState(0)
   const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay' | 'letter' | 'quiz'>('essay')
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
@@ -142,6 +143,7 @@ export default function DashboardPage() {
     setShowQuizAnswer(false)
     setQuizUserAnswer('')
     setQuizResult(null)
+    setWrongCount(0)
   }
 
   const handleQuizSubmit = (answerStr: string) => {
@@ -162,7 +164,14 @@ export default function DashboardPage() {
       setQuizResult('correct')
       setShowQuizAnswer(true)
     } else {
-      setQuizResult('wrong')
+      const newWrongCount = wrongCount + 1
+      setWrongCount(newWrongCount)
+      if (newWrongCount >= 2) {
+        setQuizResult('revealed')
+        setShowQuizAnswer(true)
+      } else {
+        setQuizResult('wrong')
+      }
     }
   }
 
@@ -509,10 +518,13 @@ export default function DashboardPage() {
                     {quiz.options.map((opt: string, idx: number) => {
                       let btnClass = "bg-white/80 border-emerald-100 text-slate-700 hover:bg-emerald-50 hover:border-emerald-300"
                       
-                      if (quizResult === 'correct') {
-                        const isCorrectOption = quiz.type === '4지 선다형' ? opt.startsWith(quiz.answer) : opt === quiz.answer
+                      const isCorrectOption = quiz.type === '4지 선다형' ? opt.startsWith(quiz.answer) : opt === quiz.answer
+
+                      if (quizResult === 'correct' || quizResult === 'revealed') {
                         if (isCorrectOption) {
                           btnClass = "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                        } else if (quizResult === 'revealed' && quizUserAnswer === opt) {
+                          btnClass = "bg-rose-50 border-rose-200 text-rose-500"
                         } else {
                           btnClass = "bg-slate-50 border-slate-200 text-slate-400 opacity-50"
                         }
@@ -524,7 +536,7 @@ export default function DashboardPage() {
                         <button 
                           key={idx} 
                           onClick={() => handleQuizSubmit(opt)}
-                          disabled={quizResult === 'correct'}
+                          disabled={quizResult === 'correct' || quizResult === 'revealed'}
                           className={`p-4 rounded-xl border font-medium text-center shadow-sm transition-all text-left px-6 ${btnClass}`}
                         >
                           {opt}
@@ -541,16 +553,16 @@ export default function DashboardPage() {
                         setQuizUserAnswer(e.target.value)
                         if (quizResult === 'wrong') setQuizResult(null)
                       }}
-                      disabled={quizResult === 'correct'}
+                      disabled={quizResult === 'correct' || quizResult === 'revealed'}
                       placeholder="정답을 입력하세요"
                       className="w-full px-6 py-4 rounded-xl border border-emerald-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center font-bold text-lg disabled:bg-slate-50 disabled:text-slate-500"
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && quizResult !== 'correct' && quizUserAnswer.trim()) {
+                        if (e.key === 'Enter' && quizResult !== 'correct' && quizResult !== 'revealed' && quizUserAnswer.trim()) {
                           handleQuizSubmit(quizUserAnswer)
                         }
                       }}
                     />
-                    {quizResult !== 'correct' && (
+                    {quizResult !== 'correct' && quizResult !== 'revealed' && (
                       <button 
                         onClick={() => {
                           if (quizUserAnswer.trim()) {
@@ -583,6 +595,16 @@ export default function DashboardPage() {
                   <div className="w-full max-w-lg bg-rose-50 text-rose-500 border border-rose-200 p-4 rounded-2xl flex items-center justify-center animate-in zoom-in-95 mt-2 gap-2">
                     <X className="w-6 h-6" />
                     <span className="text-lg font-bold">다시 생각해보세요! 🤔</span>
+                  </div>
+                )}
+
+                {quizResult === 'revealed' && (
+                  <div className="w-full max-w-lg bg-indigo-50 text-indigo-600 border border-indigo-200 p-6 rounded-2xl flex flex-col items-center justify-center animate-in zoom-in-95 mt-2 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <HelpCircle className="w-6 h-6" />
+                      <span className="text-lg font-bold">아쉽네요! 정답을 알려드릴게요. 😊</span>
+                    </div>
+                    <span className="text-xl md:text-2xl font-black break-keep text-center mt-2">정답: {quiz.answer}</span>
                   </div>
                 )}
               </div>

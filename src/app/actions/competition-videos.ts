@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { logAudit } from './audit'
 import { revalidatePath } from 'next/cache'
 
-export async function addCompetitionVideo(data: { title: string, url: string, description?: string }) {
+export async function addCompetitionVideo(data: { title: string, url: string, description?: string, category: string }) {
   const supabase = await createClient()
   
   const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -22,6 +22,7 @@ export async function addCompetitionVideo(data: { title: string, url: string, de
         title: data.title,
         url: data.url,
         description: data.description,
+        category: data.category,
         created_by: userData.user.id,
         status
       }
@@ -65,7 +66,7 @@ export async function softDeleteCompetitionVideo(id: string) {
   return { success: true }
 }
 
-export async function updateCompetitionVideo(id: string, data: { title: string, url: string, description?: string }) {
+export async function updateCompetitionVideo(id: string, data: { title: string, url: string, description?: string, category: string }) {
   const supabase = await createClient()
   
   const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -86,6 +87,7 @@ export async function updateCompetitionVideo(id: string, data: { title: string, 
       title: data.title,
       url: data.url,
       description: data.description,
+      category: data.category,
     })
     .eq('id', id)
 

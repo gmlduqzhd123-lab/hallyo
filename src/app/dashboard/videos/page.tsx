@@ -18,11 +18,103 @@ type VideoData = {
 
 const CATEGORIES = ['훈련 영상', '동기 유발', '수영 상식', '기타 수영 관련']
 
-const getEmbedUrl = (url: string) => {
+const getYoutubeVideoId = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
-  return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+  return (match && match[2].length === 11) ? match[2] : null;
 };
+
+function VideoItem({ video, userRole, userId, approveMutation, handleDelete }: any) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoId = getYoutubeVideoId(video.url);
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
+
+  return (
+    <div className="relative bg-white p-6 sm:p-8 rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      {video.status === 'pending' && (
+        <div className="absolute top-4 right-4 bg-rose-500 text-white px-3 py-1.5 text-sm font-bold rounded-xl z-10 flex items-center gap-2">
+          승인 대기
+          {['admin', 'developer'].includes(userRole as string) && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); approveMutation.mutate(video.id) }}
+              className="ml-2 p-1.5 bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
+              title="영상 승인"
+            >
+              <Check className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      )}
+      
+      {videoId ? (
+        <div className={`aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm border border-slate-200 ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+          {!isPlaying ? (
+            <div 
+              className="w-full h-full relative cursor-pointer group"
+              onClick={() => setIsPlaying(true)}
+            >
+              <img 
+                src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} 
+                alt={video.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-12 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-600/30 transition-transform group-hover:scale-110">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-6 h-6 ml-1"><path d="M8 5v14l11-7z" /></svg>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <iframe
+              className="w-full h-full"
+              src={embedUrl}
+              title={video.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          )}
+        </div>
+      ) : (
+        <div className={`aspect-video w-full rounded-2xl bg-slate-50 flex flex-col items-center justify-center border border-slate-200 text-slate-400 ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+          <Video className="w-10 h-10 mb-3 opacity-40" />
+          <p className="text-sm font-medium">유효하지 않은 유튜브 링크입니다.</p>
+        </div>
+      )}
+      
+      <div className="mt-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div className="flex-1">
+          <h3 className="font-bold text-2xl text-slate-900 leading-tight">{video.title}</h3>
+          {video.description && (
+            <p className="text-slate-600 mt-3 leading-relaxed text-[15px] whitespace-pre-wrap">
+              {video.description}
+            </p>
+          )}
+          <div className="flex items-center gap-4 mt-4 text-sm text-slate-400 font-medium">
+            <span>{new Date(video.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <div className="w-1 h-1 bg-slate-300 rounded-full" />
+            <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 hover:underline transition-all">
+              유튜브에서 원본 보기
+            </a>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 self-start shrink-0">
+          {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach' || video.created_by === userId) && (
+            <button 
+              onClick={() => handleDelete(video.id)}
+              className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all group"
+              title="이 영상 삭제하기"
+            >
+              <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function TrainingVideosPage() {
   const [isAdding, setIsAdding] = useState(false)
@@ -237,73 +329,16 @@ export default function TrainingVideosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-8">
-          {visibleVideos.map((video: any) => {
-            const embedUrl = getEmbedUrl(video.url)
-            
-            return (
-              <div key={video.id} className="relative bg-white p-6 sm:p-8 rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                {video.status === 'pending' && (
-                  <div className="absolute top-4 right-4 bg-rose-500 text-white px-3 py-1.5 text-sm font-bold rounded-xl z-10 flex items-center gap-2">
-                    승인 대기
-                    {['admin', 'developer'].includes(userRole as string) && (
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); approveMutation.mutate(video.id) }}
-                        className="ml-2 p-1.5 bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
-                        title="영상 승인"
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                )}
-                {embedUrl ? (
-                  <div className={`aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 shadow-sm border border-slate-200 ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
-                    <iframe
-                      className="w-full h-full"
-                      src={embedUrl}
-                      title={video.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    />
-                  </div>
-                ) : (
-                  <div className={`aspect-video w-full rounded-2xl bg-slate-50 flex flex-col items-center justify-center border border-slate-200 text-slate-400 ${video.status === 'pending' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
-                    <Video className="w-10 h-10 mb-3 opacity-40" />
-                    <p className="text-sm font-medium">유효하지 않은 유튜브 링크입니다.</p>
-                  </div>
-                )}
-                
-                <div className="mt-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-2xl text-slate-900 leading-tight">{video.title}</h3>
-                    {video.description && (
-                      <p className="text-slate-600 mt-3 leading-relaxed text-[15px] whitespace-pre-wrap">
-                        {video.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-4 text-sm text-slate-400 font-medium">
-                      <span>{new Date(video.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                      <div className="w-1 h-1 bg-slate-300 rounded-full" />
-                      <a href={video.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 hover:underline transition-all">
-                        유튜브에서 원본 보기
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 self-start shrink-0">
-                    {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach' || video.created_by === userId) && (
-                      <button 
-                        onClick={() => handleDelete(video.id)}
-                        className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all group"
-                        title="이 영상 삭제하기"
-                      >
-                        <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+          {visibleVideos.map((video: any) => (
+            <VideoItem 
+              key={video.id} 
+              video={video} 
+              userRole={userRole} 
+              userId={userId} 
+              approveMutation={approveMutation} 
+              handleDelete={handleDelete} 
+            />
+          ))}
         </div>
       )}
     </main>
