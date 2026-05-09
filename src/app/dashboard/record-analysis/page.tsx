@@ -265,14 +265,6 @@ export default function RecordAnalysisPage() {
   }, [athletes, localRecords, nationwide, selectedAthleteId]);
 
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
   const selectedAthleteData = analysisData?.athleteAnalysis.find(a => a.id === selectedAthleteId);
 
   // Generate Recommended Videos
@@ -315,6 +307,14 @@ export default function RecordAnalysisPage() {
 
     return matches.slice(0, 5); // Return up to 5 videos
   }, [selectedAthleteData, trainingVideos, competitionVideos]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return (
     <main className="space-y-6 pb-20">
