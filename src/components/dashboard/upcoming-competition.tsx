@@ -145,6 +145,7 @@ export function UpcomingCompetition() {
                 {DEFAULT_CHECKLIST.map((item) => (
                   <label 
                     key={item.id}
+                    onClick={() => toggleCheck(item.id)}
                     className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                       checkedItems[item.id] 
                         ? 'border-primary/30 bg-blue-50/50 text-slate-800' 
