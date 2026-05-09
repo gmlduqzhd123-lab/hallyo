@@ -395,11 +395,12 @@ export default function RecordAnalysisPage() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50 text-slate-500 text-sm border-b border-slate-100">
-                      <th className="p-4 font-bold">참가 종목</th>
-                      <th className="p-4 font-bold">최고 기록</th>
-                      <th className="p-4 font-bold">전국 평균</th>
-                      <th className="p-4 font-bold">격차</th>
-                      <th className="p-4 font-bold">상태</th>
+                      <th className="p-4 font-bold whitespace-nowrap">참가 종목</th>
+                      <th className="p-4 font-bold whitespace-nowrap">최고 기록</th>
+                      <th className="p-4 font-bold whitespace-nowrap">전국 평균</th>
+                      <th className="p-4 font-bold whitespace-nowrap">전국 1위</th>
+                      <th className="p-4 font-bold whitespace-nowrap">평균 격차</th>
+                      <th className="p-4 font-bold whitespace-nowrap">상태</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -411,6 +412,7 @@ export default function RecordAnalysisPage() {
                           <td className="p-4 font-bold text-slate-700">{ed.event}</td>
                           <td className="p-4 font-bold text-primary">{formatSecondsToTime(ed.myBest)}</td>
                           <td className="p-4 font-medium text-slate-500">{formatSecondsToTime(ed.nwAvg)}</td>
+                          <td className="p-4 font-bold text-amber-500">{formatSecondsToTime(ed.nwTop)}</td>
                           <td className="p-4 font-medium">
                             <span className={isGood ? 'text-emerald-500' : 'text-rose-500'}>
                               {isGood ? '-' : '+'}{Math.abs(diff).toFixed(2)}초
