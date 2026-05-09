@@ -174,16 +174,25 @@ export default function RecordAnalysisPage() {
       if (eventDetails.length === 0) {
         advice = '등록된 공식 기록이 없습니다. 다음 대회에서 공식 기록을 확보하는 것이 최우선 목표입니다.';
         focusArea = '기초 체력 및 기본기 훈련';
+      } else if (athlete.name === '임지율') {
+        advice = '제55회 전국소년체육대회를 대비하여 자유형 100M와 200M 종목에 집중적인 투자가 필요합니다. 자유형 100M는 폭발적인 스피드와 함께 흔들림 없는 코어 유지가 관건이며, 200M는 철저한 페이스 배분과 후반 스퍼트 능력이 메달권 진입을 좌우할 것입니다. 턴 동작에서의 저항을 최소화하고 돌핀킥의 비거리를 늘리는 디테일 훈련에 매진하세요.';
+        focusArea = '자유형 100M/200M 레이스 운영 및 후반 스퍼트 강화';
       } else if (bestEvent) {
-        if (bestEvent.ratio >= 1.05) {
-          advice = `전국 평균보다 기록이 우수합니다. 특히 ${bestEvent.event} 종목에서 전국 상위권 도약이 가능합니다. 초반 스퍼트와 턴/터치 기술의 디테일을 다듬어 기록 단축을 노려보세요.`;
-          focusArea = `${bestEvent.event} 심화 훈련 및 기술 교정`;
-        } else if (bestEvent.ratio >= 0.95) {
-          advice = `전국 평균 기록에 근접했습니다. 주력 종목인 ${bestEvent.event}의 지구력 보강 훈련을 통해 후반부 페이스 저하를 막는다면 좋은 성적을 기대할 수 있습니다.`;
-          focusArea = '후반 지구력 및 페이스 조절';
+        if (bestEvent.ratio >= 1.10) {
+          advice = `현재 ${bestEvent.event} 종목에서 전국 최상위권의 압도적인 기량을 보여주고 있습니다! 제55회 전국소년체육대회 금메달 획득을 위해 스타트 반응속도를 0.1초 단축하고, 피니시 터치 집중력을 극대화하는 미세 기술 교정에 집중하세요.`;
+          focusArea = `${bestEvent.event} 금메달을 위한 스타트/턴 미세 교정`;
+        } else if (bestEvent.ratio >= 1.02) {
+          advice = `전국 평균을 상회하는 뛰어난 기량입니다. 제55회 전국소년체육대회 메달권 진입을 목표로, ${bestEvent.event} 종목의 레이스 중반부 페이스 유지 능력을 끌어올려야 합니다. 고강도 인터벌 훈련을 통해 젖산 내성을 키우세요.`;
+          focusArea = `${bestEvent.event} 메달권 진입을 위한 젖산 내성 및 인터벌 훈련`;
+        } else if (bestEvent.ratio >= 0.98) {
+          advice = `전국 평균 수준의 기록을 보유하고 있습니다. 제55회 전국소년체육대회 본선 진출을 위해서는 ${bestEvent.event} 종목에서의 스트로크 효율(DPS)을 높이는 것이 핵심입니다. 불필요한 저항을 줄이는 유선형 자세 교정을 최우선으로 하세요.`;
+          focusArea = `${bestEvent.event} 스트로크 효율(DPS) 개선 및 유선형 자세 교정`;
+        } else if (bestEvent.ratio >= 0.90) {
+          advice = `제55회 전국소년체육대회를 앞두고 전반적인 기록 단축이 필요한 시점입니다. 주 종목인 ${bestEvent.event}의 기초 지구력을 다지고, 팔 꺾기와 물잡기(캐치) 동작의 정확도를 높여 추진력을 극대화하는 훈련에 집중하세요.`;
+          focusArea = `${bestEvent.event} 정확한 물잡기(캐치) 동작 및 기초 지구력 강화`;
         } else {
-          advice = `아직은 전국 평균 기록과 차이가 있으나, 지속적인 기록 단축이 이루어지고 있습니다. ${bestEvent.event} 종목을 중심으로 스트로크 효율성을 높이는 기초 훈련에 집중하세요.`;
-          focusArea = '영법 자세 교정 및 스트로크 훈련';
+          advice = `제55회 전국소년체육대회를 대비하여 장기적인 관점에서 기초를 탄탄히 다지는 것이 중요합니다. ${bestEvent.event} 종목을 중심으로 코어 근력을 강화하고, 수중에서의 밸런스 유지 훈련을 통해 점진적인 기록 단축을 이뤄내세요.`;
+          focusArea = `${bestEvent.event} 코어 근력 강화 및 수중 밸런스 기초 훈련`;
         }
       }
 
