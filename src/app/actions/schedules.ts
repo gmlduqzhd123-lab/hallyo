@@ -184,6 +184,33 @@ export async function updateScheduleParticipants(id: string, participants: strin
   return { success: true }
 }
 
+export async function updateScheduleLocation(id: string, location: string) {
+  const supabase = await createClient()
+  
+  const { data: authData, error: userError } = await supabase.auth.getUser()
+  if (userError || !authData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: userRecord } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+  if (!['admin', 'developer'].includes(userRecord?.role as string) && userRecord?.role !== 'coach') {
+    return { error: '권한이 없습니다.' }
+  }
+
+  const { error } = await supabase
+    .from('schedules')
+    .update({ location })
+    .eq('id', id)
+
+  if (error) {
+    return { error: '장소 수정에 실패했습니다: ' + error.message }
+  }
+
+  await logAudit('UPDATE', 'schedules', { id, action: 'update_location', location })
+
+  revalidatePath('/dashboard/competitions')
+  revalidatePath(`/dashboard/competitions/${id}`)
+  return { success: true }
+}
+
 export async function updateSchedulePlaces(id: string, type: 'accommodations' | 'restaurants', places: any[]) {
   const supabase = await createClient()
   

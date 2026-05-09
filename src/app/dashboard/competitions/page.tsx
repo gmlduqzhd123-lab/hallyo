@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Calendar, Plus, Trash2, MapPin } from 'lucide-react'
+import { Calendar, Plus, Trash2, MapPin, Edit2 } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addSchedule, softDeleteSchedule } from '@/app/actions/schedules'
+import { addSchedule, softDeleteSchedule, updateScheduleLocation } from '@/app/actions/schedules'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -103,6 +103,19 @@ export default function CompetitionsPage() {
     }
   })
 
+  const updateLocationMutation = useMutation({
+    mutationFn: async ({ id, location }: { id: string; location: string }) => {
+      const result = await updateScheduleLocation(id, location)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('대회 장소가 수정되었습니다.')
+      queryClient.invalidateQueries({ queryKey: ['competitions'] })
+    },
+    onError: (err: Error) => toast.error(err.message)
+  })
+
   const onSubmit = (data: FormValues) => {
     addMutation.mutate(data)
   }
@@ -160,18 +173,34 @@ export default function CompetitionsPage() {
                     {format(new Date(comp.date), 'yyyy년 MM월 dd일')}
                     {comp.end_date ? ` ~ ${format(new Date(comp.end_date), 'yyyy년 MM월 dd일')}` : ''}
                   </span>
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      window.open(`https://map.naver.com/p/search/${encodeURIComponent(comp.location)}`, '_blank')
-                    }}
-                    className="flex items-center gap-1.5 text-slate-500 hover:text-blue-500 text-sm font-medium shrink-0 transition-colors z-10 relative"
-                    title="네이버 지도로 보기"
-                  >
-                    <MapPin className="w-4 h-4 shrink-0" />
-                    <span className="break-keep underline-offset-4 hover:underline">{comp.location}</span>
-                  </button>
+                  <div className="flex items-center gap-1.5 text-slate-500 text-sm font-medium shrink-0 z-10 relative">
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        window.open(`https://map.naver.com/p/search/${encodeURIComponent(comp.location)}`, '_blank')
+                      }}
+                      className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                      title="네이버 지도로 보기"
+                    >
+                      <MapPin className="w-4 h-4 shrink-0" />
+                      <span className="break-keep underline-offset-4 hover:underline">{comp.location}</span>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        const newLocation = window.prompt('새로운 대회 장소를 입력하세요:', comp.location)
+                        if (newLocation && newLocation !== comp.location) {
+                          updateLocationMutation.mutate({ id: comp.id, location: newLocation })
+                        }
+                      }}
+                      className="p-1 hover:text-amber-600 hover:bg-amber-50 text-slate-400 rounded transition-colors"
+                      title="장소 수정"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-2 min-w-0">
                   <h2 className="text-xl sm:text-2xl font-bold text-accent-navy group-hover:text-blue-600 transition-colors break-keep truncate w-full whitespace-normal line-clamp-2">{comp.title}</h2>
