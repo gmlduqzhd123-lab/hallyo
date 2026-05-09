@@ -37,16 +37,19 @@ export default function PhotosPage() {
   };
 
 
-  const { data: userRole, isPending: rolePending } = useQuery({
-    queryKey: ['user_role'],
+  const { data: userProfile, isPending: rolePending } = useQuery({
+    queryKey: ['user_profile'],
     queryFn: async () => {
       const supabase = createClient()
       const { data: authData } = await supabase.auth.getUser()
       if (!authData.user) return null
-      const { data } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
-      return data?.role
+      const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
+      return data
     }
   })
+
+  const userRole = userProfile?.role
+  const userId = userProfile?.id
 
   const { data: photos, isPending } = useQuery({
     queryKey: ['photos'],
@@ -227,7 +230,7 @@ export default function PhotosPage() {
                       <Check className="w-5 h-5" />
                     </button>
                   )}
-                  {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
+                  {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach' || photo.created_by === userId) && (
                     <button 
                       onClick={() => { if(confirm('이 사진을 정말 삭제하시겠습니까?')) deleteMutation.mutate(photo.id) }}
                       className="p-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"

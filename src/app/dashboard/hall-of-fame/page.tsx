@@ -37,15 +37,18 @@ export default function HallOfFamePage() {
   const queryClient = useQueryClient()
   const supabase = createClient()
 
-  const { data: userRole } = useQuery({
-    queryKey: ['userRole'],
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return 'viewer'
-      const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
-      return data?.role || 'viewer'
+      if (!user) return null
+      const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
+      return data
     }
   })
+
+  const userRole = userProfile?.role || 'viewer'
+  const userId = userProfile?.id
 
   const { data: records, isPending } = useQuery({
     queryKey: ['hall_of_fame'],
@@ -155,8 +158,8 @@ export default function HallOfFamePage() {
     <main className="space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-400 p-6 md:p-8 rounded-[32px] shadow-lg shadow-amber-500/20 text-white relative overflow-hidden border border-white/20">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-10 w-40 h-40 bg-orange-300/30 rounded-full blur-2xl translate-y-1/2"></div>
+        <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="hidden md:block absolute bottom-0 left-10 w-40 h-40 bg-orange-300/30 rounded-full blur-2xl translate-y-1/2"></div>
         
         <div className="relative z-10 flex items-center gap-4">
           <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner shrink-0">
@@ -373,7 +376,7 @@ export default function HallOfFamePage() {
                   onClick={() => setViewingRecord(record)}
                 >
                   <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" 
+                    className="hidden md:block absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" 
                     style={{ backgroundImage: `url(${record.photo_url})` }}
                   ></div>
                   <img src={record.photo_url} alt={record.athlete_name} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105 relative z-10 drop-shadow-2xl" />
@@ -437,7 +440,7 @@ export default function HallOfFamePage() {
                   </div>
                 )}
 
-                {['admin', 'developer'].includes(userRole as string) && (
+                {(['admin', 'developer'].includes(userRole as string) || (record as any).created_by === userId) && (
                   <div className="mt-6 flex justify-end gap-2 border-t border-slate-100 pt-6">
                     <button 
                       onClick={() => handleEditClick(record)}

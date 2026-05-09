@@ -30,15 +30,18 @@ export default function CompetitionVideosPage() {
   const queryClient = useQueryClient()
   const supabase = createClient()
 
-  const { data: userRole, isPending: rolePending } = useQuery({
+  const { data: userProfile, isPending: rolePending } = useQuery({
     queryKey: ['user_role'],
     queryFn: async () => {
       const { data: authData } = await supabase.auth.getUser()
       if (!authData.user) return null
-      const { data } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
-      return data?.role
+      const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
+      return data
     }
   })
+
+  const userRole = userProfile?.role
+  const userId = userProfile?.id
 
   const { data: videos, isPending } = useQuery({
     queryKey: ['competition_videos'],
@@ -332,7 +335,7 @@ export default function CompetitionVideosPage() {
                     )}
                   </div>
                   <div className="flex items-center">
-                    {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
+                    {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach' || video.created_by === userId) && (
                       <>
                         <button
                           onClick={() => handleEditClick(video)}

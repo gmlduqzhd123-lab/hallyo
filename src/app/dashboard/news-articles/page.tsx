@@ -30,15 +30,18 @@ export default function NewsArticlesPage() {
   const queryClient = useQueryClient()
   const supabase = createClient()
 
-  const { data: userRole } = useQuery({
-    queryKey: ['userRole'],
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return 'viewer'
-      const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
-      return data?.role || 'viewer'
+      if (!user) return null
+      const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
+      return data
     }
   })
+
+  const userRole = userProfile?.role || 'viewer'
+  const userId = userProfile?.id
 
   const { data: articles, isPending } = useQuery({
     queryKey: ['news_articles'],
@@ -139,8 +142,8 @@ export default function NewsArticlesPage() {
     <main className="space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 md:p-8 rounded-[32px] shadow-lg shadow-indigo-500/20 text-white relative overflow-hidden border border-white/20">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-10 w-40 h-40 bg-blue-300/30 rounded-full blur-2xl translate-y-1/2"></div>
+        <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="hidden md:block absolute bottom-0 left-10 w-40 h-40 bg-blue-300/30 rounded-full blur-2xl translate-y-1/2"></div>
         
         <div className="relative z-10 flex items-center gap-4">
           <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner shrink-0">
@@ -365,7 +368,7 @@ export default function NewsArticlesPage() {
                     기사 원문 보기 <ExternalLink className="w-4 h-4" />
                   </a>
 
-                  {['admin', 'developer'].includes(userRole as string) && (
+                  {(['admin', 'developer'].includes(userRole as string) || (article as any).created_by === userId) && (
                     <div className="flex gap-2">
                       <button 
                         onClick={(e) => { e.preventDefault(); handleEditClick(article); }}

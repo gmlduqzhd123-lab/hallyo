@@ -19,6 +19,8 @@ export async function addHallOfFameRecord(data: {
   vice_captain?: string | null;
 }) {
   const supabase = await createClient()
+  const { data: authData } = await supabase.auth.getUser()
+  if (!authData.user) return { error: '로그인이 필요합니다.' }
 
   const { error } = await supabase
     .from('hall_of_fame')
@@ -36,6 +38,7 @@ export async function addHallOfFameRecord(data: {
       parent_president: data.parent_president || null,
       captain: data.captain || null,
       vice_captain: data.vice_captain || null,
+      created_by: authData.user.id,
       is_deleted: false,
     }])
 
@@ -61,6 +64,15 @@ export async function updateHallOfFameRecord(id: string, data: {
   vice_captain?: string | null;
 }) {
   const supabase = await createClient()
+  const { data: authData } = await supabase.auth.getUser()
+  if (!authData.user) return { error: '로그인이 필요합니다.' }
+
+  const { data: roleData } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+  const { data: record } = await supabase.from('hall_of_fame').select('created_by').eq('id', id).single()
+
+  if (!['admin', 'developer'].includes(roleData?.role as string) && record?.created_by !== authData.user.id) {
+    return { error: '관리자, 개발자 또는 작성자 본인만 명예의 전당을 수정할 수 있습니다.' }
+  }
 
   const { error } = await supabase
     .from('hall_of_fame')
@@ -89,6 +101,15 @@ export async function updateHallOfFameRecord(id: string, data: {
 
 export async function deleteHallOfFameRecord(id: string) {
   const supabase = await createClient()
+  const { data: authData } = await supabase.auth.getUser()
+  if (!authData.user) return { error: '로그인이 필요합니다.' }
+
+  const { data: roleData } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+  const { data: record } = await supabase.from('hall_of_fame').select('created_by').eq('id', id).single()
+
+  if (!['admin', 'developer'].includes(roleData?.role as string) && record?.created_by !== authData.user.id) {
+    return { error: '관리자, 개발자 또는 작성자 본인만 명예의 전당을 삭제할 수 있습니다.' }
+  }
 
   const { error } = await supabase
     .from('hall_of_fame')

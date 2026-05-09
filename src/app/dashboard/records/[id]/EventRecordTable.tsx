@@ -90,7 +90,8 @@ export default function EventRecordTable({ eventRecords, userRole, athleteId }: 
 
   return (
     <>
-      <table className="w-full text-left">
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-left whitespace-nowrap">
         <thead className="border-b border-slate-100 text-slate-500 text-sm font-bold">
           <tr>
             <th className="px-6 py-4">대회명 / 일정</th>
@@ -168,6 +169,7 @@ export default function EventRecordTable({ eventRecords, userRole, athleteId }: 
           ))}
         </tbody>
       </table>
+      </div>
 
       {canEdit && (
         <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="기록 수정">

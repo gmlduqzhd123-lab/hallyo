@@ -192,8 +192,8 @@ export default function SchedulePage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
         {/* Cute background decoration */}
-        <div className="absolute -top-4 -right-4 w-24 h-24 bg-sky-100 rounded-full blur-2xl opacity-60"></div>
-        <div className="absolute -bottom-4 right-12 w-20 h-20 bg-pink-100 rounded-full blur-2xl opacity-60"></div>
+        <div className="hidden md:block absolute -top-4 -right-4 w-24 h-24 bg-sky-100 rounded-full blur-2xl opacity-60"></div>
+        <div className="hidden md:block absolute -bottom-4 right-12 w-20 h-20 bg-pink-100 rounded-full blur-2xl opacity-60"></div>
         
         <div className="flex items-center gap-3 relative z-10">
           <div className="p-3 bg-gradient-to-br from-blue-100 to-sky-100 text-primary rounded-2xl shadow-sm shrink-0">

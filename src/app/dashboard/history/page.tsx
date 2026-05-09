@@ -33,15 +33,18 @@ export default function HistoryPage() {
     }
   })
 
-  const { data: userRole } = useQuery({
-    queryKey: ['user_role'],
+  const { data: userProfile } = useQuery({
+    queryKey: ['user_profile'],
     queryFn: async () => {
       const { data: authData } = await supabase.auth.getUser()
       if (!authData.user) return null
-      const { data } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
-      return data?.role
+      const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
+      return data
     }
   })
+
+  const userRole = userProfile?.role
+  const userId = userProfile?.id
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -181,7 +184,7 @@ export default function HistoryPage() {
                       <p className="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">{history.description}</p>
                     )}
                     
-                    {['admin', 'developer'].includes(userRole as string) && (
+                    {(['admin', 'developer'].includes(userRole as string) || (history as any).created_by === userId) && (
                       <div className="absolute top-4 right-4 flex opacity-0 group-hover:opacity-100 transition-opacity gap-1">
                         <button 
                           onClick={() => setEditingItem(history)}

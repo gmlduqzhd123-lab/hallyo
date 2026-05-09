@@ -156,8 +156,8 @@ export default function DevelopersPage() {
     <main className="space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500 p-6 md:p-8 rounded-[32px] shadow-lg shadow-purple-500/20 text-white relative overflow-hidden border border-white/20">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-10 w-40 h-40 bg-fuchsia-300/30 rounded-full blur-2xl translate-y-1/2"></div>
+        <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="hidden md:block absolute bottom-0 left-10 w-40 h-40 bg-fuchsia-300/30 rounded-full blur-2xl translate-y-1/2"></div>
         <div className="absolute top-10 right-1/4 w-20 h-20 bg-pink-300/20 rounded-full blur-xl"></div>
 
         <div className="relative z-10 flex items-center gap-4">
@@ -324,7 +324,7 @@ export default function DevelopersPage() {
                 <div className="md:w-72 shrink-0 relative overflow-hidden bg-gradient-to-br from-violet-100 to-fuchsia-100">
                   {dev.photo_url ? (
                     <div className="h-64 md:h-full min-h-[280px] relative flex items-center justify-center bg-slate-900">
-                      <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" style={{ backgroundImage: `url(${dev.photo_url})` }}></div>
+                      <div className="hidden md:block absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" style={{ backgroundImage: `url(${dev.photo_url})` }}></div>
                       <img src={dev.photo_url} alt={dev.name} className="max-w-full max-h-full object-contain relative z-10 drop-shadow-2xl" />
                     </div>
                   ) : (

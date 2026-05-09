@@ -27,7 +27,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="ko" style={{ '--global-font': `"${font}"` } as React.CSSProperties}>
+    <html lang="ko" style={{ '--global-font': font } as React.CSSProperties}>
       <head>
         <link
           rel="preload"
@@ -37,7 +37,7 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`min-h-screen bg-[#F8FAFC] text-slate-800 antialiased font-sans`}>
+      <body className="min-h-screen bg-[#F8FAFC] text-slate-800 antialiased" style={{ fontFamily: `var(--global-font), sans-serif` }}>
         <GlobalFontProvider initialFont={font} />
         <PwaRegistry />
         <Providers>

@@ -22,6 +22,7 @@ export async function addNewsArticle(data: any) {
       publisher: data.publisher,
       publish_date: data.publish_date || null,
       photo_url: data.photo_url || null,
+      created_by: userData.user.id,
     }
   ])
 
@@ -38,8 +39,10 @@ export async function updateNewsArticle(id: string, data: any) {
   if (!userData.user) return { error: '권한이 없습니다.' }
 
   const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
-  if (!['admin', 'developer'].includes(roleData?.role)) {
-    return { error: '기사를 수정할 권한이 없습니다.' }
+  const { data: article } = await supabase.from('news_articles').select('created_by').eq('id', id).single()
+
+  if (!['admin', 'developer'].includes(roleData?.role) && article?.created_by !== userData.user.id) {
+    return { error: '관리자, 개발자 또는 작성자 본인만 기사를 수정할 수 있습니다.' }
   }
 
   const { error } = await supabase.from('news_articles').update({
@@ -64,8 +67,10 @@ export async function deleteNewsArticle(id: string) {
   if (!userData.user) return { error: '권한이 없습니다.' }
 
   const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
-  if (!['admin', 'developer'].includes(roleData?.role)) {
-    return { error: '기사를 삭제할 권한이 없습니다.' }
+  const { data: article } = await supabase.from('news_articles').select('created_by').eq('id', id).single()
+
+  if (!['admin', 'developer'].includes(roleData?.role) && article?.created_by !== userData.user.id) {
+    return { error: '관리자, 개발자 또는 작성자 본인만 기사를 삭제할 수 있습니다.' }
   }
 
   const { error } = await supabase.from('news_articles').update({ is_deleted: true }).eq('id', id)

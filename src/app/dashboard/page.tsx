@@ -153,8 +153,8 @@ export default function DashboardPage() {
       {/* Stats Widget */}
       <div className="bg-gradient-to-br from-sky-400 via-blue-400 to-indigo-500 rounded-[32px] p-6 md:p-8 text-white relative overflow-hidden shadow-xl shadow-blue-500/20 min-h-[160px] border border-white/20">
         {/* Decorative background elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-10 w-40 h-40 bg-sky-300/30 rounded-full blur-2xl translate-y-1/2"></div>
+        <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="hidden md:block absolute bottom-0 left-10 w-40 h-40 bg-sky-300/30 rounded-full blur-2xl translate-y-1/2"></div>
         <div className="absolute top-10 left-1/2 w-20 h-20 bg-pink-300/30 rounded-full blur-xl"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 h-full">
@@ -322,7 +322,7 @@ export default function DashboardPage() {
         {/* Voice of Mind - Poems */}
         {activeReadingTab === 'poem' && poem && (
           <div className="bg-gradient-to-br from-fuchsia-50 to-pink-50 rounded-[32px] p-6 md:p-8 border border-fuchsia-100/50 shadow-sm shadow-fuchsia-500/5 relative overflow-hidden group animate-in fade-in zoom-in-95 duration-500">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
             
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 relative z-10">
               <h3 className="font-extrabold text-xl md:text-2xl text-fuchsia-900 flex items-center gap-3">
@@ -362,7 +362,7 @@ export default function DashboardPage() {
         {/* Swimming Team Essays */}
         {activeReadingTab === 'essay' && essay && (
           <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-[32px] p-6 md:p-8 border border-blue-100/50 shadow-sm shadow-blue-500/5 relative overflow-hidden group animate-in fade-in zoom-in-95 duration-500">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
             
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 relative z-10">
               <h3 className="font-extrabold text-xl md:text-2xl text-blue-900 flex items-center gap-3">
@@ -396,7 +396,7 @@ export default function DashboardPage() {
         {/* Love Letters */}
         {activeReadingTab === 'letter' && letter && (
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-[32px] p-6 md:p-8 border border-amber-100/50 shadow-sm shadow-amber-500/5 relative overflow-hidden group animate-in fade-in zoom-in-95 duration-500">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
             
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 relative z-10">
               <h3 className="font-extrabold text-xl md:text-2xl text-amber-900 flex items-center gap-3">

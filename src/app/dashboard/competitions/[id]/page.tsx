@@ -431,7 +431,8 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm mb-12">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left whitespace-nowrap">
           <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 text-sm font-bold">
             <tr>
               <th className="px-6 py-4">선수명</th>
@@ -507,6 +508,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Places Information Tabs */}

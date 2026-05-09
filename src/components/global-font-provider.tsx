@@ -34,7 +34,7 @@ export function GlobalFontProvider({ initialFont = 'MaplestoryL' }: { initialFon
   }, [supabase])
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--global-font', `"${fontFamily}"`)
+    document.documentElement.style.setProperty('--global-font', fontFamily)
   }, [fontFamily])
 
   return null

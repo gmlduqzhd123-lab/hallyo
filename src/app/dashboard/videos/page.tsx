@@ -26,16 +26,19 @@ export default function TrainingVideosPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const queryClient = useQueryClient()
 
-  const { data: userRole, isPending: rolePending } = useQuery({
+  const { data: userProfile, isPending: rolePending } = useQuery({
     queryKey: ['user_role'],
     queryFn: async () => {
       const supabase = createClient()
       const { data: authData } = await supabase.auth.getUser()
       if (!authData.user) return null
-      const { data } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
-      return data?.role
+      const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
+      return data
     }
   })
+
+  const userRole = userProfile?.role
+  const userId = userProfile?.id
 
   const { data: videos, isPending } = useQuery({
     queryKey: ['training_videos'],
@@ -251,7 +254,7 @@ export default function TrainingVideosPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 self-start shrink-0">
-                    {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
+                    {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach' || video.created_by === userId) && (
                       <button 
                         onClick={() => handleDelete(video.id)}
                         className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all group"

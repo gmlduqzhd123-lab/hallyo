@@ -40,6 +40,16 @@ export async function addCompetitionVideo(data: { title: string, url: string, de
 export async function softDeleteCompetitionVideo(id: string) {
   const supabase = await createClient()
   
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData?.user) return { error: '인증에 실패했습니다.' }
+
+  const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  const { data: video } = await supabase.from('competition_videos').select('created_by').eq('id', id).single()
+
+  if (!['admin', 'developer'].includes(roleData?.role as string) && video?.created_by !== userData.user.id) {
+    return { error: '관리자, 개발자 또는 작성자 본인만 영상을 삭제할 수 있습니다.' }
+  }
+
   const { error } = await supabase
     .from('competition_videos')
     .update({ is_deleted: true })
@@ -61,6 +71,13 @@ export async function updateCompetitionVideo(id: string, data: { title: string, 
   const { data: userData, error: userError } = await supabase.auth.getUser()
   if (userError || !userData?.user) {
     return { error: '인증에 실패했습니다. 다시 로그인해주세요.' }
+  }
+
+  const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  const { data: video } = await supabase.from('competition_videos').select('created_by').eq('id', id).single()
+
+  if (!['admin', 'developer'].includes(roleData?.role as string) && video?.created_by !== userData.user.id) {
+    return { error: '관리자, 개발자 또는 작성자 본인만 영상을 수정할 수 있습니다.' }
   }
 
   const { error } = await supabase

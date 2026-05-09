@@ -36,7 +36,7 @@ export async function addNotice(formData: FormData) {
     .single()
 
   if (!['admin', 'developer'].includes(profile?.role as string)) {
-    return { error: '관리자만 공지사항을 등록할 수 있습니다.' }
+    return { error: '관리자 또는 개발자만 공지사항을 등록할 수 있습니다.' }
   }
 
   const { error } = await supabase.from('notices').insert([
@@ -71,8 +71,10 @@ export async function softDeleteNotice(id: string) {
     .eq('id', userData.user.id)
     .single()
 
-  if (!['admin', 'developer'].includes(profile?.role as string)) {
-    return { error: '관리자만 공지사항을 삭제할 수 있습니다.' }
+  const { data: notice } = await supabase.from('notices').select('created_by').eq('id', id).single()
+
+  if (!['admin', 'developer'].includes(profile?.role as string) && notice?.created_by !== userData.user.id) {
+    return { error: '관리자, 개발자 또는 작성자 본인만 공지사항을 삭제할 수 있습니다.' }
   }
 
   const { error } = await supabase
