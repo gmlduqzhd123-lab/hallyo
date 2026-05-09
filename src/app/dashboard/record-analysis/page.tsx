@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Activity, TrendingUp, Medal, AlertCircle, Target, Users, Zap, CheckCircle, PlayCircle } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { PageHeader } from '@/components/ui/page-header'
 
 // Helpers for time formatting
@@ -258,12 +258,38 @@ function RecordAnalysisContent() {
         }
       }
 
+      // Compute historyData for time-series chart
+      const historyData: any[] = [];
+      aRecords.forEach(r => {
+        const dateStr = r.record_date;
+        const myTime = Number(r.record_time);
+        if (!myTime || !dateStr) return;
+        historyData.push({
+          event: r.event_name,
+          date: dateStr,
+          time: myTime
+        });
+      });
+      
+      const formattedHistory: Record<string, any> = {};
+      historyData.forEach(hd => {
+        if (!formattedHistory[hd.date]) {
+          formattedHistory[hd.date] = { date: hd.date };
+        }
+        // Keep the best time for the day if there are multiple
+        if (!formattedHistory[hd.date][hd.event] || hd.time < formattedHistory[hd.date][hd.event]) {
+          formattedHistory[hd.date][hd.event] = hd.time;
+        }
+      });
+      const historyChartData = Object.values(formattedHistory).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
       return {
         ...athlete,
         eventDetails,
         bestEvent,
         advice,
-        focusArea
+        focusArea,
+        historyChartData
       };
     }).filter(a => a.eventDetails.length > 0 || selectedAthleteId === a.id); // Filter out athletes with no records unless specifically selected
 
@@ -494,6 +520,85 @@ function RecordAnalysisContent() {
               <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
               <h3 className="text-lg font-bold text-slate-600">비교할 공식 기록이 없습니다.</h3>
               <p className="text-slate-500 mt-2">선수 기록 메뉴에서 대회 기록을 먼저 등록해주세요.</p>
+            </div>
+          )}
+
+
+
+          {/* Historical Performance Line Chart */}
+          {selectedAthleteData.historyChartData && selectedAthleteData.historyChartData.length > 1 && (
+            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
+              <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-primary" /> 나의 기록 단축 성장 곡선
+              </h3>
+              
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={selectedAthleteData.historyChartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis 
+                      dataKey="date" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748B', fontSize: 12, fontWeight: 600 }} 
+                      tickFormatter={(val) => {
+                        // Format date like YYYY-MM
+                        const d = new Date(val);
+                        return `${d.getFullYear().toString().substring(2)}년 ${d.getMonth() + 1}월`;
+                      }}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748B' }}
+                      tickFormatter={(val) => formatSecondsToTime(val)}
+                      domain={['auto', 'auto']}
+                      reversed={true} // Lower time is better, so put it higher on the graph
+                      label={{ value: '기록 (초) - 아래로 갈수록 우수', angle: -90, position: 'insideLeft', style: { fill: '#94A3B8', fontSize: 12 } }} 
+                    />
+                    <Tooltip 
+                      content={({ active, payload, label }: any) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white p-4 rounded-2xl shadow-xl border border-slate-100">
+                              <p className="font-bold text-slate-800 mb-2">{label}</p>
+                              {payload.map((p: any, index: number) => (
+                                <div key={index} className="flex items-center gap-2 mb-1">
+                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }}></div>
+                                  <span className="text-sm font-medium text-slate-600">{p.name}:</span>
+                                  <span className="text-sm font-bold" style={{ color: p.color }}>
+                                    {formatSecondsToTime(p.value)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                    {selectedAthleteData.eventDetails.map((ed: any, index: number) => {
+                      const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6', '#14B8A6'];
+                      return (
+                        <Line 
+                          key={ed.event} 
+                          type="monotone" 
+                          dataKey={ed.event} 
+                          stroke={colors[index % colors.length]} 
+                          strokeWidth={3}
+                          activeDot={{ r: 8, strokeWidth: 0 }}
+                          connectNulls={true}
+                        />
+                      );
+                    })}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-center text-xs text-slate-400 mt-4">* 기록이 짧아질수록(단축될수록) 그래프가 위를 향하도록 표기됩니다. (역순 Y축)</p>
             </div>
           )}
 
