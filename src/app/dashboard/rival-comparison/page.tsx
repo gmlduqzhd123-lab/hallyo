@@ -158,8 +158,22 @@ export default function RivalComparisonPage() {
   const [athleteA, setAthleteA] = useState('')
   const [athleteB, setAthleteB] = useState('')
 
-  // Fetch distinct athlete names
-  const { data: athleteNames = [] } = useQuery({
+  // Fetch our athlete names
+  const { data: ourAthleteNames = [] } = useQuery({
+    queryKey: ['our_athlete_names'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('athletes')
+        .select('name')
+        .eq('is_deleted', false)
+      if (error) throw error
+      const unique = [...new Set((data || []).map((r: any) => r.name as string))].sort()
+      return unique
+    }
+  })
+
+  // Fetch rival athlete names (all from nationwide_rankings)
+  const { data: rivalAthleteNames = [] } = useQuery({
     queryKey: ['rival_athlete_names'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -267,7 +281,7 @@ export default function RivalComparisonPage() {
           <Search className="w-5 h-5 text-indigo-500" /> 선수 선택
         </h2>
         <div className="flex flex-col md:flex-row gap-6 items-start">
-          <AthleteSearchInput label="우리 선수" color="blue" icon="A" athletes={athleteNames} value={athleteA} onChange={setAthleteA} onClear={() => setAthleteA('')} placeholder="예: 임지율, 김루아, 신지유..." />
+          <AthleteSearchInput label="우리 선수" color="blue" icon="A" athletes={ourAthleteNames} value={athleteA} onChange={setAthleteA} onClear={() => setAthleteA('')} placeholder="예: 임소은, 임지율, 여서원..." />
           <div className="hidden md:flex items-center justify-center self-end mb-3">
             <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center text-2xl font-black text-indigo-500 border-2 border-indigo-200 shadow-sm">
               VS
@@ -276,7 +290,7 @@ export default function RivalComparisonPage() {
           <div className="md:hidden flex items-center justify-center w-full py-1">
             <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center text-lg font-black text-indigo-500 border-2 border-indigo-200">VS</div>
           </div>
-          <AthleteSearchInput label="라이벌 선수" color="red" icon="B" athletes={athleteNames} value={athleteB} onChange={setAthleteB} onClear={() => setAthleteB('')} />
+          <AthleteSearchInput label="라이벌 선수" color="red" icon="B" athletes={rivalAthleteNames} value={athleteB} onChange={setAthleteB} onClear={() => setAthleteB('')} />
         </div>
       </div>
 
