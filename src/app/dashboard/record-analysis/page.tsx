@@ -113,20 +113,7 @@ function RecordAnalysisContent() {
     }
   });
 
-  const { data: competitionVideos, isPending: compVideoLoading } = useQuery({
-    queryKey: ['competition_videos'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('competition_videos')
-        .select('*')
-        .eq('is_deleted', false)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const isLoading = athletesLoading || localLoading || nationwideLoading || trainingLoading || compVideoLoading;
+  const isLoading = athletesLoading || localLoading || nationwideLoading || trainingLoading;
 
   const analysisData = useMemo(() => {
     if (!athletes || !localRecords || !nationwide) return null;
@@ -305,12 +292,9 @@ function RecordAnalysisContent() {
 
   // Generate Recommended Videos
   const recommendedVideos = useMemo(() => {
-    if (!selectedAthleteData || (!trainingVideos && !competitionVideos)) return [];
+    if (!selectedAthleteData || !trainingVideos) return [];
     
-    let allVideos = [
-      ...(trainingVideos || []).map((v: any) => ({ ...v, type: 'training' })),
-      ...(competitionVideos || []).map((v: any) => ({ ...v, type: 'competition' }))
-    ];
+    const allVideos = (trainingVideos || []).map((v: any) => ({ ...v, type: 'training' }));
 
     if (allVideos.length === 0) return [];
 
@@ -342,7 +326,7 @@ function RecordAnalysisContent() {
     }
 
     return matches.slice(0, 5); // Return up to 5 videos
-  }, [selectedAthleteData, trainingVideos, competitionVideos]);
+  }, [selectedAthleteData, trainingVideos]);
 
   if (isLoading) {
     return (
@@ -742,7 +726,7 @@ function RecordAnalysisContent() {
                       />
                       <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors" />
                       <div className="absolute bottom-2 right-2 px-2 py-1 bg-slate-900/80 backdrop-blur-sm rounded-lg text-white text-xs font-bold shadow-sm">
-                        {video.type === 'training' ? '수영 영상' : '대회 영상'}
+                        수영 영상
                       </div>
                     </div>
                     <h4 className="font-bold text-slate-800 line-clamp-2 text-sm group-hover:text-primary transition-colors">{video.title}</h4>
