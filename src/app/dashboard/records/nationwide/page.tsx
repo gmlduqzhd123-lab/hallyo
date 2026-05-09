@@ -42,7 +42,7 @@ export default function NationwideRecordsPage() {
     queryFn: async () => {
       let query = supabase.from('nationwide_rankings').select('*').eq('is_deleted', false);
 
-      let debugFilters: any = {}
+      const debugFilters: Record<string, string | number> = {}
 
       if (selectedGender && selectedGender !== 'all') {
         query = query.eq('gender', selectedGender);
@@ -174,47 +174,62 @@ export default function NationwideRecordsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {filteredRankings.map((ranking) => (
-                  <tr key={ranking.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
-                      {String(ranking.event || '').trim()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        ['남', 'm', '남자'].includes(String(ranking.gender || '').trim().toLowerCase())
-                          ? 'bg-blue-100 text-blue-600' 
-                          : 'bg-rose-100 text-rose-600'
-                      }`}>
-                        {String(ranking.gender || '').trim()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
-                      {ranking.grade ? `${ranking.grade}학년` : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
-                        ranking.rank === 1 ? 'bg-amber-100 text-amber-600' :
-                        ranking.rank === 2 ? 'bg-slate-200 text-slate-600' :
-                        ranking.rank === 3 ? 'bg-orange-100 text-orange-700' :
-                        'bg-slate-100 text-slate-500'
-                      }`}>
-                        {ranking.rank}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900">
-                      {ranking.athlete_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-600">
-                      {ranking.school}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap font-mono font-bold text-amber-600">
-                      {ranking.record}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-slate-400">
-                      {ranking.year}
-                    </td>
-                  </tr>
-                ))}
+                {filteredRankings.map((ranking, idx) => {
+                  if (!ranking || typeof ranking !== 'object') return null;
+                  
+                  // Ensure all string values are actually strings to prevent .trim() crashes
+                  const eventStr = typeof ranking.event === 'string' ? ranking.event : String(ranking.event || '');
+                  const genderStr = typeof ranking.gender === 'string' ? ranking.gender : String(ranking.gender || '');
+                  const isMale = ['남', 'm', '남자'].includes(genderStr.trim().toLowerCase());
+                  
+                  // Safe extraction of other primitives
+                  const rankNum = Number(ranking.rank) || 0;
+                  const gradeNum = ranking.grade ? Number(ranking.grade) : null;
+                  const athleteName = typeof ranking.athlete_name === 'string' ? ranking.athlete_name : String(ranking.athlete_name || '');
+                  const schoolName = typeof ranking.school === 'string' ? ranking.school : String(ranking.school || '');
+                  const recordStr = typeof ranking.record === 'string' ? ranking.record : String(ranking.record || '');
+                  const yearNum = Number(ranking.year) || new Date().getFullYear();
+
+                  return (
+                    <tr key={ranking.id || `fallback-key-${idx}`} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
+                        {eventStr.trim()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          isMale ? 'bg-blue-100 text-blue-600' : 'bg-rose-100 text-rose-600'
+                        }`}>
+                          {genderStr.trim()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
+                        {gradeNum ? `${gradeNum}학년` : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
+                          rankNum === 1 ? 'bg-amber-100 text-amber-600' :
+                          rankNum === 2 ? 'bg-slate-200 text-slate-600' :
+                          rankNum === 3 ? 'bg-orange-100 text-orange-700' :
+                          'bg-slate-100 text-slate-500'
+                        }`}>
+                          {rankNum > 0 ? rankNum : '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900">
+                        {athleteName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-slate-600">
+                        {schoolName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap font-mono font-bold text-amber-600">
+                        {recordStr}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-slate-400">
+                        {yearNum}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
