@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -14,7 +14,6 @@ import { GlobalSearch } from '@/components/global-search'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
   
   const pathname = usePathname()
   const supabase = createClient()
@@ -62,14 +61,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsMobileMenuOpen(false)
   }
 
-  const handleScroll = () => {
-    if (scrollContainerRef.current) {
-      setShowScrollTop(scrollContainerRef.current.scrollTop > 300)
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300)
     }
-  }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const scrollToTop = () => {
-    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const visibleNavItems = navItems.filter(item => {
@@ -166,11 +168,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
 
         {/* Content Area */}
-        <div 
-          ref={scrollContainerRef}
-          onScroll={handleScroll}
-          className="flex-1 p-4 md:p-8 overflow-y-auto"
-        >
+        <div className="flex-1 p-4 md:p-8">
           {children}
         </div>
 
