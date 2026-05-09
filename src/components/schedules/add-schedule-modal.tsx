@@ -4,9 +4,10 @@ import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addSchedule } from '@/app/actions/schedules'
+import { addSchedule, updateSchedule } from '@/app/actions/schedules'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 
 const scheduleSchema = z.object({
   type: z.enum(['training', 'competition'], { message: '일정 구분을 선택해주세요.' }),
@@ -22,22 +23,35 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   initialDate?: Date
+  initialData?: any
 }
 
-export function AddScheduleModal({ isOpen, onClose, initialDate }: Props) {
+export function AddScheduleModal({ isOpen, onClose, initialDate, initialData }: Props) {
   const queryClient = useQueryClient()
   
   const formattedDate = initialDate 
     ? `${initialDate.getFullYear()}-${String(initialDate.getMonth() + 1).padStart(2, '0')}-${String(initialDate.getDate()).padStart(2, '0')}`
     : ''
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ScheduleFormValues>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<ScheduleFormValues>({
     resolver: zodResolver(scheduleSchema),
     defaultValues: {
       type: 'training',
       date: formattedDate
     }
   })
+
+  useEffect(() => {
+    if (initialData) {
+      setValue('type', initialData.type)
+      setValue('title', initialData.title)
+      setValue('date', initialData.date)
+      setValue('location', initialData.location || '')
+      setValue('description', initialData.description || '')
+    } else {
+      reset({ type: 'training', date: formattedDate })
+    }
+  }, [initialData, formattedDate, setValue, reset])
 
   const mutation = useMutation({
     mutationFn: async (data: ScheduleFormValues) => {
@@ -48,12 +62,18 @@ export function AddScheduleModal({ isOpen, onClose, initialDate }: Props) {
       if (data.description) formData.append('description', data.description)
       if (data.location) formData.append('location', data.location)
       
-      const result = await addSchedule(formData)
-      if (result?.error) throw new Error(result.error)
-      return result
+      if (initialData) {
+        const result = await updateSchedule(initialData.id, formData)
+        if (result?.error) throw new Error(result.error)
+        return result
+      } else {
+        const result = await addSchedule(formData)
+        if (result?.error) throw new Error(result.error)
+        return result
+      }
     },
     onSuccess: () => {
-      toast.success('일정이 성공적으로 등록되었습니다.', {
+      toast.success(initialData ? '일정이 성공적으로 수정되었습니다.' : '일정이 성공적으로 등록되었습니다.', {
         style: { background: '#0047AB', color: 'white', border: 'none' }
       })
       queryClient.invalidateQueries({ queryKey: ['schedules'] })
@@ -72,7 +92,7 @@ export function AddScheduleModal({ isOpen, onClose, initialDate }: Props) {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="새로운 일정 등록">
+    <Modal isOpen={isOpen} onClose={onClose} title={initialData ? "일정 수정" : "새로운 일정 등록"}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         
         <div className="grid grid-cols-2 gap-4">
@@ -141,7 +161,7 @@ export function AddScheduleModal({ isOpen, onClose, initialDate }: Props) {
             disabled={mutation.isPending}
             className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-primary hover:bg-primary-hover transition-colors shadow-lg shadow-primary/30 disabled:opacity-50"
           >
-            {mutation.isPending ? '저장 중...' : '일정 등록'}
+            {mutation.isPending ? '저장 중...' : (initialData ? '일정 수정' : '일정 등록')}
           </button>
         </div>
       </form>

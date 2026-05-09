@@ -10,6 +10,7 @@ import { createClient } from '@/utils/supabase/client'
 import { AddScheduleModal } from '@/components/schedules/add-schedule-modal'
 import { Plus, Calendar as CalendarIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const locales = {
   'ko': ko,
@@ -86,7 +87,9 @@ YearView.title = (date: Date) => {
 export default function SchedulePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+  const [selectedEventData, setSelectedEventData] = useState<any>(null)
   const supabase = createClient()
+  const router = useRouter()
 
   const { data: schedules, isPending } = useQuery({
     queryKey: ['schedules'],
@@ -117,7 +120,7 @@ export default function SchedulePage() {
     }
   })
 
-  const isAuthorized = userRole === 'admin' || userRole === 'coach'
+  const isAuthorized = ['admin', 'developer'].includes(userRole) || userRole === 'coach'
 
   const events: Event[] = schedules?.map((s: any) => {
     const startDate = new Date(s.date)
@@ -145,14 +148,23 @@ export default function SchedulePage() {
       return
     }
     setSelectedDate(slotInfo.start)
+    setSelectedEventData(null)
     setIsModalOpen(true)
   }
 
   const handleSelectEvent = (event: Event) => {
-    // We can show details or open edit modal
-    // For now, simple alert
     const resource = event.resource as any
-    alert(`${resource.title}\n유형: ${resource.type === 'training' ? '훈련' : '대회'}\n장소: ${resource.location || '미정'}\n설명: ${resource.description || '없음'}`)
+    if (resource.type === 'competition') {
+      router.push(`/dashboard/competitions/${resource.id}`)
+      return
+    }
+    
+    if (isAuthorized) {
+      setSelectedEventData(resource)
+      setIsModalOpen(true)
+    } else {
+      alert(`${resource.title}\n유형: 훈련\n장소: ${resource.location || '미정'}\n설명: ${resource.description || '없음'}`)
+    }
   }
 
   // Custom Event Component
@@ -195,7 +207,7 @@ export default function SchedulePage() {
 
         {isAuthorized && (
           <button 
-            onClick={() => { setSelectedDate(undefined); setIsModalOpen(true); }}
+            onClick={() => { setSelectedDate(undefined); setSelectedEventData(null); setIsModalOpen(true); }}
             className="relative z-10 w-full sm:w-auto flex justify-center items-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/30 active:scale-95 shrink-0 whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
@@ -393,6 +405,7 @@ export default function SchedulePage() {
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 
           initialDate={selectedDate}
+          initialData={selectedEventData}
         />
       )}
     </div>

@@ -61,7 +61,7 @@ export default function PhotosPage() {
     }
   })
 
-  const visiblePhotos = photos?.filter(p => userRole === 'admin' || p.status === 'approved') || []
+  const visiblePhotos = photos?.filter(p => ['admin', 'developer'].includes(userRole) || p.status === 'approved') || []
 
   const uploadMutation = useMutation({
     mutationFn: async ({ files, description }: { files: FileList, description: string }) => {
@@ -218,7 +218,7 @@ export default function PhotosPage() {
                   >
                     <Download className="w-5 h-5" />
                   </button>
-                  {photo.status === 'pending' && userRole === 'admin' && (
+                  {photo.status === 'pending' && ['admin', 'developer'].includes(userRole) && (
                     <button 
                       onClick={(e) => { e.stopPropagation(); approveMutation.mutate(photo.id) }}
                       className="p-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
@@ -227,7 +227,7 @@ export default function PhotosPage() {
                       <Check className="w-5 h-5" />
                     </button>
                   )}
-                  {(userRole === 'admin' || userRole === 'coach') && (
+                  {(['admin', 'developer'].includes(userRole) || userRole === 'coach') && (
                     <button 
                       onClick={() => { if(confirm('이 사진을 정말 삭제하시겠습니까?')) deleteMutation.mutate(photo.id) }}
                       className="p-3 bg-rose-500 hover:bg-rose-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"

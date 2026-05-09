@@ -158,7 +158,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
         const athlete = row.original
         return (
           <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-            {(userRole === 'admin' || userRole === 'coach') && (
+            {(['admin', 'developer'].includes(userRole) || userRole === 'coach') && (
               <button 
                 onClick={() => onEdit(athlete)}
                 className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
@@ -174,7 +174,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
             >
               <LineChart className="w-4 h-4" />
             </button>
-            {(userRole === 'admin' || userRole === 'coach') && (
+            {(['admin', 'developer'].includes(userRole) || userRole === 'coach') && (
               <button 
                 onClick={() => {
                   if (confirm(`${athlete.name} 선수를 명단에서 삭제하시겠습니까?`)) {
@@ -196,7 +196,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
 
   const columns = allColumns.filter(col => {
     // Hide contact details if not admin
-    if (userRole !== 'admin' && ['student_phone', 'parent_name', 'parent_phone'].includes((col as any).accessorKey)) {
+    if (!['admin', 'developer'].includes(userRole) && ['student_phone', 'parent_name', 'parent_phone'].includes((col as any).accessorKey)) {
       return false
     }
     return true

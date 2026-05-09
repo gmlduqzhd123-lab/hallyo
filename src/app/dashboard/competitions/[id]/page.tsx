@@ -9,11 +9,21 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { addRecord, deleteRecord } from '@/app/actions/records'
-import { updateScheduleParticipants, updateSchedulePlaces } from '@/app/actions/schedules'
+import { updateSchedule, updateScheduleParticipants, updateSchedulePlaces } from '@/app/actions/schedules'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { formatTimeSeconds, parseTimeInput } from '@/utils/time'
+
+const editSchema = z.object({
+  title: z.string().min(2, '대회명을 입력해주세요.'),
+  date: z.string().min(10, '시작일을 선택해주세요.'),
+  end_date: z.string().optional().or(z.literal('')),
+  location: z.string().min(2, '장소를 입력해주세요.'),
+  description: z.string().optional()
+})
+
+type EditFormValues = z.infer<typeof editSchema>
 
 const schema = z.object({
   athlete_id: z.string().min(1, '선수를 선택해주세요.'),
@@ -48,6 +58,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   
   const [infoTab, setInfoTab] = useState<'accommodations' | 'restaurants'>('accommodations')
   const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false)
+  const [isEditCompModalOpen, setIsEditCompModalOpen] = useState(false)
   const [editingPlace, setEditingPlace] = useState<Place | null>(null)
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -101,6 +112,10 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     resolver: zodResolver(placeSchema),
   })
 
+  const { register: registerEditComp, handleSubmit: handleSubmitEditComp, formState: { errors: editCompErrors }, reset: resetEditComp, setValue: setEditCompValue } = useForm<EditFormValues>({
+    resolver: zodResolver(editSchema),
+  })
+
   const selectedEventName = watch('event_name')
 
   const EVENT_OPTIONS = [
@@ -148,6 +163,29 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     }
   })
 
+  const editCompMutation = useMutation({
+    mutationFn: async (data: EditFormValues) => {
+      const formData = new FormData()
+      formData.append('type', 'competition')
+      formData.append('title', data.title)
+      formData.append('date', data.date)
+      if (data.end_date) formData.append('end_date', data.end_date)
+      if (data.location) formData.append('location', data.location)
+      if (data.description) formData.append('description', data.description)
+      
+      const result = await updateSchedule(id, formData)
+      if (result?.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      toast.success('대회 정보가 수정되었습니다.', { style: { background: '#0047AB', color: 'white' } })
+      queryClient.invalidateQueries({ queryKey: ['competition', id] })
+      queryClient.invalidateQueries({ queryKey: ['competitions'] })
+      setIsEditCompModalOpen(false)
+    },
+    onError: (err: Error) => toast.error(err.message)
+  })
+
   const updateParticipantsMutation = useMutation({
     mutationFn: async (participants: string[]) => {
       const result = await updateScheduleParticipants(id, participants)
@@ -191,6 +229,21 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const onSubmit = (data: FormValues) => {
     const parsedData = { ...data, record_time: parseTimeInput(data.record_time) }
     addMutation.mutate(parsedData)
+  }
+
+  const handleOpenEditCompModal = () => {
+    if (competition) {
+      setEditCompValue('title', competition.title)
+      setEditCompValue('date', competition.date)
+      setEditCompValue('end_date', competition.end_date || '')
+      setEditCompValue('location', competition.location || '')
+      setEditCompValue('description', competition.description || '')
+    }
+    setIsEditCompModalOpen(true)
+  }
+
+  const onSubmitEditComp = (data: EditFormValues) => {
+    editCompMutation.mutate(data)
   }
 
   const handleOpenPlaceModal = (place?: Place) => {
@@ -255,8 +308,15 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         목록으로 돌아가기
       </Link>
 
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
+        <button 
+          onClick={handleOpenEditCompModal}
+          className="absolute top-6 right-6 z-20 p-2 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+          title="대회 정보 수정"
+        >
+          <Edit2 className="w-5 h-5" />
+        </button>
+        <div className="absolute top-0 right-0 p-8 opacity-5 z-0">
           <Trophy className="w-48 h-48" />
         </div>
         <div className="relative z-10">
@@ -633,6 +693,44 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             <button type="submit" disabled={updatePlacesMutation.isPending} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-accent-navy hover:bg-blue-900 shadow-lg shadow-blue-900/30">
               {editingPlace ? '수정하기' : '등록하기'}
             </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isEditCompModalOpen} onClose={() => setIsEditCompModalOpen(false)} title="대회 정보 수정">
+        <form onSubmit={handleSubmitEditComp(onSubmitEditComp)} className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">대회명</label>
+            <input {...registerEditComp('title')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" placeholder="예: 전라남도 소년체전" />
+            {editCompErrors.title && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{editCompErrors.title.message}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-accent-navy mb-1">시작일</label>
+              <input type="date" {...registerEditComp('date')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" />
+              {editCompErrors.date && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{editCompErrors.date.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-accent-navy mb-1">종료일</label>
+              <input type="date" {...registerEditComp('end_date')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" />
+              {editCompErrors.end_date && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{editCompErrors.end_date.message}</p>}
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-bold text-accent-navy mb-1">장소</label>
+              <input {...registerEditComp('location')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50" placeholder="개최 수영장" />
+              {editCompErrors.location && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{editCompErrors.location.message}</p>}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-accent-navy mb-1">대회 목표/설명</label>
+            <textarea {...registerEditComp('description')} rows={3} className="w-full px-4 py-3 rounded-2xl border bg-slate-50 resize-none" placeholder="비고를 입력하세요" />
+          </div>
+
+          <div className="pt-4 flex gap-3">
+            <button type="button" onClick={() => setIsEditCompModalOpen(false)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">취소</button>
+            <button type="submit" disabled={editCompMutation.isPending} className="flex-1 py-3.5 rounded-2xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/30">수정하기</button>
           </div>
         </form>
       </Modal>

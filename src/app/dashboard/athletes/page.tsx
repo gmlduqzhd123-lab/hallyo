@@ -222,7 +222,7 @@ export default function AthletesPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {(userRole === 'admin' || userRole === 'coach') && (
+          {(['admin', 'developer'].includes(userRole) || userRole === 'coach') && (
             <>
               <input 
                 type="file" 

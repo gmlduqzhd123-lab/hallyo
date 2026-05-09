@@ -251,6 +251,7 @@ export default function SettingsPage() {
                             disabled={updateRoleMutation.isPending}
                             className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2 outline-none focus:border-primary transition-colors disabled:opacity-50"
                           >
+                            <option value="developer">개발자 (Developer)</option>
                             <option value="admin">관리자 (Admin)</option>
                             <option value="coach">지도자 (Coach)</option>
                             <option value="athlete">선수 (Athlete)</option>

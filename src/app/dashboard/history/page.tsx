@@ -129,7 +129,7 @@ export default function HistoryPage() {
           <p className="text-slate-500 mt-1 font-medium">여수한려초등학교 수영부의 자랑스러운 발자취입니다. 🏆</p>
         </div>
 
-        {userRole === 'admin' && (
+        {['admin', 'developer'].includes(userRole) && (
           <button 
             onClick={() => setIsAddModalOpen(true)}
             className="px-5 py-2.5 rounded-2xl bg-orange-500 text-white font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/30 flex items-center gap-2 hover:-translate-y-0.5"
@@ -181,7 +181,7 @@ export default function HistoryPage() {
                       <p className="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">{history.description}</p>
                     )}
                     
-                    {userRole === 'admin' && (
+                    {['admin', 'developer'].includes(userRole) && (
                       <div className="absolute top-4 right-4 flex opacity-0 group-hover:opacity-100 transition-opacity gap-1">
                         <button 
                           onClick={() => setEditingItem(history)}
