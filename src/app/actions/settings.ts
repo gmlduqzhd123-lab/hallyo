@@ -57,3 +57,30 @@ export async function updateSystemSetting(key: string, value: string) {
   
   return { success: true }
 }
+
+export async function updateCompetitionChecklist(checklistItems: any[]) {
+  const supabase = await createClient()
+  
+  const { data: authData } = await supabase.auth.getUser()
+  if (!authData.user) return { error: '권한이 없습니다.' }
+
+  const { data: userData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', authData.user.id)
+    .single()
+    
+  if (!['admin', 'developer', 'coach'].includes(userData?.role as string)) {
+    return { error: '권한이 부족합니다.' }
+  }
+
+  const { error } = await supabase
+    .from('system_settings')
+    .upsert({ key: 'competition_checklist', value: JSON.stringify(checklistItems), updated_at: new Date().toISOString() })
+    
+  if (error) return { error: error.message }
+  
+  await logAudit('UPDATE', 'system_settings_checklist', { count: checklistItems.length })
+  
+  return { success: true }
+}
