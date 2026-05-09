@@ -11,6 +11,8 @@ const recordSchema = z.object({
   event_name: z.string().min(1, { message: '종목을 입력해주세요.' }),
   record_time: z.coerce.number().positive({ message: '유효한 기록을 입력해주세요 (초 단위).' }),
   record_date: z.string().min(10, { message: '기록일을 선택해주세요.' }),
+  rank: z.coerce.number().nullable().optional(),
+  match_type: z.string().nullable().optional(),
 })
 
 export async function addRecord(formData: FormData) {
@@ -22,6 +24,8 @@ export async function addRecord(formData: FormData) {
     event_name: formData.get('event_name'),
     record_time: formData.get('record_time'),
     record_date: formData.get('record_date'),
+    rank: formData.get('rank') || null,
+    match_type: formData.get('match_type') || null,
   }
 
   const validatedFields = recordSchema.safeParse(rawData)
@@ -37,6 +41,8 @@ export async function addRecord(formData: FormData) {
       event_name: validatedFields.data.event_name,
       record_time: validatedFields.data.record_time,
       record_date: validatedFields.data.record_date,
+      rank: validatedFields.data.rank,
+      match_type: validatedFields.data.match_type,
       is_deleted: false,
     }
   ])
@@ -51,6 +57,48 @@ export async function addRecord(formData: FormData) {
     revalidatePath(`/dashboard/competitions/${validatedFields.data.schedule_id}`)
   }
   revalidatePath('/dashboard/athletes')
+  revalidatePath(`/dashboard/records/${validatedFields.data.athlete_id}`)
+  return { success: true }
+}
+
+export async function updateRecord(id: string, formData: FormData) {
+  const supabase = await createClient()
+  
+  const rawData = {
+    schedule_id: formData.get('schedule_id'),
+    athlete_id: formData.get('athlete_id'),
+    event_name: formData.get('event_name'),
+    record_time: formData.get('record_time'),
+    record_date: formData.get('record_date'),
+    rank: formData.get('rank') || null,
+    match_type: formData.get('match_type') || null,
+  }
+
+  const validatedFields = recordSchema.safeParse(rawData)
+  if (!validatedFields.success) {
+    // @ts-expect-error: zod error typing
+    return { error: validatedFields.error.errors[0].message }
+  }
+
+  const { error } = await supabase.from('records').update({
+    event_name: validatedFields.data.event_name,
+    record_time: validatedFields.data.record_time,
+    record_date: validatedFields.data.record_date,
+    rank: validatedFields.data.rank,
+    match_type: validatedFields.data.match_type,
+  }).eq('id', id)
+
+  if (error) {
+    return { error: '기록 수정에 실패했습니다: ' + error.message }
+  }
+
+  await logAudit('UPDATE', 'records', { id, event_name: validatedFields.data.event_name })
+
+  if (validatedFields.data.schedule_id) {
+    revalidatePath(`/dashboard/competitions/${validatedFields.data.schedule_id}`)
+  }
+  revalidatePath('/dashboard/athletes')
+  revalidatePath(`/dashboard/records/${validatedFields.data.athlete_id}`)
   return { success: true }
 }
 

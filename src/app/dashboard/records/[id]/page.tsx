@@ -4,6 +4,7 @@ import { ArrowLeft, Timer, Trophy, Calendar } from 'lucide-react'
 import { formatTimeSeconds } from '@/utils/time'
 import { format } from 'date-fns'
 import EventRecordChart from './EventRecordChart'
+import EventRecordTable from './EventRecordTable'
 
 export default async function AthleteRecordsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -15,6 +16,14 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
     .select('*')
     .eq('id', id)
     .single()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user?.id)
+    .single()
+  const userRole = profile?.role || ''
 
   const { data: records } = await supabase
     .from('records')
@@ -95,65 +104,7 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
                 </div>
               )}
 
-              <table className="w-full text-left">
-                <thead className="border-b border-slate-100 text-slate-500 text-sm font-bold">
-                  <tr>
-                    <th className="px-6 py-4">대회명 / 일정</th>
-                    <th className="px-6 py-4 text-center">경기 구분</th>
-                    <th className="px-6 py-4 text-center">순위</th>
-                    <th className="px-6 py-4">기록일</th>
-                    <th className="px-6 py-4 text-right">기록</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
-                  {eventRecords.map((record: any) => (
-                    <tr key={record.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-slate-800">{record.schedules?.title || '기타 기록'}</div>
-                        {record.schedules?.location && (
-                          <div className="text-slate-400 text-xs mt-1">{record.schedules.location}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {record.match_type ? (
-                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
-                            record.match_type === '결승' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
-                          }`}>
-                            {record.match_type}
-                          </span>
-                        ) : (
-                          <span className="text-slate-300">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {record.rank ? (
-                          <div className="flex justify-center">
-                            <span className={`flex items-center justify-center w-7 h-7 rounded-full font-black text-xs ${
-                              record.rank === 1 ? 'bg-yellow-100 text-yellow-600 border-2 border-yellow-200 shadow-sm' :
-                              record.rank === 2 ? 'bg-slate-100 text-slate-500 border-2 border-slate-200' :
-                              record.rank === 3 ? 'bg-orange-50 text-orange-600 border-2 border-orange-200' :
-                              'text-slate-500'
-                            }`}>
-                              {record.rank}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-slate-300">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-slate-500 flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {format(new Date(record.record_date), 'yyyy.MM.dd')}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className="font-black text-blue-600 text-lg">
-                          {formatTimeSeconds(record.record_time)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <EventRecordTable eventRecords={eventRecords} userRole={userRole} athleteId={id} />
             </div>
           ))
         )}
