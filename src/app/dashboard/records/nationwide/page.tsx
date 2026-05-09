@@ -37,45 +37,53 @@ export default function NationwideRecordsPage() {
 
   const { data: rankings, isPending } = useQuery({
     queryKey: ['nationwide_rankings', selectedGender, selectedEvent, selectedGrade],
+    staleTime: 0, // 캐시 무효화: 항상 최신 데이터를 요청
+    gcTime: 0,
     queryFn: async () => {
       let query = supabase
         .from('nationwide_rankings')
         .select('*')
         .eq('is_deleted', false)
       
+      let debugFilters: any = {}
+
       if (selectedGender !== 'all') {
         query = query.eq('gender', selectedGender)
+        debugFilters.gender = selectedGender
       }
 
       if (selectedGrade !== 'all') {
-        // UI에서는 '6학년' -> Supabase에는 숫자 6
         const gradeNum = parseInt(selectedGrade.replace('학년', ''), 10)
         if (!isNaN(gradeNum)) {
           query = query.eq('grade', gradeNum)
+          debugFilters.grade = gradeNum
         }
       }
 
       if (selectedEvent !== 'all') {
-        // DB에는 띄어쓰기 없이 저장되어 있을 수 있으므로 공백 제거
         const cleanEvent = selectedEvent.replace(/\s+/g, '')
         query = query.ilike('event', `%${cleanEvent}%`)
+        debugFilters.event = `%${cleanEvent}%`
       }
 
-      // Supabase 기본 제한이 1000건이므로, 필터가 적용된 상태에서 데이터를 가져와야 정확함
+      console.log('🚀 [Supabase Request] Filters applied:', debugFilters)
+
       const { data, error } = await query
         .order('event', { ascending: true })
         .order('gender', { ascending: true })
         .order('rank', { ascending: true })
         .limit(1000)
       
-      if (error) throw error
-      
-      // 임시로 쿼리 결과를 확인하기 위한 console.log
-      console.log('Supabase Query Result (Nationwide Rankings):', data)
+      console.log('📥 [Supabase Response] Data:', data?.length ? `${data.length}건 반환됨` : '데이터 없음', data)
+      if (error) {
+        console.error('❌ [Supabase Error]:', error)
+        throw error
+      }
       
       return data as NationwideRanking[]
     }
   })
+
 
   // Since filtering is done on the server, rankings is already filtered
   const filteredRankings = rankings || []
