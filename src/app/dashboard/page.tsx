@@ -26,22 +26,6 @@ async function fetchActiveAthletes() {
   return data
 }
 
-// Fetch recent notices
-async function fetchRecentNotices() {
-  const supabase = createClient()
-  const { data, error } = await supabase
-    .from('notices')
-    .select('id, title, created_at')
-    .eq('is_deleted', false)
-    .order('created_at', { ascending: false })
-    .limit(3)
-
-  if (error) {
-    throw new Error(error.message)
-  }
-  return data
-}
-
 export default function DashboardPage() {
   const supabase = createClient()
   
@@ -69,10 +53,7 @@ export default function DashboardPage() {
     queryFn: fetchActiveAthletes,
   })
 
-  const { data: notices, isPending: noticesPending } = useQuery({
-    queryKey: ['notices', 'recent'],
-    queryFn: fetchRecentNotices,
-  })
+
 
   const [quote, setQuote] = useState<string>('')
   const [poem, setPoem] = useState<{title: string, page: string, content: string} | null>(null)
@@ -268,67 +249,44 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Placeholders Grid */}
+      {/* Main Navigation Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Today's Training */}
+        {/* Competitions */}
         <div className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-[32px] p-8 border border-teal-100/50 shadow-sm shadow-teal-500/5 flex flex-col items-center justify-center min-h-[280px] text-center group hover:shadow-md hover:shadow-teal-500/10 transition-all cursor-pointer relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 text-teal-500/5 text-[120px] font-black pointer-events-none transform rotate-12">🏊‍♂️</div>
-          <Link href="/dashboard/training" className="w-20 h-20 bg-white rounded-[24px] shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
+          <div className="absolute -top-10 -right-10 text-teal-500/5 text-[120px] font-black pointer-events-none transform rotate-12">🏆</div>
+          <Link href="/dashboard/competitions" className="w-20 h-20 bg-white rounded-[24px] shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10">
             <CalendarDays className="w-10 h-10 text-teal-500" />
           </Link>
-          <h3 className="font-extrabold text-xl text-teal-900 mb-3 relative z-10">오늘의 훈련 일정</h3>
-          <p className="text-teal-700/70 text-sm mb-8 max-w-[220px] font-medium leading-relaxed relative z-10">등록된 훈련 일정이 없어요.<br/>새로운 훈련을 계획해볼까요? 🌱</p>
-          {isAuthorized && (
-            <Link href="/dashboard/training" className="relative z-10 inline-flex items-center gap-2 text-white font-bold bg-teal-500 px-6 py-3 rounded-full hover:bg-teal-600 hover:-translate-y-1 transition-all shadow-md shadow-teal-500/30">
-              일정 추가하기 <ChevronRight className="w-4 h-4" />
-            </Link>
-          )}
+          <h3 className="font-extrabold text-xl text-teal-900 mb-3 relative z-10">대회 일정</h3>
+          <p className="text-teal-700/70 text-sm mb-8 max-w-[220px] font-medium leading-relaxed relative z-10">다가오는 대회 일정을 확인하고<br/>준비물을 챙겨보세요! 🎯</p>
+          <Link href="/dashboard/competitions" className="relative z-10 inline-flex items-center gap-2 text-white font-bold bg-teal-500 px-6 py-3 rounded-full hover:bg-teal-600 hover:-translate-y-1 transition-all shadow-md shadow-teal-500/30">
+            일정 확인하기 <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
 
-        {/* Recent Notices */}
-        <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-[32px] p-8 border border-indigo-100/50 shadow-sm shadow-indigo-500/5 flex flex-col relative overflow-hidden">
-          <div className="absolute -bottom-10 -left-10 text-indigo-500/5 text-[120px] font-black pointer-events-none transform -rotate-12">📢</div>
-          <div className="flex justify-between items-center mb-6 relative z-10">
-            <h3 className="font-extrabold text-xl text-indigo-900 flex items-center gap-2">
-              <span className="bg-white p-2 rounded-xl shadow-sm text-indigo-500"><Bell className="w-5 h-5" /></span>
-              최근 소식
-            </h3>
-            <Link href="/dashboard/notices" className="text-sm font-bold text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100/50 px-3 py-1.5 rounded-full transition-colors">더보기</Link>
-          </div>
-          
-          <div className="space-y-3 flex-1 relative z-10">
-            {noticesPending ? (
-              <div className="flex justify-center items-center h-full min-h-[100px]">
-                <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-500 rounded-full animate-spin"></div>
-              </div>
-            ) : !notices || notices.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[120px] text-indigo-300">
-                <Bell className="w-10 h-10 mb-3 opacity-30 drop-shadow-sm" />
-                <p className="text-sm font-bold">새로운 소식이 아직 없어요 💭</p>
-              </div>
-            ) : (
-              notices.map((notice) => {
-                const isTournament = notice.title.includes('대회')
-                const isTraining = notice.title.includes('훈련')
-                const tag = isTournament ? '대회 🏆' : (isTraining ? '훈련 🏊‍♂️' : '공지 📢')
-                const tagColor = isTournament ? 'bg-rose-100 text-rose-600' : (isTraining ? 'bg-sky-100 text-sky-600' : 'bg-indigo-100 text-indigo-600')
+        {/* Shortcuts: Records & Analysis */}
+        <div className="flex flex-col gap-6">
+          <Link href="/dashboard/records" className="flex-1 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-[32px] p-6 sm:p-8 border border-indigo-100/50 shadow-sm shadow-indigo-500/5 flex items-center group hover:shadow-md hover:shadow-indigo-500/10 transition-all relative overflow-hidden">
+            <div className="absolute -bottom-10 -right-10 text-indigo-500/5 text-[100px] font-black pointer-events-none transform -rotate-12">⏱️</div>
+            <div className="w-16 h-16 bg-white rounded-[20px] shadow-sm flex items-center justify-center mr-4 sm:mr-6 group-hover:scale-110 transition-transform relative z-10 shrink-0">
+              <span className="text-3xl">⏱️</span>
+            </div>
+            <div className="relative z-10">
+              <h3 className="font-extrabold text-xl text-indigo-900 mb-1">선수 기록</h3>
+              <p className="text-indigo-700/70 text-sm font-medium">우리 팀 선수들의 공식 기록 관리</p>
+            </div>
+          </Link>
 
-                return (
-                  <Link href={`/dashboard/notices#${notice.id}`} key={notice.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-white/60 hover:bg-white rounded-2xl cursor-pointer transition-all border border-white shadow-sm hover:shadow-md hover:-translate-y-0.5 group">
-                    <div className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-black ${tagColor} shadow-sm group-hover:scale-105 transition-transform`}>
-                      {tag}
-                    </div>
-                    <div className="flex-1 truncate font-bold text-slate-700 text-sm group-hover:text-indigo-900 transition-colors">
-                      {notice.title}
-                    </div>
-                    <div className="text-xs text-indigo-400/80 font-bold shrink-0">
-                      {new Date(notice.created_at).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' }).replace(new RegExp('\\\\.$'), '')}
-                    </div>
-                  </Link>
-                )
-              })
-            )}
-          </div>
+          <Link href="/dashboard/record-analysis" className="flex-1 bg-gradient-to-br from-rose-50 to-pink-50 rounded-[32px] p-6 sm:p-8 border border-rose-100/50 shadow-sm shadow-rose-500/5 flex items-center group hover:shadow-md hover:shadow-rose-500/10 transition-all relative overflow-hidden">
+            <div className="absolute -bottom-10 -right-10 text-rose-500/5 text-[100px] font-black pointer-events-none transform -rotate-12">📈</div>
+            <div className="w-16 h-16 bg-white rounded-[20px] shadow-sm flex items-center justify-center mr-4 sm:mr-6 group-hover:scale-110 transition-transform relative z-10 shrink-0">
+              <span className="text-3xl">📈</span>
+            </div>
+            <div className="relative z-10">
+              <h3 className="font-extrabold text-xl text-rose-900 mb-1">기록 분석</h3>
+              <p className="text-rose-700/70 text-sm font-medium">성장 곡선 및 전국 랭킹 데이터</p>
+            </div>
+          </Link>
         </div>
       </div>
 
