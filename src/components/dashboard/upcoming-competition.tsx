@@ -158,8 +158,8 @@ export function UpcomingCompetition() {
               {dDayText}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-rose-100 font-bold text-sm mb-1 line-clamp-1">{upcomingCompetition.location || '장소 미정'}</p>
-              <h3 className="text-white font-black text-lg sm:text-xl line-clamp-1 group-hover:underline underline-offset-4 decoration-2">
+              <p className="text-rose-100 font-bold text-sm mb-1 break-keep leading-snug">{upcomingCompetition.location || '장소 미정'}</p>
+              <h3 className="text-white font-black text-lg sm:text-xl break-keep leading-snug group-hover:underline underline-offset-4 decoration-2">
                 {upcomingCompetition.title}
               </h3>
             </div>

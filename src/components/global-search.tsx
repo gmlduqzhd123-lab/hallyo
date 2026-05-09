@@ -116,8 +116,8 @@ export function GlobalSearch() {
           ref={inputRef}
           type="text"
           placeholder="선수, 학교, 종목명 검색..."
-          className={`bg-transparent outline-none text-sm ml-2 w-full transition-opacity duration-300 placeholder:text-slate-400 ${
-            isExpanded ? 'opacity-100' : 'opacity-0 md:opacity-100'
+          className={`bg-transparent outline-none text-sm transition-all duration-300 placeholder:text-slate-400 ${
+            isExpanded ? 'w-full opacity-100 ml-2' : 'w-0 opacity-0 md:w-full md:opacity-100 md:ml-2'
           }`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
