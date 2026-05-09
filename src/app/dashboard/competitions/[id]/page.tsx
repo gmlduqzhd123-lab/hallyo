@@ -429,9 +429,13 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
          {(competition.participants && competition.participants.length > 0) ? (
            <div className="flex flex-wrap gap-2">
              {athletes?.filter((a: any) => competition.participants.includes(a.id)).map((a: any) => (
-               <span key={a.id} className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold border border-indigo-100 flex items-center gap-1">
+               <Link 
+                 key={a.id} 
+                 href={`/dashboard/record-analysis?athleteId=${a.id}`}
+                 className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 px-4 py-2 rounded-xl text-sm font-bold border border-indigo-100 flex items-center gap-1 transition-colors cursor-pointer"
+               >
                  {a.name} <span className="text-xs font-normal opacity-75">({a.grade}학년)</span>
-               </span>
+               </Link>
              ))}
            </div>
          ) : (

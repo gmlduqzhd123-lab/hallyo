@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Suspense, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Activity, TrendingUp, Medal, AlertCircle, Target, Users, Zap, CheckCircle, PlayCircle } from 'lucide-react'
@@ -29,9 +30,17 @@ const normalizeEventName = (name: string) => {
   return name.replace(/\s+/g, '').toUpperCase();
 }
 
-export default function RecordAnalysisPage() {
+function RecordAnalysisContent() {
   const supabase = createClient()
-  const [selectedAthleteId, setSelectedAthleteId] = useState<string | 'ALL'>('ALL')
+  const searchParams = useSearchParams()
+  const athleteIdFromUrl = searchParams.get('athleteId')
+  const [selectedAthleteId, setSelectedAthleteId] = useState<string | 'ALL'>(athleteIdFromUrl || 'ALL')
+
+  useEffect(() => {
+    if (athleteIdFromUrl) {
+      setSelectedAthleteId(athleteIdFromUrl)
+    }
+  }, [athleteIdFromUrl])
 
   // Fetch Athletes
   const { data: athletes, isPending: athletesLoading } = useQuery({
@@ -606,5 +615,17 @@ export default function RecordAnalysisPage() {
         </div>
       ) : null}
     </main>
+  )
+}
+
+export default function RecordAnalysisPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <RecordAnalysisContent />
+    </Suspense>
   )
 }
