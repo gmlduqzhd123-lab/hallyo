@@ -527,7 +527,11 @@ function RecordAnalysisContent() {
 
 
           {/* Historical Performance Line Chart */}
-          {selectedAthleteData.historyChartData && selectedAthleteData.historyChartData.length > 1 && (
+          {selectedAthleteData.historyChartData && selectedAthleteData.historyChartData.length > 1 && (() => {
+            const activeEvent = selectedHistoryEvent || selectedAthleteData.eventDetails[0]?.event;
+            const chartData = selectedAthleteData.historyChartData.filter((d: any) => d[activeEvent] !== undefined);
+            
+            return (
             <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
               <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
                 <TrendingUp className="w-6 h-6 text-primary" /> 나의 기록 단축 성장 곡선
@@ -535,7 +539,7 @@ function RecordAnalysisContent() {
               
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedAthleteData.eventDetails.map((ed: any) => {
-                  const isActive = selectedHistoryEvent ? selectedHistoryEvent === ed.event : selectedAthleteData.eventDetails[0]?.event === ed.event;
+                  const isActive = activeEvent === ed.event;
                   return (
                     <button
                       key={ed.event}
@@ -555,7 +559,7 @@ function RecordAnalysisContent() {
               <div className="h-[400px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
-                    data={selectedAthleteData.historyChartData}
+                    data={chartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -631,8 +635,8 @@ function RecordAnalysisContent() {
               </div>
               <p className="text-center text-xs text-slate-400 mt-4">* 특정 종목을 선택하면 해당 종목의 기록 변화 폭을 더욱 크고 확실하게 확인할 수 있습니다.</p>
             </div>
-          )}
-
+            );
+          })()}
           {/* Detailed Data Table */}
           {selectedAthleteData.eventDetails.length > 0 && (
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
