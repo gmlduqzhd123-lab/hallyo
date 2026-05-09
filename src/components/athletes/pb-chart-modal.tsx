@@ -219,6 +219,7 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
                   tickLine={false}
                   dx={-10}
                   domain={['auto', 'auto']}
+                  reversed={true}
                 />
                 <Tooltip 
                   formatter={(value: any) => [formatTimeSeconds(value), '기록']}
