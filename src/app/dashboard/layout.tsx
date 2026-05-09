@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity } from 'lucide-react'
 import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
@@ -36,6 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '홈', icon: Home, href: '/dashboard' },
     { name: '선수 명단', icon: Users, href: '/dashboard/athletes', restrictedTo: ['admin', 'developer', 'coach'] },
     { name: '선수 기록', icon: Timer, href: '/dashboard/records' },
+    { name: '기록 분석', icon: Activity, href: '/dashboard/record-analysis' },
     { name: '대회 일정', icon: Calendar, href: '/dashboard/competitions' },
     { name: '훈련 일정', icon: CalendarDays, href: '/dashboard/training' },
     { name: '수영 관련 영상', icon: Video, href: '/dashboard/videos' },
