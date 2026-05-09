@@ -144,7 +144,7 @@ export default function CompetitionVideosPage() {
   const supabase = createClient()
 
   const { data: userProfile, isPending: rolePending } = useQuery({
-    queryKey: ['user_role'],
+    queryKey: ['user_profile'],
     queryFn: async () => {
       const { data: authData } = await supabase.auth.getUser()
       if (!authData.user) return null

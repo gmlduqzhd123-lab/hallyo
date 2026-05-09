@@ -135,7 +135,7 @@ export default function TrainingVideosPage() {
   const queryClient = useQueryClient()
 
   const { data: userProfile, isPending: rolePending } = useQuery({
-    queryKey: ['user_role'],
+    queryKey: ['user_profile'],
     queryFn: async () => {
       const supabase = createClient()
       const { data: authData } = await supabase.auth.getUser()
