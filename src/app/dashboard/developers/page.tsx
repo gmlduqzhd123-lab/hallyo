@@ -346,91 +346,89 @@ export default function DevelopersPage() {
               <p className="text-slate-500">이 서비스를 만든 멋진 개발자들을 소개해보세요! 💻</p>
             </div>
           ) : (
-            <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {developers?.map((dev, index) => (
-                <div key={dev.id} className="bg-white rounded-[32px] overflow-hidden border border-purple-100/50 shadow-sm hover:shadow-xl transition-all duration-500 group">
-                  <div className="flex flex-col md:flex-row">
-                    {/* Photo Section */}
-                    <div className="md:w-72 shrink-0 relative overflow-hidden bg-gradient-to-br from-violet-100 to-fuchsia-100">
-                      {dev.photo_url ? (
-                        <div className="h-64 md:h-full min-h-[280px] relative flex items-center justify-center bg-slate-900">
-                          <div className="hidden md:block absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" style={{ backgroundImage: `url(${dev.photo_url})` }}></div>
-                          <img src={dev.photo_url} alt={dev.name} className="max-w-full max-h-full object-contain relative z-10 drop-shadow-2xl" />
-                        </div>
-                      ) : (
-                        <div className="h-64 md:h-full min-h-[280px] flex items-center justify-center">
-                          <div className="w-28 h-28 bg-white/60 backdrop-blur-sm rounded-full flex items-center justify-center shadow-inner border border-white">
-                            <User className="w-14 h-14 text-purple-300" />
-                          </div>
-                        </div>
-                      )}
-                      {/* Order Badge */}
-                      <div className="absolute top-4 left-4 bg-purple-500 text-white text-xs font-black w-8 h-8 rounded-full flex items-center justify-center shadow-lg z-20">
-                        {index + 1}
+                <div key={dev.id} className="bg-white rounded-[32px] overflow-hidden border border-purple-100/50 shadow-sm hover:shadow-xl transition-all duration-500 group flex flex-col hover:-translate-y-1">
+                  {/* Photo Section */}
+                  <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-violet-100 to-fuchsia-100 shrink-0">
+                    {dev.photo_url ? (
+                      <div className="w-full h-full relative flex items-center justify-center bg-slate-900">
+                        <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-xl scale-125 transition-transform duration-700 group-hover:scale-150" style={{ backgroundImage: `url(${dev.photo_url})` }}></div>
+                        <img src={dev.photo_url} alt={dev.name} className="w-full h-full object-cover object-top relative z-10 transition-transform duration-700 group-hover:scale-105" />
                       </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-24 h-24 bg-white/60 backdrop-blur-sm rounded-full flex items-center justify-center shadow-inner border border-white">
+                          <User className="w-12 h-12 text-purple-300" />
+                        </div>
+                      </div>
+                    )}
+                    {/* Order Badge */}
+                    <div className="absolute top-4 left-4 bg-white text-purple-600 text-sm font-black w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg z-20 border border-purple-100">
+                      #{index + 1}
                     </div>
+                  </div>
 
-                    {/* Info Section */}
-                    <div className="flex-1 p-8 flex flex-col">
-                      <div className="flex items-start justify-between gap-4 mb-4">
-                        <div>
-                          <h3 className="text-2xl font-black text-slate-800 break-keep">{dev.name}</h3>
-                          {dev.role && (
-                            <div className="inline-flex items-center gap-1.5 mt-1.5 px-3 py-1 bg-purple-50 text-purple-600 text-sm font-bold rounded-full whitespace-nowrap">
-                              <Briefcase className="w-3.5 h-3.5" />
-                              {dev.role}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {dev.bio && (
-                        <p className="text-lg font-medium text-slate-600 mb-4 leading-relaxed">{dev.bio}</p>
-                      )}
-
-                      {dev.introduction && (
-                        <div className="bg-slate-50 rounded-2xl p-5 mb-6 border border-slate-100 flex-1">
-                          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{dev.introduction}</p>
-                        </div>
-                      )}
-
-                      {/* Social Links */}
-                      {socialLinks(dev).length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-auto">
-                          {socialLinks(dev).map((link) => (
-                            <a
-                              key={link.label}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all hover:-translate-y-0.5 hover:shadow-md ${link.color}`}
-                            >
-                              <link.icon className="w-4 h-4" />
-                              {link.label}
-                              <ExternalLink className="w-3 h-3 opacity-50" />
-                            </a>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Admin Actions */}
-                      {['admin', 'developer'].includes(userRole as string) && (
-                        <div className="mt-6 flex justify-end gap-2 border-t border-slate-100 pt-6">
-                          <button
-                            onClick={() => handleEditClick(dev)}
-                            className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
-                          >
-                            <Edit2 className="w-4 h-4" /> 수정
-                          </button>
-                          <button
-                            onClick={() => handleDelete(dev.id)}
-                            className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
-                          >
-                            <Trash2 className="w-4 h-4" /> 삭제
-                          </button>
+                  {/* Info Section */}
+                  <div className="flex-1 p-6 flex flex-col bg-white relative z-20">
+                    <div className="text-center mb-5">
+                      <h3 className="text-2xl font-black text-slate-800 break-keep">{dev.name}</h3>
+                      {dev.role && (
+                        <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-purple-50 text-purple-600 text-sm font-bold rounded-full whitespace-nowrap">
+                          <Briefcase className="w-3.5 h-3.5" />
+                          {dev.role}
                         </div>
                       )}
                     </div>
+
+                    {dev.bio && (
+                      <p className="text-base font-bold text-slate-500 text-center mb-5 break-keep px-2">"{dev.bio}"</p>
+                    )}
+
+                    {dev.introduction && (
+                      <div className="bg-slate-50 rounded-2xl p-5 mb-6 border border-slate-100 flex-1 relative overflow-hidden group/intro">
+                        <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none">
+                          <Code2 className="w-12 h-12" />
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap relative z-10">{dev.introduction}</p>
+                      </div>
+                    )}
+
+                    {/* Social Links */}
+                    {socialLinks(dev).length > 0 && (
+                      <div className="flex flex-wrap justify-center gap-3 mt-auto mb-2">
+                        {socialLinks(dev).map((link) => (
+                          <a
+                            key={link.label}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center justify-center w-11 h-11 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg ${link.color}`}
+                            title={link.label}
+                          >
+                            <link.icon className="w-5 h-5" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Admin Actions */}
+                    {['admin', 'developer'].includes(userRole as string) && (
+                      <div className="mt-6 flex justify-center gap-2 border-t border-slate-100 pt-5">
+                        <button
+                          onClick={() => handleEditClick(dev)}
+                          className="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
+                        >
+                          <Edit2 className="w-4 h-4" /> 수정
+                        </button>
+                        <button
+                          onClick={() => handleDelete(dev.id)}
+                          className="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" /> 삭제
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
