@@ -310,9 +310,12 @@ export default function RecordAnalysisPage() {
                   <BarChart
                     data={selectedAthleteData.eventDetails.map((ed: any) => ({
                       name: ed.event,
-                      '내 기록': parseFloat(ed.myBest.toFixed(2)),
-                      '전국 평균': parseFloat(ed.nwAvg.toFixed(2)),
-                      '전국 1위': parseFloat(ed.nwTop.toFixed(2)),
+                      '내 기록': parseFloat(((ed.nwAvg / ed.myBest) * 100).toFixed(1)),
+                      '전국 평균': 100,
+                      '전국 1위': parseFloat(((ed.nwAvg / ed.nwTop) * 100).toFixed(1)),
+                      myTimeVal: ed.myBest,
+                      nwAvgVal: ed.nwAvg,
+                      nwTopVal: ed.nwTop
                     }))}
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                   >
@@ -322,22 +325,42 @@ export default function RecordAnalysisPage() {
                       axisLine={false} 
                       tickLine={false} 
                       tick={{ fill: '#64748B' }}
-                      label={{ value: '기록 (초) - 낮을수록 우수', angle: -90, position: 'insideLeft', style: { fill: '#94A3B8', fontSize: 12 } }} 
-                      domain={['auto', 'auto']}
+                      label={{ value: '전국 평균 대비 성취율 (%) - 높을수록 우수', angle: -90, position: 'insideLeft', style: { fill: '#94A3B8', fontSize: 12 } }} 
+                      domain={[0, 'auto']}
                     />
                     <Tooltip 
                       cursor={{ fill: '#F1F5F9' }}
-                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-                      formatter={(value: any) => [`${value}초 (${formatSecondsToTime(value)})`]}
+                      content={({ active, payload, label }: any) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white p-4 rounded-2xl shadow-xl border border-slate-100">
+                              <p className="font-bold text-slate-800 mb-2">{label}</p>
+                              {payload.map((p: any, index: number) => (
+                                <div key={index} className="flex items-center gap-2 mb-1">
+                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }}></div>
+                                  <span className="text-sm font-medium text-slate-600">{p.name}:</span>
+                                  <span className="text-sm font-bold" style={{ color: p.color }}>
+                                    {p.name === '내 기록' ? formatSecondsToTime(p.payload.myTimeVal) : 
+                                     p.name === '전국 평균' ? formatSecondsToTime(p.payload.nwAvgVal) : 
+                                     formatSecondsToTime(p.payload.nwTopVal)}
+                                    <span className="text-xs text-slate-400 ml-1">({p.value}%)</span>
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
                     />
                     <Legend wrapperStyle={{ paddingTop: '20px' }} />
                     <Bar dataKey="내 기록" fill="#3B82F6" radius={[6, 6, 0, 0]} maxBarSize={50} />
-                    <Bar dataKey="전국 평균" fill="#94A3B8" radius={[6, 6, 0, 0]} maxBarSize={50} />
                     <Bar dataKey="전국 1위" fill="#F59E0B" radius={[6, 6, 0, 0]} maxBarSize={50} />
+                    <Bar dataKey="전국 평균" fill="#94A3B8" radius={[6, 6, 0, 0]} maxBarSize={50} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <p className="text-center text-xs text-slate-400 mt-4">* 기록이 낮을수록(막대가 짧을수록) 더 빠른 기록입니다.</p>
+              <p className="text-center text-xs text-slate-400 mt-4">* 성취율(%)이 높을수록(막대가 위로 솟을수록) 전국 평균(100%) 대비 더 빠른 기록임을 의미합니다.</p>
             </div>
           ) : (
             <div className="bg-slate-50 p-12 rounded-3xl text-center border border-slate-100">
