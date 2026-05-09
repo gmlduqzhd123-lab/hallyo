@@ -1,0 +1,83 @@
+const fs = require('fs');
+
+const data = `
+|  51 | 자유형     | 수면을 미끄러져 가는 자유형 베이스 스트로크                            | [https://www.youtube.com/watch?v=e7C-DgSmo-g](https://www.youtube.com/watch?v=e7C-DgSmo-g) | 한다경 선수의 자유형 베이스 드릴 영상으로, 부드럽고 효율적인 스트로크 감각을 익히기 좋음. |
+|  52 | 자유형     | 빠른 자유형을 위한 전신감각 스피드 훈련                              | [https://www.youtube.com/watch?v=_s6QIe7gr9k](https://www.youtube.com/watch?v=_s6QIe7gr9k) | 자유형 스피드를 높이기 위한 전신 연결과 감각 훈련을 배울 수 있음.              |
+|  53 | 자유형     | 자유형의 모든 것 [KNSU 스포츠클럽]                              | [https://www.youtube.com/watch?v=jL_B6Mk1nfk](https://www.youtube.com/watch?v=jL_B6Mk1nfk) | 한국체육대학교 기반 콘텐츠로 자유형 핵심 기술을 폭넓게 정리하기 좋음.             |
+|  54 | 자유형 킥   | 왕초보 수영배우기 3화 - 자유형 발차기                              | [https://www.youtube.com/watch?v=Cv1_G1niINA](https://www.youtube.com/watch?v=Cv1_G1niINA) | 선수들도 기본을 다시 점검하기 좋은 자유형 킥 기본 영상.                    |
+|  55 | 자유형 호흡  | 왕초보 수영배우기 4화 - 손돌리기와 호흡                             | [https://www.youtube.com/watch?v=knmcy8iRQqo](https://www.youtube.com/watch?v=knmcy8iRQqo) | 자유형 팔돌리기와 호흡 타이밍을 기초부터 다시 확인할 수 있음.                 |
+|  56 | 자유형 턴   | 자유형 플립턴 마스터하기                                       | [https://www.youtube.com/watch?v=6kley6CTrAQ](https://www.youtube.com/watch?v=6kley6CTrAQ) | 자유형 경기에서 기록 단축에 중요한 플립턴을 단계적으로 익히기 좋음.              |
+|  57 | 평영·접영 턴 | 오픈턴 마스터하기                                           | [https://www.youtube.com/watch?v=Vv6BO44Euac](https://www.youtube.com/watch?v=Vv6BO44Euac) | 평영과 접영에서 사용하는 오픈턴을 정리한 영상으로, 터치 후 전환 동작 점검에 좋음.     |
+|  58 | 배영 턴    | 배영 롤 오버 턴 마스터하기                                     | [https://www.youtube.com/watch?v=balI6kn6Q5I](https://www.youtube.com/watch?v=balI6kn6Q5I) | 배영 턴을 더 빠르고 정확하게 만들고 싶은 선수들에게 추천.                   |
+|  59 | 자유형 턴   | 플립턴 강좌: 단 한 번의 성공                                   | [https://www.youtube.com/watch?v=2_z4QRS60Og](https://www.youtube.com/watch?v=2_z4QRS60Og) | 플립턴을 어려워하는 선수들이 회전 감각을 잡기 좋음.                       |
+|  60 | 스타트     | 수영레슨 비법전수 84편 - 그랩 스타트 기본편                          | [https://www.youtube.com/watch?v=RHuYnzLbC0I](https://www.youtube.com/watch?v=RHuYnzLbC0I) | 국가대표 출신 코치가 알려주는 그랩 스타트 기본 영상.                      |
+|  61 | 계영 스타트  | 수영레슨 비법전수 87편 - 릴레이스타트                              | [https://www.youtube.com/watch?v=hq_MgXcqQSo](https://www.youtube.com/watch?v=hq_MgXcqQSo) | 계영 인계와 릴레이 스타트 감각을 익히기 좋은 영상.                       |
+|  62 | 스트림라인   | 수영레슨 비법전수 3편 - 유선형                                  | [https://www.youtube.com/watch?v=0VgIaUOWrdY](https://www.youtube.com/watch?v=0VgIaUOWrdY) | 스타트와 턴 이후 기록을 좌우하는 유선형 자세를 점검할 수 있음.                |
+|  63 | 배영      | 수영레슨 비법전수 83편 - 배영 백돌핀킥                             | [https://www.youtube.com/watch?v=Fg3O7SvvrPQ](https://www.youtube.com/watch?v=Fg3O7SvvrPQ) | 배영 스타트와 턴 이후 잠영 구간을 강화하는 데 도움 됨.                    |
+|  64 | 배영      | 수영레슨 비법전수 81편 - 배영 헤드업드릴                            | [https://www.youtube.com/watch?v=Wu6f0owRlq8](https://www.youtube.com/watch?v=Wu6f0owRlq8) | 배영 자세 안정과 머리 위치 조절을 연습하기 좋음.                        |
+|  65 | 자유형 풀   | 수영레슨 비법전수 16편 - 자유형 풀동작훈련법 1                        | [https://www.youtube.com/watch?v=ObuTMv4rqQs](https://www.youtube.com/watch?v=ObuTMv4rqQs) | 자유형 팔로 물을 잡고 밀어내는 풀 동작을 교정하기 좋음.                    |
+|  66 | 배영      | 국가대표 박한별의 배영 잘하는 팁 - 배영스트록                          | [https://www.youtube.com/watch?v=o0p42PmHo2E](https://www.youtube.com/watch?v=o0p42PmHo2E) | 배영 스트로크와 몸의 균형을 국가대표 시범으로 볼 수 있음.                   |
+|  67 | 지상훈련    | 박한별 선수의 수영 전 지상훈련 루틴 20분                            | [https://www.youtube.com/watch?v=lrEDVVuAp2U](https://www.youtube.com/watch?v=lrEDVVuAp2U) | 수영 전 몸을 깨우는 지상훈련 루틴으로 훈련 전 준비운동 자료로 좋음.             |
+|  68 | 돌핀킥     | 수영 여신 박한별이 직접 알려주는 돌핀킥 레슨                           | [https://www.youtube.com/watch?v=hp9gBbjBhTI](https://www.youtube.com/watch?v=hp9gBbjBhTI) | 모든 영법에 도움이 되는 돌핀킥 감각을 배울 수 있음.                      |
+|  69 | 배영 드릴   | 수준 단계별 적절한 드릴 동작은? 다양한 배영 드릴 훈련 지도법                 | [https://www.youtube.com/watch?v=kg0UE-n9wv0](https://www.youtube.com/watch?v=kg0UE-n9wv0) | 배영 수준별 드릴을 확인할 수 있어 선수별 맞춤 훈련에 활용 가능.               |
+|  70 | 배영 콤비   | 끊기지 않는 배영 하는 방법 - 배영콤비훈련                            | [https://www.youtube.com/watch?v=VJkjFMkO5Tg](https://www.youtube.com/watch?v=VJkjFMkO5Tg) | 배영 팔동작과 킥 연결이 끊기는 선수에게 도움 됨.                        |
+|  71 | 배영 드릴   | 배영 드릴 - 다운스위프, 몸통 골반 롤링, 사이드 킥 롤링                   | [https://www.youtube.com/watch?v=wrcKIOgqrJE](https://www.youtube.com/watch?v=wrcKIOgqrJE) | 배영 롤링과 킥의 연결 감각을 익히는 드릴 영상.                         |
+|  72 | 배영 분석   | Backstroke Movement - Stroke, Kick, Turn / 배영선수 함찬미 | [https://www.youtube.com/watch?v=QU7K07xLA9Y](https://www.youtube.com/watch?v=QU7K07xLA9Y) | 배영 스트로크, 킥, 턴을 선수 움직임으로 관찰하기 좋음.                    |
+|  73 | 평영      | 평영 손 배우기 18년차 수영샘의 노하우                              | [https://www.youtube.com/watch?v=YdOM8GkWFk0](https://www.youtube.com/watch?v=YdOM8GkWFk0) | 평영 손동작과 머리 타이밍을 세밀하게 점검하기 좋음.                       |
+|  74 | 평영 분석   | Breaststroke Movement - 깔끔한 평영 움직임과 타이밍 살펴보기        | [https://www.youtube.com/watch?v=MwLFTjldakE](https://www.youtube.com/watch?v=MwLFTjldakE) | 평영 리듬, 글라이드, 킥 타이밍을 관찰하기 좋은 영상.                     |
+|  75 | 평영      | 상하체 분리 컨트롤과 평영 글라이드                                 | [https://www.youtube.com/watch?v=QhFPJp5P8FE](https://www.youtube.com/watch?v=QhFPJp5P8FE) | 평영에서 상체와 하체 타이밍이 맞지 않는 선수에게 추천.                     |
+|  76 | 평영      | 평영특강 3탄 - 앞으로 나아가는 평영, 상체에 달렸다                      | [https://www.youtube.com/watch?v=4VV7rpcBSWA](https://www.youtube.com/watch?v=4VV7rpcBSWA) | 평영 추진력이 약한 선수들이 상체 활용을 이해하기 좋음.                     |
+|  77 | 평영      | 평영 교과서대로 하면 망합니다                                    | [https://www.youtube.com/watch?v=IHGmwx5zW_A](https://www.youtube.com/watch?v=IHGmwx5zW_A) | 평영 글라이드와 웨이브 감각을 현실적으로 점검할 수 있음.                    |
+|  78 | 평영 지상훈련 | 수영지상운동 [평영]편                                        | [https://www.youtube.com/watch?v=Ix03JsU7TWQ](https://www.youtube.com/watch?v=Ix03JsU7TWQ) | 평영 킥과 자세를 지상에서 보완하는 데 활용 가능.                        |
+|  79 | 접영 드릴   | 접영 초급 / 접영 드릴 3가지                                   | [https://www.youtube.com/watch?v=ZFouVMrcjtg](https://www.youtube.com/watch?v=ZFouVMrcjtg) | 접영을 처음 다듬는 선수들이 기본 드릴을 익히기 좋음.                      |
+|  80 | 접영 드릴   | 스윔 드릴 마스터 - 레인을 활용한 접영 연습방법                         | [https://www.youtube.com/watch?v=Nc4pbcfi2z8](https://www.youtube.com/watch?v=Nc4pbcfi2z8) | 접영 리듬과 웨이브를 레인을 활용해 연습하는 방법.                        |
+|  81 | 접영 리듬   | 접영 교정 2-2-2 드릴                                      | [https://www.youtube.com/watch?v=wbJ_gKm-u08](https://www.youtube.com/watch?v=wbJ_gKm-u08) | 접영 입수킥과 출수킥의 리듬을 일정하게 만드는 데 도움 됨.                   |
+|  82 | 접영      | 접영을 연습해도 실력이 늘지 않는다면 이걸 꼭 해야 합니다                    | [https://www.youtube.com/watch?v=2u-PGc4ce8E](https://www.youtube.com/watch?v=2u-PGc4ce8E) | 접영이 무겁거나 리듬이 안 잡히는 선수들에게 추천.                        |
+|  83 | 접영 킥    | 접영 입출수킥 드릴                                          | [https://www.youtube.com/watch?v=Tyw_jxCKsK0](https://www.youtube.com/watch?v=Tyw_jxCKsK0) | 접영 킥 타이밍과 몸의 웨이브 연결을 익히기 좋음.                        |
+|  84 | 접영 드릴   | 접영 드릴 - 가장 빠른 구간에서의 저항을 피해보도록 해요                    | [https://www.youtube.com/watch?v=Rqcr03_dX9Y](https://www.youtube.com/watch?v=Rqcr03_dX9Y) | 접영에서 속도를 잃지 않는 몸의 움직임을 연습할 수 있음.                    |
+|  85 | 접영 교정   | 접영 구부러지는 팔 드릴 교정 지도법                                | [https://www.youtube.com/watch?v=h94XlBEGvS0](https://www.youtube.com/watch?v=h94XlBEGvS0) | 접영 리커버리 때 팔이 구부러지는 문제를 교정하는 데 도움 됨.                 |
+|  86 | 자유형 캐치  | 최대 캐치 길이와 실제 가동 범위를 활용한 최대 효율의 스트로크                 | [https://www.youtube.com/watch?v=5MA1YMA1Yq4](https://www.youtube.com/watch?v=5MA1YMA1Yq4) | 자유형 캐치 길이와 팔꿈치 활용을 이해하기 좋은 영상.                      |
+|  87 | 자세 교정   | 스윔 드릴 마스터 - 신체포지션                                   | [https://www.youtube.com/watch?v=gkCIibMOBHo](https://www.youtube.com/watch?v=gkCIibMOBHo) | 수영에서 몸의 위치와 균형을 잡는 기본 개념을 익히기 좋음.                   |
+|  88 | 스트림라인   | Revealing the know-how of creating streamlines      | [https://www.youtube.com/watch?v=Vz3xhVqt6Lk](https://www.youtube.com/watch?v=Vz3xhVqt6Lk) | 백승호 선수가 알려주는 스트림라인 노하우 영상.                          |
+|  89 | 기본기     | 수영의 지름길 = 기본기 훈련                                    | [https://www.youtube.com/watch?v=Y9H5W1r8XQU](https://www.youtube.com/watch?v=Y9H5W1r8XQU) | 스트림라인과 기본 자세의 중요성을 다시 일깨우기 좋은 영상.                   |
+|  90 | 박태환     | 다시, 올림픽 - 한국 최초 수영 금메달의 순간                          | [https://www.youtube.com/watch?v=v3_H3EK-5Xs](https://www.youtube.com/watch?v=v3_H3EK-5Xs) | 박태환 선수의 올림픽 금메달 과정을 통해 큰 동기부여를 줄 수 있음.              |
+|  91 | 황선우     | 황선우 선수가 직접 그려본 성장 그래프                               | [https://www.youtube.com/watch?v=y6NgHVR8kw4](https://www.youtube.com/watch?v=y6NgHVR8kw4) | 황선우 선수의 성장 과정과 선수 생활 이야기를 들을 수 있음.                  |
+|  92 | 황선우     | 150m까지 수영천재의 독보적 질주, 세계를 놀래킨 18살 황선우                | [https://www.youtube.com/watch?v=skbMCy4stcE](https://www.youtube.com/watch?v=skbMCy4stcE) | 어린 선수들이 황선우의 도전과 가능성을 보며 자극받기 좋음.                   |
+|  93 | 국가대표    | 파리 첫 훈련 황선우·김우민 “이제 올림픽 실감”                         | [https://www.youtube.com/watch?v=DKgEQomUHf4](https://www.youtube.com/watch?v=DKgEQomUHf4) | 큰 대회를 앞둔 국가대표의 현장 분위기와 준비 과정을 볼 수 있음.               |
+|  94 | 국가대표 다큐 | 수영 경영 국가대표팀 5달간의 기록 - 02편                           | [https://www.youtube.com/watch?v=JYeMJOv9HgM](https://www.youtube.com/watch?v=JYeMJOv9HgM) | 국가대표팀이 세계대회와 올림픽을 준비하는 과정을 담은 영상.                   |
+|  95 | 전지훈련    | 남자 자유형 국가대표 선수들 호주 전지훈련 출국                          | [https://www.youtube.com/watch?v=iHdprdGJE-8](https://www.youtube.com/watch?v=iHdprdGJE-8) | 황선우, 김우민 등 대표 선수들의 전지훈련 출발 장면을 볼 수 있음.              |
+|  96 | 국가대표 훈련 | 올림픽 경기장에서 첫 훈련한 수영 황금세대                             | [https://www.youtube.com/watch?v=Yxrpth5vq08](https://www.youtube.com/watch?v=Yxrpth5vq08) | 올림픽 경기장에서 훈련하는 대표팀 모습을 통해 대회 분위기를 느낄 수 있음.          |
+|  97 | 김우민     | 김우민 자유형 400m 금메달! 13년 만에 수영 3관왕                     | [https://www.youtube.com/watch?v=I2yeJH04EBU](https://www.youtube.com/watch?v=I2yeJH04EBU) | 김우민 선수의 끈기와 레이스 운영을 보며 중장거리 선수들이 자극받기 좋음.           |
+|  98 | 김우민     | 김우민 “사지 타들어 가는 느낌…메달 위해 극복”                         | [https://www.youtube.com/watch?v=tFOm3JWCdFM](https://www.youtube.com/watch?v=tFOm3JWCdFM) | 힘든 훈련과 경기 고통을 이겨내는 국가대표의 마음가짐을 배울 수 있음.             |
+|  99 | 계영      | 황선우 등 계영 대표팀, 800m 한국 신기록 세우며 결승행                   | [https://www.youtube.com/watch?v=ULFNtSYlAL4](https://www.youtube.com/watch?v=ULFNtSYlAL4) | 단체전 계영의 힘과 팀워크를 보여주는 영상.                            |
+| 100 | 계영      | 국가대표 드림팀이 해냈구나! 대회 신기록 우승                           | [https://www.youtube.com/watch?v=tpddRzCBRFY](https://www.youtube.com/watch?v=tpddRzCBRFY) | 황선우·김우민 등 대표급 선수들의 계영 레이스를 보며 팀 경기 동기부여 가능.         |
+`;
+
+const lines = data.split('\n').filter(l => l.trim() !== '' && (l.includes('|  5') || l.includes('|  6') || l.includes('|  7') || l.includes('|  8') || l.includes('|  9') || l.includes('| 10')));
+let sql = "INSERT INTO public.training_videos (url, title, description, category, status) VALUES\n";
+
+const values = lines.map(line => {
+  const parts = line.split('|').map(p => p.trim());
+  if (parts.length < 5) return null;
+  const num = parts[1];
+  const type = parts[2];
+  let title = parts[3].replace(/'/g, "''");
+  let url = parts[4];
+  const match = url.match(/\[(.*?)\]/);
+  if (match) {
+    url = match[1];
+  }
+  let desc = parts[5].replace(/'/g, "''");
+  
+  let category = '훈련 영상';
+  if (type === '지상훈련' || type.includes('지상훈련')) category = '기타 수영 관련';
+  else if (type === '박태환' || type === '황선우' || type.includes('국가대표') || type === '전지훈련' || type === '김우민' || type === '계영') category = '동기 유발';
+  else if (title.includes('노하우') || title.includes('꿀팁') || title.includes('방법') || title.includes('이유')) category = '수영 상식';
+  else category = '훈련 영상';
+
+  return `('${url}', '${title}', '${desc}', '${category}', 'approved')`;
+}).filter(Boolean);
+
+sql += values.join(',\n') + ';';
+
+fs.writeFileSync('scratch/insert_videos2.sql', sql);
