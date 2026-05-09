@@ -53,17 +53,20 @@ export default function NationwideRecordsPage() {
       }
 
       if (selectedGrade !== 'all') {
-        const gradeNum = parseInt(selectedGrade.replace('학년', ''), 10)
-        if (!isNaN(gradeNum)) {
+        // 정규식을 이용해 숫자만 추출하여 정수형(Number)으로 변환
+        const gradeStr = selectedGrade.replace(/[^0-9]/g, '')
+        const gradeNum = Number(gradeStr)
+        if (gradeStr && !isNaN(gradeNum)) {
           query = query.eq('grade', gradeNum)
           debugFilters.grade = gradeNum
         }
       }
 
       if (selectedEvent !== 'all') {
+        // 띄어쓰기 제거 후 eq로 검색
         const cleanEvent = selectedEvent.replace(/\s+/g, '')
-        query = query.ilike('event', `%${cleanEvent}%`)
-        debugFilters.event = `%${cleanEvent}%`
+        query = query.eq('event', cleanEvent)
+        debugFilters.event = cleanEvent
       }
 
       console.log('🚀 [Supabase Request] Filters applied:', debugFilters)
