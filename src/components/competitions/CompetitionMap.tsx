@@ -185,15 +185,15 @@ export function CompetitionMap({ competitions }: Props) {
                 <circle
                   cx={data.x}
                   cy={data.y - 5}
-                  r={12}
-                  className="fill-white/20"
+                  r={8}
+                  className="fill-white/95"
                 />
                 <text
                   x={data.x}
-                  y={data.y - 5}
+                  y={data.y - 4}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="fill-white text-[10px] font-bold pointer-events-none"
+                  className="fill-blue-700 text-[10px] font-extrabold pointer-events-none"
                 >
                   {data.count}
                 </text>
