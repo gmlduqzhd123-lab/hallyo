@@ -28,9 +28,9 @@ export default function EventRecordChart({ records }: EventRecordChartProps) {
   }))
 
   return (
-    <div className="h-[250px] w-full mt-4 mb-2">
+    <div className="h-[200px] md:h-[250px] w-full mt-4 mb-2">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
+        <LineChart data={data} margin={{ top: 10, right: 10, bottom: 5, left: -10 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
           <XAxis 
             dataKey="date" 

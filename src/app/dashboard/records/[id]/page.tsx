@@ -70,7 +70,7 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
         선수 명단으로 돌아가기
       </Link>
 
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
+      <div className="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5">
           <Timer className="w-48 h-48" />
         </div>
@@ -86,7 +86,7 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
                 </span>
               )}
             </div>
-            <h1 className="text-3xl md:text-4xl font-black text-accent-navy mb-2">{athlete?.name} 선수의 기록</h1>
+            <h1 className="text-2xl md:text-4xl font-black text-accent-navy mb-2 break-keep">{athlete?.name} 선수의 기록</h1>
           </div>
           <div>
             <AddAthleteRecord athleteId={id} userRole={userRole} schedules={schedules || []} />

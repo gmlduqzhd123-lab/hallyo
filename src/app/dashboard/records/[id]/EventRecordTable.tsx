@@ -90,7 +90,63 @@ export default function EventRecordTable({ eventRecords, userRole, athleteId }: 
 
   return (
     <>
-      <div className="overflow-x-auto w-full">
+      {/* Mobile Card View */}
+      <div className="md:hidden divide-y divide-slate-100">
+        {eventRecords.map((record: any) => (
+          <div key={record.id} className="px-5 py-4 flex items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-slate-800 text-sm truncate">{record.schedules?.title || '기타 기록'}</div>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className="text-xs text-slate-400 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {format(new Date(record.record_date), 'yyyy.MM.dd')}
+                </span>
+                {record.match_type && (
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    record.match_type === '결승' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {record.match_type}
+                  </span>
+                )}
+                {record.rank && (
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                    record.rank === 1 ? 'bg-yellow-100 text-yellow-600' :
+                    record.rank === 2 ? 'bg-slate-100 text-slate-500' :
+                    record.rank === 3 ? 'bg-orange-50 text-orange-600' :
+                    'bg-slate-50 text-slate-500'
+                  }`}>
+                    {record.rank}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="font-black text-blue-600 text-lg">
+                {formatTimeSeconds(record.record_time)}
+              </span>
+            </div>
+            {canEdit && (
+              <div className="flex gap-0.5 shrink-0">
+                <button 
+                  onClick={() => handleEditClick(record)}
+                  className="text-slate-400 hover:text-indigo-600 p-1.5 rounded-lg"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => handleDeleteClick(record.id)}
+                  className="text-rose-400 hover:text-rose-600 p-1.5 rounded-lg"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto w-full">
         <table className="w-full text-left whitespace-nowrap">
         <thead className="border-b border-slate-100 text-slate-500 text-sm font-bold">
           <tr>
@@ -138,9 +194,11 @@ export default function EventRecordTable({ eventRecords, userRole, athleteId }: 
                   <span className="text-slate-300">-</span>
                 )}
               </td>
-              <td className="px-6 py-4 text-slate-500 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                {format(new Date(record.record_date), 'yyyy.MM.dd')}
+              <td className="px-6 py-4 text-slate-500">
+                <span className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {format(new Date(record.record_date), 'yyyy.MM.dd')}
+                </span>
               </td>
               <td className="px-6 py-4 text-right">
                 <span className="font-black text-blue-600 text-lg">

@@ -100,7 +100,7 @@ function VideoItem({ video, userRole, userId, approveMutation, handleDelete, han
             <span className="bg-purple-100 text-purple-600 px-2 py-0.5 rounded-md text-xs font-bold shrink-0">
               {video.category || '기타'}
             </span>
-            <h3 className="font-bold text-xl text-slate-900 line-clamp-2">{video.title}</h3>
+            <h3 className="font-bold text-lg md:text-xl text-slate-900 line-clamp-2 break-keep">{video.title}</h3>
           </div>
           {video.description && (
             <p className="text-slate-500 mt-2 text-sm whitespace-pre-wrap line-clamp-3">
@@ -272,8 +272,8 @@ export default function CompetitionVideosPage() {
             <Film className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-accent-navy">대회 영상</h1>
-            <p className="text-sm text-slate-500 font-medium break-keep">유튜브 링크 또는 구글 드라이브 링크를 등록하여 대회 영상을 공유하세요.</p>
+            <h1 className="text-xl md:text-2xl font-black text-accent-navy break-keep">대회 영상</h1>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium break-keep">유튜브 링크 또는 구글 드라이브 링크를 등록하여 대회 영상을 공유하세요.</p>
           </div>
         </div>
 
