@@ -3,12 +3,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import React, { useState, useEffect } from 'react'
-import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote, BookOpen, Download, Share, PlusSquare, MoreVertical, X } from 'lucide-react'
+import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote, BookOpen, Download, Share, PlusSquare, MoreVertical, X, HelpCircle, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { quotes } from '@/lib/quotes'
 import { poems } from '@/data/poems'
 import { essays } from '@/data/essays'
 import { letters } from '@/data/letters'
+import { quizzes } from '@/data/quizzes'
 
 // Fetch athletes (is_deleted = false)
 async function fetchActiveAthletes() {
@@ -76,7 +77,9 @@ export default function DashboardPage() {
   const [poem, setPoem] = useState<{title: string, page: string, content: string} | null>(null)
   const [essay, setEssay] = useState<{title: string, content: string} | null>(null)
   const [letter, setLetter] = useState<{title: string, content: string} | null>(null)
-  const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay' | 'letter'>('essay')
+  const [quiz, setQuiz] = useState<any>(null)
+  const [showQuizAnswer, setShowQuizAnswer] = useState(false)
+  const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay' | 'letter' | 'quiz'>('essay')
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   const [showInstallGuide, setShowInstallGuide] = useState(false)
@@ -103,6 +106,9 @@ export default function DashboardPage() {
 
     const randomLetter = letters[Math.floor(Math.random() * letters.length)]
     setLetter(randomLetter)
+    
+    const randomQuiz = quizzes[Math.floor(Math.random() * quizzes.length)]
+    setQuiz(randomQuiz)
     
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault()
@@ -317,6 +323,16 @@ export default function DashboardPage() {
           >
             💌 사랑의 편지
           </button>
+          <button
+            onClick={() => setActiveReadingTab('quiz')}
+            className={`px-5 py-2.5 rounded-full font-bold text-sm md:text-base transition-all shadow-sm ${
+              activeReadingTab === 'quiz'
+                ? 'bg-emerald-500 text-white shadow-emerald-500/30 border border-emerald-500'
+                : 'bg-white text-emerald-400 hover:bg-emerald-50 border border-emerald-100'
+            }`}
+          >
+            💡 수영 상식 퀴즈
+          </button>
         </div>
 
         {/* Voice of Mind - Poems */}
@@ -422,6 +438,69 @@ export default function DashboardPage() {
                 <div className="text-base md:text-lg text-slate-700 leading-[2.2] font-medium whitespace-pre-wrap max-w-2xl text-center md:text-left break-keep">
                   {letter.content}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Swimming Trivia Quiz */}
+        {activeReadingTab === 'quiz' && quiz && (
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-[32px] p-6 md:p-8 border border-emerald-100/50 shadow-sm shadow-emerald-500/5 relative overflow-hidden group animate-in fade-in zoom-in-95 duration-500">
+            <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 relative z-10">
+              <h3 className="font-extrabold text-xl md:text-2xl text-emerald-900 flex items-center gap-3">
+                <span className="bg-white p-2.5 rounded-xl shadow-sm text-emerald-500 shrink-0">
+                  <HelpCircle className="w-5 h-5 md:w-6 md:h-6" />
+                </span>
+                <span className="break-keep">
+                  수영 상식 퀴즈 💡
+                </span>
+              </h3>
+              <button 
+                onClick={() => {
+                  setQuiz(quizzes[Math.floor(Math.random() * quizzes.length)])
+                  setShowQuizAnswer(false)
+                }}
+                className="shrink-0 text-xs md:text-sm font-bold text-emerald-500 hover:text-white bg-white hover:bg-emerald-400 px-4 py-2 rounded-full transition-all shadow-sm flex items-center gap-2 border border-emerald-100"
+              >
+                다른 퀴즈 풀기 🎲
+              </button>
+            </div>
+            
+            <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 md:p-10 border border-white shadow-inner relative z-10">
+              <div className="flex flex-col items-center w-full">
+                <div className="bg-emerald-100/80 text-emerald-600 font-bold px-3 py-1 rounded-lg text-sm mb-4">
+                  {quiz.type}
+                </div>
+                <h4 className="text-xl md:text-2xl font-black text-slate-800 mb-8 break-keep text-center">
+                  Q. {quiz.question}
+                </h4>
+                
+                {quiz.options && (
+                  <div className="flex flex-col gap-3 w-full max-w-lg mb-8">
+                    {quiz.options.map((opt: string, idx: number) => (
+                      <div key={idx} className="bg-white/80 p-4 rounded-xl border border-emerald-100 text-slate-700 font-medium text-center shadow-sm">
+                        {opt}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {!showQuizAnswer ? (
+                  <button 
+                    onClick={() => setShowQuizAnswer(true)}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-3.5 rounded-2xl transition-all shadow-lg shadow-emerald-500/30 flex items-center gap-2"
+                  >
+                    <CheckCircle className="w-5 h-5" />
+                    정답 확인하기
+                  </button>
+                ) : (
+                  <div className="w-full max-w-lg bg-emerald-500 text-white p-6 rounded-2xl flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 shadow-lg shadow-emerald-500/30">
+                    <span className="text-emerald-100 font-bold mb-2">정답</span>
+                    <span className="text-2xl md:text-3xl font-black break-keep text-center">{quiz.answer}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
