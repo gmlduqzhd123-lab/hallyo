@@ -112,7 +112,8 @@ export default function RecordAnalysisPage() {
       const eventDetails: any[] = [];
 
       aRecords.forEach(r => {
-        const eventKey = `${athlete.gender}_${normalizeEventName(r.event_name)}`;
+        const aGender = athlete.gender === 'M' ? '남자' : '여자';
+        const eventKey = `${aGender}_${normalizeEventName(r.event_name)}`;
         const benchmark = nwBenchmarks[eventKey];
         if (!benchmark) return;
 
