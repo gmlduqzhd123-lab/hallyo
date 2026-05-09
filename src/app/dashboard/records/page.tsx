@@ -34,7 +34,7 @@ export default function RecordsSelectionPage() {
         </Link>
 
         {/* National Athletes Card */}
-        <Link href="/dashboard/records/national" className="group relative bg-gradient-to-br from-amber-500 to-orange-500 rounded-[32px] p-8 md:p-10 text-white overflow-hidden shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:-translate-y-1 transition-all duration-300">
+        <Link href="/dashboard/records/nationwide" className="group relative bg-gradient-to-br from-amber-500 to-orange-500 rounded-[32px] p-8 md:p-10 text-white overflow-hidden shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:-translate-y-1 transition-all duration-300">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 transition-transform duration-700 group-hover:scale-110"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-yellow-300/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
           
