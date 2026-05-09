@@ -9,6 +9,7 @@ import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { GlobalSearch } from '@/components/global-search'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -100,19 +101,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        {/* Desktop Header */}
+        <header className="hidden md:flex bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4 items-center justify-between sticky top-0 z-40">
+          <h1 className="font-bold text-slate-800 text-lg">
+            {navItems.find(item => item.href === pathname)?.name || '여수한려초 수영부'}
+          </h1>
+          <GlobalSearch />
+        </header>
+
         {/* Mobile Header */}
-        <header className="md:hidden bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between sticky top-0 z-50">
+        <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-4 flex items-center justify-between sticky top-0 z-40">
           <Link href="/login" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={32} height={32} className="w-8 h-8 object-contain rounded-lg" />
             <h1 className="font-bold text-accent-navy text-sm">HALLYOSWIM</h1>
           </Link>
-          <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 bg-slate-50 rounded-xl text-slate-600"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <GlobalSearch />
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 bg-slate-50 rounded-xl text-slate-600"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </header>
 
         {/* Mobile Navigation Dropdown */}
