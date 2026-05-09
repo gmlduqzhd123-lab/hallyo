@@ -107,11 +107,11 @@ export function GlobalSearch() {
         className={`flex items-center rounded-full transition-all duration-300 overflow-hidden ${
           isExpanded 
             ? 'w-full md:w-80 px-4 py-2 ring-2 ring-primary/20 bg-white border border-primary/30 shadow-sm' 
-            : 'w-10 h-10 justify-center cursor-pointer bg-slate-100 hover:bg-slate-200 md:w-64 md:px-4 md:py-2 md:justify-start md:bg-slate-100'
+            : 'w-10 h-10 items-center justify-center cursor-pointer bg-slate-100 hover:bg-slate-200 md:w-64 md:px-4 md:py-2 md:justify-start md:bg-slate-100'
         }`}
         onClick={() => !isExpanded && handleExpand()}
       >
-        <Search className="w-5 h-5 text-slate-500 flex-shrink-0" />
+        <Search className={`w-5 h-5 text-slate-500 flex-shrink-0 ${!isExpanded ? 'mx-auto md:mx-0' : ''}`} />
         <input 
           ref={inputRef}
           type="text"
