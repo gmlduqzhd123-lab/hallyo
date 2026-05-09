@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { Calendar, MapPin } from 'lucide-react'
@@ -195,6 +195,14 @@ export default function DynamicMap({ competitions }: DynamicMapProps) {
             position={[group.lat, group.lng]}
             icon={customIcon}
           >
+            <Tooltip permanent direction="top" offset={[0, -40]} className="!bg-white/95 !backdrop-blur-sm !border-0 !shadow-md !text-slate-800 !font-bold !rounded-xl !px-3 !py-1.5 !whitespace-nowrap !text-xs text-center z-50">
+              <div className="flex flex-col items-center gap-0.5">
+                <span>{group.location}</span>
+                <span className="text-[10px] text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-full">
+                  {group.competitions.length}개 대회
+                </span>
+              </div>
+            </Tooltip>
             <Popup className="rounded-2xl min-w-[220px]">
               <div className="p-1 max-h-[350px] overflow-y-auto custom-scrollbar">
                 <div className="sticky top-0 bg-white z-10 flex flex-col gap-1 pb-3 mb-2 border-b border-slate-100">
