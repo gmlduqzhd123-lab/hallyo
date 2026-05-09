@@ -99,7 +99,7 @@ export default function LoginPage() {
         </form>
       </div>
       <div className="mt-8 text-center text-slate-400 text-sm font-medium tracking-wide">
-        © 2026. [엽쌤, 달디단] All rights reserved.
+        © 2026. 엽쌤, 달디단 All rights reserved.
       </div>
     </div>
   )
