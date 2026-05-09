@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Activity, TrendingUp, Medal, AlertCircle, Target, Users, Zap, CheckCircle } from 'lucide-react'
+import { Activity, TrendingUp, Medal, AlertCircle, Target, Users, Zap, CheckCircle, PlayCircle } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { PageHeader } from '@/components/ui/page-header'
 
@@ -89,7 +89,34 @@ export default function RecordAnalysisPage() {
     }
   })
 
-  const isLoading = athletesLoading || localLoading || nationwideLoading
+  // Fetch Videos for recommendations
+  const { data: trainingVideos, isPending: trainingLoading } = useQuery({
+    queryKey: ['training_videos'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('training_videos')
+        .select('*')
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const { data: competitionVideos, isPending: compVideoLoading } = useQuery({
+    queryKey: ['competition_videos'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('competition_videos')
+        .select('*')
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const isLoading = athletesLoading || localLoading || nationwideLoading || trainingLoading || compVideoLoading;
 
   const analysisData = useMemo(() => {
     if (!athletes || !localRecords || !nationwide) return null;
@@ -221,6 +248,47 @@ export default function RecordAnalysisPage() {
   }
 
   const selectedAthleteData = analysisData?.athleteAnalysis.find(a => a.id === selectedAthleteId);
+
+  // Generate Recommended Videos
+  const recommendedVideos = useMemo(() => {
+    if (!selectedAthleteData || (!trainingVideos && !competitionVideos)) return [];
+    
+    let allVideos = [
+      ...(trainingVideos || []).map((v: any) => ({ ...v, type: 'training' })),
+      ...(competitionVideos || []).map((v: any) => ({ ...v, type: 'competition' }))
+    ];
+
+    if (allVideos.length === 0) return [];
+
+    const focusEvent = selectedAthleteData.bestEvent?.event || '';
+    const strokeType = focusEvent.split(' ')[0] || ''; // e.g. "자유형"
+
+    // 1. Exact event match in title or description
+    let matches = allVideos.filter(v => 
+      (v.title && v.title.includes(focusEvent)) || 
+      (v.description && v.description.includes(focusEvent))
+    );
+
+    // 2. If less than 3 matches, try stroke type match
+    if (matches.length < 3 && strokeType) {
+      const strokeMatches = allVideos.filter(v => 
+        !matches.includes(v) &&
+        ((v.title && v.title.includes(strokeType)) || 
+         (v.description && v.description.includes(strokeType)) ||
+         (v.category && v.category.includes(strokeType)) ||
+         (v.sub_category && v.sub_category.includes(strokeType)))
+      );
+      matches = [...matches, ...strokeMatches];
+    }
+
+    // 3. Fill the rest with the most recent videos if still under 3
+    if (matches.length < 3) {
+      const remaining = allVideos.filter(v => !matches.includes(v)).slice(0, 5 - matches.length);
+      matches = [...matches, ...remaining];
+    }
+
+    return matches.slice(0, 5); // Return up to 5 videos
+  }, [selectedAthleteData, trainingVideos, competitionVideos]);
 
   return (
     <main className="space-y-6 pb-20">
@@ -464,6 +532,46 @@ export default function RecordAnalysisPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* Recommended Videos */}
+          {recommendedVideos.length > 0 && (
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <PlayCircle className="w-6 h-6 text-primary" />
+                <h3 className="text-lg font-bold text-slate-800">실력 향상 추천 영상</h3>
+              </div>
+              <p className="text-sm text-slate-500 mb-6">현재 기록을 바탕으로 집중 훈련이 필요한 종목({selectedAthleteData.bestEvent?.event})의 추천 영상입니다.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {recommendedVideos.map((video: any) => (
+                  <a 
+                    key={video.id} 
+                    href={video.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group block"
+                  >
+                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-100 mb-3 border border-slate-200 group-hover:border-primary/30 transition-colors">
+                      <img 
+                        src={`https://img.youtube.com/vi/${video.url.split('v=')[1]?.split('&')[0] || video.url.split('/').pop()}/mqdefault.jpg`} 
+                        alt={video.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-video.svg'; // Fallback image if youtube thumbnail fails
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors" />
+                      <div className="absolute bottom-2 right-2 px-2 py-1 bg-slate-900/80 backdrop-blur-sm rounded-lg text-white text-xs font-bold shadow-sm">
+                        {video.type === 'training' ? '수영 영상' : '대회 영상'}
+                      </div>
+                    </div>
+                    <h4 className="font-bold text-slate-800 line-clamp-2 text-sm group-hover:text-primary transition-colors">{video.title}</h4>
+                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">{video.description || '선수 맞춤형 추천 영상'}</p>
+                  </a>
+                ))}
               </div>
             </div>
           )}
