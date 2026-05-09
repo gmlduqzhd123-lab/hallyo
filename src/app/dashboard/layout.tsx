@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp } from 'lucide-react'
 import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
@@ -13,6 +13,9 @@ import { GlobalSearch } from '@/components/global-search'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [showScrollTop, setShowScrollTop] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  
   const pathname = usePathname()
   const supabase = createClient()
 
@@ -57,6 +60,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleNavClick = (e: React.MouseEvent, item: any) => {
     setIsMobileMenuOpen(false)
+  }
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      setShowScrollTop(scrollContainerRef.current.scrollTop > 300)
+    }
+  }
+
+  const scrollToTop = () => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const visibleNavItems = navItems.filter(item => {
@@ -153,9 +166,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
 
         {/* Content Area */}
-        <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div 
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 p-4 md:p-8 overflow-y-auto"
+        >
           {children}
         </div>
+
+        {/* Scroll to Top Button */}
+        {showScrollTop && (
+          <button
+            onClick={scrollToTop}
+            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1 z-50 animate-in fade-in zoom-in duration-300"
+            aria-label="맨 위로 가기"
+          >
+            <ArrowUp className="w-6 h-6" />
+          </button>
+        )}
       </main>
     </div>
   )
