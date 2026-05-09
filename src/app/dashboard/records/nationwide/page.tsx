@@ -210,13 +210,13 @@ export default function NationwideRecordsPage() {
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 text-slate-600 font-bold">
                 <tr>
+                  <th className="px-6 py-4 whitespace-nowrap">순위</th>
+                  <th className="px-6 py-4 whitespace-nowrap">이름</th>
+                  <th className="px-6 py-4 whitespace-nowrap">기록</th>
+                  <th className="px-6 py-4 whitespace-nowrap">소속(학교)</th>
                   <th className="px-6 py-4 whitespace-nowrap">종목</th>
                   <th className="px-6 py-4 whitespace-nowrap">성별</th>
                   <th className="px-6 py-4 whitespace-nowrap">학년</th>
-                  <th className="px-6 py-4 whitespace-nowrap">순위</th>
-                  <th className="px-6 py-4 whitespace-nowrap">이름</th>
-                  <th className="px-6 py-4 whitespace-nowrap">소속(학교)</th>
-                  <th className="px-6 py-4 whitespace-nowrap">기록</th>
                   <th className="px-6 py-4 whitespace-nowrap text-right">기준 년도</th>
                 </tr>
               </thead>
@@ -263,19 +263,6 @@ export default function NationwideRecordsPage() {
 
                     return (
                       <tr key={ranking.id || `fallback-key-${idx}`} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
-                          {safeEvent}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            isMale ? 'bg-blue-100 text-blue-600' : 'bg-rose-100 text-rose-600'
-                          }`}>
-                            {safeGender}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
-                          {gradeNum ? `${gradeNum}학년` : '-'}
-                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
                             displayRank === 1 ? 'bg-amber-100 text-amber-600' :
@@ -289,11 +276,24 @@ export default function NationwideRecordsPage() {
                         <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900">
                           {athleteName}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap font-mono font-bold text-amber-600">
+                          {safeRecord}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-slate-600">
                           {schoolName}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap font-mono font-bold text-amber-600">
-                          {safeRecord}
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
+                          {safeEvent}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            isMale ? 'bg-blue-100 text-blue-600' : 'bg-rose-100 text-rose-600'
+                          }`}>
+                            {safeGender}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
+                          {gradeNum ? `${gradeNum}학년` : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-slate-400">
                           {yearNum}
