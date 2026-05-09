@@ -181,13 +181,13 @@ export default function DashboardPage() {
       <UpcomingCompetition />
 
       {/* Stats Widget */}
-      <div className="bg-gradient-to-br from-sky-400 via-blue-400 to-indigo-500 rounded-[32px] p-6 md:p-8 text-white relative overflow-hidden shadow-xl shadow-blue-500/20 min-h-[160px] border border-white/20">
+      <div className="bg-gradient-to-br from-sky-400 via-blue-400 to-indigo-500 rounded-[28px] p-5 md:p-6 text-white relative overflow-hidden shadow-xl shadow-blue-500/20 min-h-[120px] border border-white/20 flex flex-col justify-center">
         {/* Decorative background elements */}
         <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="hidden md:block absolute bottom-0 left-10 w-40 h-40 bg-sky-300/30 rounded-full blur-2xl translate-y-1/2"></div>
         <div className="absolute top-10 left-1/2 w-20 h-20 bg-pink-300/30 rounded-full blur-xl"></div>
         
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 h-full">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 h-full">
           {isPending ? (
             <div className="flex items-center gap-3 animate-pulse text-blue-100 font-bold">
               <div className="w-6 h-6 border-4 border-t-white border-white/30 rounded-full animate-spin"></div>
@@ -201,20 +201,20 @@ export default function DashboardPage() {
           ) : (
             <React.Fragment>
               <div>
-                <p className="text-white/80 font-bold text-sm md:text-base mb-1 tracking-wide">우리 수영부 요정들 🧚‍♀️</p>
+                <p className="text-white/80 font-bold text-xs md:text-sm mb-1 tracking-wide">우리 수영부 요정들 🧚‍♀️</p>
                 <div className="flex items-baseline gap-2">
-                  <h2 className="text-5xl md:text-6xl font-black drop-shadow-md">총 {total}명</h2>
+                  <h2 className="text-4xl md:text-5xl font-black drop-shadow-md">총 {total}명</h2>
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 md:mt-0">
-                <Link href="/dashboard/athletes" className="bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md px-4 sm:px-5 py-2 sm:py-3 rounded-2xl flex items-center gap-2 border border-white/20 shadow-lg shadow-black/5 flex-1 min-w-[120px] justify-center cursor-pointer">
-                  <span className="text-xl sm:text-2xl drop-shadow-sm">👦</span>
-                  <span className="font-bold text-base sm:text-lg text-white whitespace-nowrap">남 ( {boys} )명</span>
+              <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+                <Link href="/dashboard/athletes" className="bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md px-4 py-2 sm:py-2.5 rounded-2xl flex items-center gap-2 border border-white/20 shadow-lg shadow-black/5 flex-1 min-w-[100px] justify-center cursor-pointer">
+                  <span className="text-lg sm:text-xl drop-shadow-sm">👦</span>
+                  <span className="font-bold text-sm sm:text-base text-white whitespace-nowrap">남 ( {boys} )명</span>
                 </Link>
-                <Link href="/dashboard/athletes" className="bg-pink-400/30 hover:bg-pink-400/40 transition-colors backdrop-blur-md px-4 sm:px-5 py-2 sm:py-3 rounded-2xl flex items-center gap-2 border border-pink-300/30 shadow-lg shadow-black/5 flex-1 min-w-[120px] justify-center cursor-pointer">
-                  <span className="text-xl sm:text-2xl drop-shadow-sm">👧</span>
-                  <span className="font-bold text-base sm:text-lg text-white whitespace-nowrap">여 ( {girls} )명</span>
+                <Link href="/dashboard/athletes" className="bg-pink-400/30 hover:bg-pink-400/40 transition-colors backdrop-blur-md px-4 py-2 sm:py-2.5 rounded-2xl flex items-center gap-2 border border-pink-300/30 shadow-lg shadow-black/5 flex-1 min-w-[100px] justify-center cursor-pointer">
+                  <span className="text-lg sm:text-xl drop-shadow-sm">👧</span>
+                  <span className="font-bold text-sm sm:text-base text-white whitespace-nowrap">여 ( {girls} )명</span>
                 </Link>
               </div>
             </React.Fragment>
@@ -222,32 +222,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Random Quote Widget */}
-      <div className={`transition-all duration-700 transform ${quote ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        {quote && (
-          <div className="bg-gradient-to-r from-amber-200 via-orange-200 to-rose-200 rounded-[32px] p-[3px] shadow-lg shadow-orange-500/10">
-            <div className="bg-white/90 backdrop-blur-sm rounded-[29px] p-6 md:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden h-full border border-white">
-              <div className="absolute top-4 left-6 text-orange-200 opacity-60">
-                <Quote className="w-16 h-16" fill="currentColor" />
-              </div>
-              <p className="relative z-10 text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 leading-relaxed px-4 md:px-12 py-4 drop-shadow-sm">
-                "{quote}"
-              </p>
-              <div className="relative z-10 flex flex-col items-center gap-1 mt-2">
-                <p className="text-sm font-bold text-orange-400/80 tracking-widest uppercase">
-                  오늘의 긍정 에너지 ✨
-                </p>
-                <button 
-                  onClick={() => setQuote(quotes[Math.floor(Math.random() * quotes.length)])}
-                  className="text-xs text-orange-500 hover:text-white font-bold mt-2 px-4 py-1.5 bg-orange-50 hover:bg-gradient-to-r hover:from-orange-400 hover:to-rose-400 rounded-full transition-all duration-300 shadow-sm"
-                >
-                  다른 명언 보기 🎯
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* Main Navigation Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -288,6 +262,33 @@ export default function DashboardPage() {
             </div>
           </Link>
         </div>
+      </div>
+
+      {/* Random Quote Widget */}
+      <div className={`transition-all duration-700 transform ${quote ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        {quote && (
+          <div className="bg-gradient-to-r from-amber-200 via-orange-200 to-rose-200 rounded-[24px] p-[3px] shadow-sm shadow-orange-500/10">
+            <div className="bg-white/90 backdrop-blur-sm rounded-[21px] p-5 md:p-6 flex flex-col items-center justify-center text-center relative overflow-hidden h-full border border-white">
+              <div className="absolute top-2 left-4 text-orange-200 opacity-60">
+                <Quote className="w-12 h-12" fill="currentColor" />
+              </div>
+              <p className="relative z-10 text-base md:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 leading-relaxed px-4 md:px-12 py-2 drop-shadow-sm">
+                "{quote}"
+              </p>
+              <div className="relative z-10 flex items-center gap-3 mt-1">
+                <p className="text-xs font-bold text-orange-400/80 tracking-widest uppercase">
+                  오늘의 긍정 에너지 ✨
+                </p>
+                <button 
+                  onClick={() => setQuote(quotes[Math.floor(Math.random() * quotes.length)])}
+                  className="text-[10px] sm:text-xs text-orange-500 hover:text-white font-bold px-3 py-1 bg-orange-50 hover:bg-gradient-to-r hover:from-orange-400 hover:to-rose-400 rounded-full transition-all duration-300 shadow-sm"
+                >
+                  다른 명언 보기 🎯
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Reading Section (Poems / Essays) */}
