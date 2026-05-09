@@ -113,14 +113,15 @@ export function CompetitionMap({ competitions }: Props) {
               <motion.path
                 key={prov.id}
                 d={prov.path}
+                fillRule="evenodd"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.02 }}
-                className={`transition-all duration-300 stroke-white stroke-[1] hover:stroke-[2] hover:filter-[url(#glow)] cursor-default
+                className={`transition-all duration-300 stroke-white stroke-[1.5] hover:stroke-[2.5] hover:filter-[url(#glow)] cursor-default
                   ${prov.id === 'seoul' ? 'fill-[#5EEAD4]' : 
                     prov.id === 'gyeonggi' ? 'fill-[#67E8F9]' :
                     prov.id === 'gangwon' ? 'fill-[#FEF08A]' :
-                    prov.id === 'north-chungcheong' ? 'fill-[#BAE6FD]' :
+                    prov.id === 'north-chungcheong' ? 'fill-[#C084FC]' : /* matched reference image */
                     prov.id === 'south-chungcheong' ? 'fill-[#A5B4FC]' :
                     prov.id === 'north-jeolla' ? 'fill-[#FCA5A5]' :
                     prov.id === 'south-jeolla' ? 'fill-[#FB923C]' :
@@ -155,7 +156,7 @@ export function CompetitionMap({ competitions }: Props) {
                   x={center.x}
                   y={center.y}
                   textAnchor="middle"
-                  className="fill-slate-500/40 text-[12px] font-bold pointer-events-none uppercase tracking-wider"
+                  className="fill-white/80 text-[14px] font-bold pointer-events-none uppercase tracking-wider drop-shadow-md"
                 >
                   {prov.name.replace('특별시', '').replace('광역시', '').replace('특별자치도', '').replace('특별자치시', '')}
                 </text>
