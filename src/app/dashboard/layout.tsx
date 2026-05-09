@@ -102,7 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
-        <header className="md:hidden bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between sticky top-0 z-20">
+        <header className="md:hidden bg-white border-b border-slate-100 px-4 py-4 flex items-center justify-between sticky top-0 z-50">
           <Link href="/login" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={32} height={32} className="w-8 h-8 object-contain rounded-lg" />
             <h1 className="font-bold text-accent-navy text-sm">HALLYOSWIM</h1>
@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Mobile Navigation Dropdown */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-[73px] left-0 right-0 bg-white shadow-xl z-20 p-4 border-b border-slate-100 flex flex-col gap-2">
+          <div className="md:hidden absolute top-[73px] left-0 right-0 bg-white shadow-xl z-50 p-4 border-b border-slate-100 flex flex-col gap-2">
             {visibleNavItems.map((item, idx) => {
               const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
               return (
