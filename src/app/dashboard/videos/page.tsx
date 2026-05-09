@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client'
 import { Video, Plus, Trash2, Loader2, Check } from 'lucide-react'
 import { addVideo, softDeleteVideo, approveVideo } from '@/app/actions/videos'
 import { toast } from 'sonner'
+import { PageHeader } from '@/components/ui/page-header'
 
 type VideoData = {
   id: string
@@ -213,8 +214,11 @@ export default function TrainingVideosPage() {
             <Video className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">수영 관련 영상 시청</h1>
-            <p className="text-slate-500 text-sm mt-1">유튜브 링크를 등록하여 수영 관련 영상을 공유하세요.</p>
+            <PageHeader 
+              title="수영 관련 영상 시청" 
+              settingKey="desc_videos" 
+              defaultDescription="유튜브 링크를 등록하여 수영 관련 영상을 공유하세요." 
+            />
           </div>
         </div>
         <button

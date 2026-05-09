@@ -11,6 +11,7 @@ import { AddScheduleModal } from '@/components/schedules/add-schedule-modal'
 import { Plus, Calendar as CalendarIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { PageHeader } from '@/components/ui/page-header'
 
 const locales = {
   'ko': ko,
@@ -200,8 +201,12 @@ export default function SchedulePage() {
             <CalendarIcon className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-accent-navy">일정 관리 🗓️</h1>
-            <p className="text-sm text-slate-500 font-medium break-keep">훈련 및 대회 일정을 확인하고 관리하세요!</p>
+            <PageHeader 
+              title="일정 관리" 
+              icon="🗓️"
+              settingKey="desc_training" 
+              defaultDescription="훈련 및 대회 일정을 확인하고 관리하세요!" 
+            />
           </div>
         </div>
 

@@ -13,6 +13,7 @@ import { addSchedule, softDeleteSchedule, updateScheduleLocation } from '@/app/a
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { PageHeader } from '@/components/ui/page-header'
 
 const schema = z.object({
   type: z.literal('competition'),
@@ -130,8 +131,11 @@ export default function CompetitionsPage() {
             <Calendar className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-accent-navy break-keep">대회 일정</h1>
-            <p className="text-sm text-slate-500 font-medium break-keep">참가할 대회의 세부 정보와 기록을 관리하세요.</p>
+            <PageHeader 
+              title="대회 일정" 
+              settingKey="desc_competitions" 
+              defaultDescription="참가할 대회의 세부 정보와 기록을 관리하세요." 
+            />
           </div>
         </div>
 

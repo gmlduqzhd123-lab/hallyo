@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Timer, Trophy, ArrowRight, Activity } from 'lucide-react'
 
+import { PageHeader } from '@/components/ui/page-header'
+
 export default function RecordsSelectionPage() {
   return (
     <div className="space-y-6">
@@ -9,8 +11,11 @@ export default function RecordsSelectionPage() {
           <Timer className="w-48 h-48" />
         </div>
         <div className="relative z-10">
-          <h1 className="text-2xl md:text-3xl font-black text-accent-navy mb-3 break-keep leading-tight">선수 기록</h1>
-          <p className="text-slate-500 text-base md:text-lg break-keep leading-relaxed">조회하고자 하는 기록의 종류를 선택해주세요.</p>
+          <PageHeader 
+            title="선수 기록" 
+            settingKey="desc_records" 
+            defaultDescription="조회하고자 하는 기록의 종류를 선택해주세요." 
+          />
         </div>
       </div>
 

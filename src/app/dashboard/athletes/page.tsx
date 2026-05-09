@@ -11,6 +11,7 @@ import { UserPlus, Download, Upload, AlertCircle, Trash2 } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { bulkAddAthletes, bulkDeleteAllAthletes } from '@/app/actions/athletes'
 import { toast } from 'sonner'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function AthletesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -216,10 +217,11 @@ export default function AthletesPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-accent-navy">선수 명단</h1>
-          <p className="text-slate-500 mt-1">등록된 선수를 관리하고 기록을 확인할 수 있습니다.</p>
-        </div>
+        <PageHeader 
+          title="선수 명단" 
+          settingKey="desc_athletes" 
+          defaultDescription="등록된 선수를 관리하고 기록을 확인할 수 있습니다." 
+        />
 
         <div className="flex items-center gap-2 flex-wrap justify-end">
           {(['admin', 'developer'].includes(userRole as string) || userRole === 'coach') && (
