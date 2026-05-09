@@ -65,12 +65,27 @@ export default function RecordAnalysisPage() {
   const { data: nationwide, isPending: nationwideLoading } = useQuery({
     queryKey: ['nationwide_records_analysis'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('nationwide_rankings')
-        .select('*')
-        .eq('is_deleted', false)
-      if (error) throw error
-      return data
+      let allData: any[] = [];
+      let hasMore = true;
+      let page = 0;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('nationwide_rankings')
+          .select('*')
+          .eq('is_deleted', false)
+          .range(page * 1000, (page + 1) * 1000 - 1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allData = [...allData, ...data];
+          page++;
+          if (data.length < 1000) hasMore = false;
+        } else {
+          hasMore = false;
+        }
+      }
+      return allData;
     }
   })
 
