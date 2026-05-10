@@ -25,6 +25,9 @@
   * {
     border-color: #e2e8f0;
   }
+  html, body {
+    font-family: var(--global-font, 'MaplestoryL'), sans-serif !important;
+  }
   body {
     background-color: var(--color-background);
     color: #1e293b;
