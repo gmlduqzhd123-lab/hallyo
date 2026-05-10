@@ -32,7 +32,7 @@
  * GlobalFontProvider에 의해 관리됩니다.
  */
 :root {
-  --global-font: 'MaplestoryL';
+  --global-font: 'MaplestoryB';
 }
 
 *, *::before, *::after {

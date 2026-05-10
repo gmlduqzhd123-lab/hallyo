@@ -15,7 +15,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let font = 'MaplestoryL';
+  let font = 'MaplestoryB';
   try {
     const supabase = await createClient();
     const { data } = await supabase.from('system_settings').select('value').eq('key', 'global_font').single();

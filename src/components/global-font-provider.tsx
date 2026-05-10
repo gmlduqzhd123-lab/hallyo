@@ -10,7 +10,7 @@ import { createClient } from '@/utils/supabase/client'
  * 이렇게 하면 React 리렌더링이 아무리 많이 일어나도 폰트가 깜빡이지 않는다.
  * CSS 규칙 `* { font-family: var(--global-font) !important }` 가 모든 요소에 적용됨.
  */
-export function GlobalFontProvider({ initialFont = 'MaplestoryL' }: { initialFont?: string }) {
+export function GlobalFontProvider({ initialFont = 'MaplestoryB' }: { initialFont?: string }) {
   const supabaseRef = useRef(createClient())
   const currentFontRef = useRef(initialFont)
 
