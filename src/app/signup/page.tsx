@@ -54,7 +54,7 @@ export default function SignupPage() {
         
         <div className="text-center mb-10 relative z-10">
           <div className="mx-auto w-28 h-28 flex items-center justify-center mb-4">
-            <Image src="/logo.jpg" alt="여수한려초 수영부 로고" width={112} height={112} className="w-full h-full object-contain rounded-full shadow-md" />
+            <Image src="/logo.png" alt="여수한려초 수영부 로고" width={112} height={112} className="w-full h-full object-contain rounded-full shadow-md" />
           </div>
           <h1 className="text-2xl font-bold text-accent-navy mb-2">회원가입</h1>
           <p className="text-secondary-hover font-semibold tracking-wide">HALLYOSWIM</p>
