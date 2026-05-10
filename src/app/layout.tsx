@@ -27,7 +27,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="ko" suppressHydrationWarning style={{ fontFamily: `'${font}', sans-serif` }}>
+    <html lang="ko" suppressHydrationWarning>
       <head>
         <link
           rel="preload"
@@ -36,25 +36,19 @@ export default async function RootLayout({
           type="font/ttf"
           crossOrigin="anonymous"
         />
-        {/* 
-          인라인 스크립트: HTML 파싱 즉시 폰트를 적용하여 FOUC(Flash of Unstyled Content) 방지.
-          이 스크립트는 React hydration보다 먼저 실행됩니다.
+        {/*
+          블로킹 인라인 스타일 + 스크립트:
+          CSS 변수를 HTML 파싱 시점에 즉시 설정합니다.
+          React의 inline style이 아닌 <style> 태그를 사용하여,
+          React 리렌더링과 무관하게 항상 유지됩니다.
         */}
-        <script
+        <style
           dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var f = '${font}';
-                  document.documentElement.style.setProperty('--global-font', f);
-                  document.documentElement.style.fontFamily = "'" + f + "', sans-serif";
-                } catch(e) {}
-              })();
-            `,
+            __html: `:root { --global-font: '${font}'; }`,
           }}
         />
       </head>
-      <body suppressHydrationWarning className="min-h-screen bg-[#F8FAFC] text-slate-800 antialiased" style={{ fontFamily: `'${font}', sans-serif` }}>
+      <body suppressHydrationWarning className="min-h-screen bg-[#F8FAFC] text-slate-800 antialiased">
         <GlobalFontProvider initialFont={font} />
         <PwaRegistry />
         <Providers>

@@ -21,12 +21,27 @@
   --color-background: #F8FAFC;
 }
 
+/*
+ * 🔒 글꼴 강제 적용 규칙 (Unlayered — 최고 우선순위)
+ * 
+ * @layer 바깥에 배치하여 Tailwind의 어떤 규칙보다도 높은 우선순위를 가집니다.
+ * 모든 요소(*, ::before, ::after)에 !important로 적용하므로
+ * React inline style이나 컴포넌트 로컬 스타일이 절대 이를 override할 수 없습니다.
+ * 
+ * CSS 변수 --global-font는 layout.tsx의 <style> 태그와
+ * GlobalFontProvider에 의해 관리됩니다.
+ */
+:root {
+  --global-font: 'MaplestoryL';
+}
+
+*, *::before, *::after {
+  font-family: var(--global-font), sans-serif !important;
+}
+
 @layer base {
   * {
     border-color: #e2e8f0;
-  }
-  html, body {
-    font-family: var(--global-font, 'MaplestoryL'), sans-serif !important;
   }
   body {
     background-color: var(--color-background);
