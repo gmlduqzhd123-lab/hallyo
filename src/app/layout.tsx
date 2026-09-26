@@ -8,6 +8,25 @@ import { createClient } from "@/utils/supabase/server";
 export const metadata: Metadata = {
   title: "Hallyoswim | 여수한려초 수영부 관리",
   description: "여수한려초등학교 수영부 선수단 및 훈련 관리 플랫폼",
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    siteName: "Hallyoswim",
+    title: "Hallyoswim | 여수한려초 수영부 관리",
+    description: "여수한려초등학교 수영부 선수단 및 훈련 관리 플랫폼",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Hallyoswim 수영부 관리",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og-image.jpg"],
+  },
 };
 
 export default async function RootLayout({
