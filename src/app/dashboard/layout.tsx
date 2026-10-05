@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp, Download } from 'lucide-react'
 import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
@@ -124,7 +124,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <h1 className="font-bold text-slate-800 text-lg">
             {navItems.find(item => item.href === pathname)?.name || '여수한려초 수영부'}
           </h1>
-          <GlobalSearch />
+          <div className="flex items-center gap-3">
+            <button type="button" data-ys-install="" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold shadow-sm shadow-blue-500/30 transition-colors">
+              <Download className="w-4 h-4" />앱 설치
+            </button>
+            <GlobalSearch />
+          </div>
         </header>
 
         {/* Mobile Header */}
@@ -134,6 +139,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <h1 className="font-bold text-accent-navy text-sm">HALLYOSWIM</h1>
           </Link>
           <div className="flex items-center gap-2">
+            <button type="button" data-ys-install="" aria-label="앱 설치" className="flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-500 text-white text-xs font-bold">
+              <Download className="w-4 h-4" />설치
+            </button>
             <GlobalSearch />
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

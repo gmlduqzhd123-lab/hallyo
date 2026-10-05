@@ -66,6 +66,8 @@ export default async function RootLayout({
             __html: `:root { --global-font: '${font}'; }`,
           }}
         />
+        {/* 📲 앱 설치 도우미: [data-ys-install] 버튼 → 바로 설치 또는 기기별 설치 방법 안내 */}
+        <script src="/ys-install.js" defer />
       </head>
       <body suppressHydrationWarning className="min-h-screen bg-[#F8FAFC] text-slate-800 antialiased">
         <GlobalFontProvider initialFont={font} />
