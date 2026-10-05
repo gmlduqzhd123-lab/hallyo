@@ -104,6 +104,12 @@ export default function DashboardPage() {
   }, [])
 
   const handleInstallApp = async () => {
+    // 상단 '앱 설치' 버튼과 같은 도우미(ys-install.js)를 쓴다: 바로 설치 또는 기기별 설치 방법 안내
+    const ysInstall = (window as unknown as { YSInstall?: { open: () => void } }).YSInstall
+    if (ysInstall) {
+      ysInstall.open()
+      return
+    }
     if (!deferredPrompt) {
       setShowInstallGuide(true)
       return
