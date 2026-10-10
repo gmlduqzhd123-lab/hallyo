@@ -46,7 +46,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning data-qr-url="https://hallyo.vercel.app/" data-qr-src="/qr.svg" data-qr-name="Hallyoswim 수영부 관리">
       <head>
         <link
           rel="preload"
@@ -68,6 +68,8 @@ export default async function RootLayout({
         />
         {/* 📲 앱 설치 도우미: [data-ys-install] 버튼 → 바로 설치 또는 기기별 설치 방법 안내 */}
         <script src="/ys-install.js" defer />
+        {/* 📱 QR로 접속: [data-qr] 버튼 → 큰 QR 창 */}
+        <script src="/ys-qr.js" defer />
       </head>
       <body suppressHydrationWarning className="min-h-screen bg-[#F8FAFC] text-slate-800 antialiased">
         <GlobalFontProvider initialFont={font} />
