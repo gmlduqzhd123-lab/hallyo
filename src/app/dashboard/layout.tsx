@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp, Download } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp, Download, QrCode } from 'lucide-react'
 import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
@@ -128,6 +128,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button type="button" data-ys-install="" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold shadow-sm shadow-blue-500/30 transition-colors">
               <Download className="w-4 h-4" />앱 설치
             </button>
+            <button type="button" data-qr="" aria-label="QR 코드로 접속" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-bold shadow-sm transition-colors">
+              <QrCode className="w-4 h-4" />QR
+            </button>
             <GlobalSearch />
           </div>
         </header>
@@ -136,11 +139,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-4 flex items-center justify-between sticky top-0 z-40">
           <Link href="/login" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image src="/logo.png" alt="여수한려초 수영부 로고" width={32} height={32} className="w-8 h-8 object-contain rounded-lg" />
-            <h1 className="font-bold text-accent-navy text-sm">HALLYOSWIM</h1>
+            <h1 className="hidden min-[380px]:block font-bold text-accent-navy text-sm">HALLYOSWIM</h1>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button type="button" data-ys-install="" aria-label="앱 설치" className="flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-500 text-white text-xs font-bold">
               <Download className="w-4 h-4" />설치
+            </button>
+            <button type="button" data-qr="" aria-label="QR 코드로 접속" className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold">
+              <QrCode className="w-4 h-4" /><span className="hidden min-[400px]:inline">QR</span>
             </button>
             <GlobalSearch />
             <button 
