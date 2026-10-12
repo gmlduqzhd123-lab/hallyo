@@ -53,9 +53,9 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
       const supabase = createClient()
       const { data, error } = await supabase
         .from('schedules')
-        .select('id, title, start_date')
+        .select('id, title, date')
         .eq('is_deleted', false)
-        .order('start_date', { ascending: false })
+        .order('date', { ascending: false })
       if (error) throw new Error(error.message)
       return data
     },

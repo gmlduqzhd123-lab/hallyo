@@ -37,7 +37,7 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
     .from('schedules')
     .select('id, title')
     .eq('type', 'competition')
-    .order('start_date', { ascending: false })
+    .order('date', { ascending: false })
 
   // Group records by event_name to show best times or progression
   const recordsByEvent = records?.reduce((acc: any, record: any) => {
