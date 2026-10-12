@@ -67,7 +67,9 @@
 - **이름 + 비밀번호**로 가입·로그인합니다. 내부적으로는 이름을 hex로 바꾼 `…@hallyoswim.com` 주소로 Supabase Auth에 등록합니다.
 - 가입하면 `pending`(승인 대기) 상태가 되고, 관리자가 승인해야 대시보드에 들어갈 수 있습니다. 이 흐름은 `src/proxy.ts`에서 처리합니다.
 - 역할: `admin`(관리자), `developer`(개발자), `coach`(지도자), `athlete`(선수), `parents`(학부모), `guest`(일반인)
-  - 선수 정보 추가·수정, 회원 관리: 관리자·개발자
+  - 회원 관리(가입 승인·역할 변경·삭제·비밀번호 초기화): 개발자
+  - 선수 정보 추가·수정, 선수 연락처(학생 전화·학부모 이름·전화) 조회: 관리자·개발자
+  - 상담 일지: 관리자·개발자·코치
   - 일정·공지 등록: 관리자·개발자·코치
   - 사진·영상: 누구나 올릴 수 있고, 일반 회원이 올린 것은 승인 후 공개됩니다.
 
@@ -84,15 +86,17 @@ src/
   utils/supabase/ Supabase 클라이언트 (서버용 / 브라우저용)
   proxy.ts        로그인·승인 여부에 따른 페이지 이동
 supabase/
-  schema.sql          DB 스키마 (코드 기준 참고용)
+  schema.sql          DB 스키마 (운영 DB 에서 뽑은 실제 구조)
   inspect_schema.sql  운영 DB 실제 구조 확인용 쿼리
+  manual/             SQL Editor 에서 직접 실행해야 하는 변경
 scripts/              데이터 일괄 등록 등 일회성 스크립트 (앱 빌드와 무관)
 public/               로고, 글꼴, 공유 이미지, 서비스워커
 ```
 
 ## 데이터베이스
 
-- `supabase/schema.sql`은 앱 코드가 쓰는 테이블 17개를 정리한 **참고용·새 프로젝트 구축용** 스키마입니다. 운영 DB에 그대로 실행하지 마세요.
+- `supabase/schema.sql`은 운영 DB에서 직접 뽑아 정리한 실제 구조입니다(테이블 17개, 권한 규칙, 함수). 운영 DB에 그대로 실행하지 마세요. DB를 바꾸면 이 파일도 함께 고쳐 주세요.
+- 선수 연락처 3개 컬럼은 컬럼 권한으로 일반 조회에서 막혀 있습니다. `athletes`에 컬럼을 추가하면 `schema.sql` 7번의 `grant`와 `src/lib/athletes.ts`의 `ATHLETE_COLUMNS`에도 넣어야 합니다.
 - 운영 DB의 실제 구조는 Supabase SQL Editor에서 `supabase/inspect_schema.sql`을 실행해 확인할 수 있습니다.
 - 대부분의 테이블은 실제로 지우지 않고 `is_deleted = true`로 표시만 합니다(soft delete).
 - 변경 이력은 `audit_logs` 테이블에 남습니다.
