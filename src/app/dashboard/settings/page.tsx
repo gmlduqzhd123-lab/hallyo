@@ -158,7 +158,7 @@ export default function SettingsPage() {
         .select('value')
         .eq('key', 'global_font')
         .single()
-      if (error) return 'MaplestoryL'
+      if (error) return 'MaplestoryB'
       return data.value
     }
   })
