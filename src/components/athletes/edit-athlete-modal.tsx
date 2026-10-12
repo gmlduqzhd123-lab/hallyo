@@ -1,7 +1,7 @@
 'use client'
 
 import { Modal } from '@/components/ui/modal'
-import { useForm } from 'react-hook-form'
+import { useForm, type FieldValues } from 'react-hook-form'
 import { updateAthlete } from '@/app/actions/athletes'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -43,7 +43,7 @@ export function EditAthleteModal({ isOpen, onClose, athlete }: Props) {
   }, [athlete, reset])
 
   const mutation = useMutation({
-    mutationFn: async (data: Record<string, any>) => {
+    mutationFn: async (data: FieldValues) => {
       if (!athlete) return
       const result = await updateAthlete(athlete.id, data)
       if (result?.error) throw new Error(result.error)
@@ -63,7 +63,7 @@ export function EditAthleteModal({ isOpen, onClose, athlete }: Props) {
     }
   })
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: FieldValues) => {
     mutation.mutate(data)
   }
 

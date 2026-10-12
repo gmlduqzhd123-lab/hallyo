@@ -33,7 +33,7 @@ const EVENT_OPTIONS = [
   { key: '접영100M', label: '접영 100M' },
 ]
 
-export default function AddAthleteRecord({ athleteId, userRole, schedules }: { athleteId: string, userRole: string, schedules: any[] }) {
+export default function AddAthleteRecord({ athleteId, userRole, schedules }: { athleteId: string, userRole: string, schedules: { id: string; title: string }[] }) {
   const [isOpen, setIsOpen] = useState(false)
   const canEdit = ['admin', 'developer'].includes(userRole) || userRole === 'coach'
 

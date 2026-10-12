@@ -1,12 +1,28 @@
 'use client'
 
-import { useState, useMemo, Suspense, useEffect } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Activity, TrendingUp, Medal, AlertCircle, Target, Zap, CheckCircle, PlayCircle } from 'lucide-react'
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, type TooltipContentProps } from 'recharts'
 import { PageHeader } from '@/components/ui/page-header'
+import type { AthleteRow, NationwideRanking, SwimRecord, TrainingVideo } from '@/types/database'
+
+// 종목별 내 최고 기록과 전국 기준 비교
+type EventDetail = {
+  event: string
+  myBest: number
+  nwAvg: number
+  nwTop: number
+  ratio: number
+  isBetterThanAvg: boolean
+}
+
+// 성장 곡선 차트의 한 행: 날짜 + 종목별 기록(초)
+type HistoryRow = { date: string } & Record<string, string | number>
+
+type ChartTooltipProps = TooltipContentProps
 
 // Helpers for time formatting
 const parseTimeStringToSeconds = (timeStr: string) => {
@@ -37,11 +53,14 @@ function RecordAnalysisContent() {
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | 'ALL'>(athleteIdFromUrl || 'ALL')
   const [selectedHistoryEvent, setSelectedHistoryEvent] = useState<string>('')
 
-  useEffect(() => {
+  // 주소의 athleteId 가 바뀌면 선택한 선수도 맞춰 바꿉니다 (렌더링 중 상태 조정 패턴)
+  const [prevAthleteIdFromUrl, setPrevAthleteIdFromUrl] = useState(athleteIdFromUrl)
+  if (athleteIdFromUrl !== prevAthleteIdFromUrl) {
+    setPrevAthleteIdFromUrl(athleteIdFromUrl)
     if (athleteIdFromUrl) {
       setSelectedAthleteId(athleteIdFromUrl)
     }
-  }, [athleteIdFromUrl])
+  }
 
   // Fetch Athletes
   const { data: athletes, isPending: athletesLoading } = useQuery({
@@ -54,7 +73,7 @@ function RecordAnalysisContent() {
         .order('grade', { ascending: false, nullsFirst: false })
         .order('name', { ascending: true })
       if (error) throw error
-      return data
+      return data as AthleteRow[]
     }
   })
 
@@ -67,7 +86,7 @@ function RecordAnalysisContent() {
         .select('*')
         .eq('is_deleted', false)
       if (error) throw error
-      return data
+      return data as SwimRecord[]
     }
   })
 
@@ -75,7 +94,7 @@ function RecordAnalysisContent() {
   const { data: nationwide, isPending: nationwideLoading } = useQuery({
     queryKey: ['nationwide_records_analysis'],
     queryFn: async () => {
-      let allData: any[] = [];
+      let allData: NationwideRanking[] = [];
       let hasMore = true;
       let page = 0;
       while (hasMore) {
@@ -109,7 +128,7 @@ function RecordAnalysisContent() {
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return data as TrainingVideo[];
     }
   });
 
@@ -152,9 +171,9 @@ function RecordAnalysisContent() {
       const division = (athlete.grade && athlete.grade <= 4) ? '유년부' : '초등부';
 
       // Find best event based on comparison to nationwide average
-      let bestEvent: any = null;
+      let bestEvent: EventDetail | null = null;
       let maxPercentile = -999;
-      const eventDetails: any[] = [];
+      const eventDetails: EventDetail[] = [];
 
       aRecords.forEach(r => {
         const aGender = athlete.gender === 'M' ? '남자' : '여자';
@@ -196,12 +215,12 @@ function RecordAnalysisContent() {
         }
       });
 
-      eventDetails.forEach(ed => {
+      for (const ed of eventDetails) {
         if (ed.ratio > maxPercentile) {
           maxPercentile = ed.ratio;
           bestEvent = ed;
         }
-      });
+      }
 
       // Generate Advice
       let advice = '';
@@ -247,7 +266,7 @@ function RecordAnalysisContent() {
       }
 
       // Compute historyData for time-series chart
-      const historyData: any[] = [];
+      const historyData: { event: string; date: string; time: number }[] = [];
       aRecords.forEach(r => {
         const dateStr = r.record_date;
         const myTime = Number(r.record_time);
@@ -259,13 +278,14 @@ function RecordAnalysisContent() {
         });
       });
       
-      const formattedHistory: Record<string, any> = {};
+      const formattedHistory: Record<string, HistoryRow> = {};
       historyData.forEach(hd => {
         if (!formattedHistory[hd.date]) {
           formattedHistory[hd.date] = { date: hd.date };
         }
         // Keep the best time for the day if there are multiple
-        if (!formattedHistory[hd.date][hd.event] || hd.time < formattedHistory[hd.date][hd.event]) {
+        const prevTime = formattedHistory[hd.date][hd.event] as number | undefined
+        if (!prevTime || hd.time < prevTime) {
           formattedHistory[hd.date][hd.event] = hd.time;
         }
       });
@@ -294,7 +314,7 @@ function RecordAnalysisContent() {
   const recommendedVideos = useMemo(() => {
     if (!selectedAthleteData || !trainingVideos) return [];
     
-    const allVideos = (trainingVideos || []).map((v: any) => ({ ...v, type: 'training' }));
+    const allVideos = (trainingVideos || []).map((v) => ({ ...v, type: 'training' }));
 
     if (allVideos.length === 0) return [];
 
@@ -373,7 +393,7 @@ function RecordAnalysisContent() {
                   <h3 className="text-xl font-black text-slate-800">{athlete.name}</h3>
                   <p className="text-sm text-slate-500">{athlete.grade}학년 | {athlete.gender === 'M' ? '남' : '여'}</p>
                 </div>
-                {athlete.bestEvent?.ratio >= 1.0 && (
+                {(athlete.bestEvent?.ratio ?? 0) >= 1.0 && (
                   <div className="p-2 bg-amber-50 text-amber-500 rounded-xl" title="전국 평균 이상">
                     <Medal className="w-6 h-6" />
                   </div>
@@ -446,7 +466,7 @@ function RecordAnalysisContent() {
               <div className="h-[400px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={selectedAthleteData.eventDetails.map((ed: any) => ({
+                    data={selectedAthleteData.eventDetails.map((ed) => ({
                       name: ed.event,
                       '내 기록': parseFloat(((ed.nwAvg / ed.myBest) * 100).toFixed(1)),
                       '전국 평균': 100,
@@ -468,12 +488,12 @@ function RecordAnalysisContent() {
                     />
                     <Tooltip 
                       cursor={{ fill: '#F1F5F9' }}
-                      content={({ active, payload, label }: any) => {
+                      content={({ active, payload, label }: ChartTooltipProps) => {
                         if (active && payload && payload.length) {
                           return (
                             <div className="bg-white p-4 rounded-2xl shadow-xl border border-slate-100">
                               <p className="font-bold text-slate-800 mb-2">{label}</p>
-                              {payload.map((p: any, index: number) => (
+                              {payload.map((p, index) => (
                                 <div key={index} className="flex items-center gap-2 mb-1">
                                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }}></div>
                                   <span className="text-sm font-medium text-slate-600">{p.name}:</span>
@@ -513,7 +533,7 @@ function RecordAnalysisContent() {
           {/* Historical Performance Line Chart */}
           {selectedAthleteData.historyChartData && selectedAthleteData.historyChartData.length > 1 && (() => {
             const activeEvent = selectedHistoryEvent || selectedAthleteData.eventDetails[0]?.event;
-            const chartData = selectedAthleteData.historyChartData.filter((d: any) => d[activeEvent] !== undefined);
+            const chartData = selectedAthleteData.historyChartData.filter((d) => d[activeEvent] !== undefined);
             
             return (
             <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
@@ -522,7 +542,7 @@ function RecordAnalysisContent() {
               </h3>
               
               <div className="flex flex-wrap gap-2 mb-6">
-                {selectedAthleteData.eventDetails.map((ed: any) => {
+                {selectedAthleteData.eventDetails.map((ed) => {
                   const isActive = activeEvent === ed.event;
                   return (
                     <button
@@ -568,23 +588,23 @@ function RecordAnalysisContent() {
                       label={{ value: '기록 (초) - 아래로 갈수록 우수', angle: -90, position: 'insideLeft', style: { fill: '#94A3B8', fontSize: 12 } }} 
                     />
                     <Tooltip 
-                      content={({ active, payload, label }: any) => {
+                      content={({ active, payload, label }: ChartTooltipProps) => {
                         if (active && payload && payload.length) {
                           // If a specific event is selected, only show its tooltip
                           const activeEvent = selectedHistoryEvent || selectedAthleteData.eventDetails[0]?.event;
-                          const visiblePayload = payload.filter((p: any) => p.name === activeEvent);
+                          const visiblePayload = payload.filter((p) => p.name === activeEvent);
                             
                           if (visiblePayload.length === 0) return null;
 
                           return (
                             <div className="bg-white p-4 rounded-2xl shadow-xl border border-slate-100">
                               <p className="font-bold text-slate-800 mb-2">{label}</p>
-                              {visiblePayload.map((p: any, index: number) => (
+                              {visiblePayload.map((p, index) => (
                                 <div key={index} className="flex items-center gap-2 mb-1">
                                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }}></div>
                                   <span className="text-sm font-medium text-slate-600">{p.name}:</span>
                                   <span className="text-sm font-bold" style={{ color: p.color }}>
-                                    {formatSecondsToTime(p.value)}
+                                    {formatSecondsToTime(Number(p.value))}
                                   </span>
                                 </div>
                               ))}
@@ -596,11 +616,11 @@ function RecordAnalysisContent() {
                     />
                     <Legend wrapperStyle={{ paddingTop: '20px' }} />
                     {selectedAthleteData.eventDetails
-                      .filter((ed: any) => {
+                      .filter((ed) => {
                         const activeEvent = selectedHistoryEvent || selectedAthleteData.eventDetails[0]?.event;
                         return activeEvent === ed.event;
                       })
-                      .map((ed: any, index: number) => {
+                      .map((ed, index) => {
                         const colors = ['#3B82F6', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6', '#14B8A6'];
                         return (
                           <Line 
@@ -641,7 +661,7 @@ function RecordAnalysisContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedAthleteData.eventDetails.map((ed: any, idx: number) => {
+                    {selectedAthleteData.eventDetails.map((ed, idx) => {
                       const diff = ed.myBest - ed.nwAvg;
                       const isGood = diff <= 0;
                       
@@ -707,7 +727,7 @@ function RecordAnalysisContent() {
               <p className="text-sm text-slate-500 mb-6">현재 기록을 바탕으로 집중 훈련이 필요한 종목({selectedAthleteData.bestEvent?.event})의 추천 영상입니다.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {recommendedVideos.map((video: any) => (
+                {recommendedVideos.map((video) => (
                   <a 
                     key={video.id} 
                     href={video.url} 

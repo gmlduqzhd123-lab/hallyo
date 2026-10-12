@@ -3,9 +3,10 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatTimeSeconds } from '@/utils/time'
 import { format } from 'date-fns'
+import type { SwimRecord } from '@/types/database'
 
 interface EventRecordChartProps {
-  records: any[]
+  records: SwimRecord[]
 }
 
 export default function EventRecordChart({ records }: EventRecordChartProps) {
@@ -49,8 +50,8 @@ export default function EventRecordChart({ records }: EventRecordChartProps) {
             reversed={true}
           />
           <Tooltip 
-            formatter={(value: any) => [
-              <span key="time" className="font-black text-indigo-600">{formatTimeSeconds(value)}</span>, 
+            formatter={(value) => [
+              <span key="time" className="font-black text-indigo-600">{formatTimeSeconds(Number(value))}</span>, 
               <span key="label" className="text-slate-500">기록</span>
             ]}
             labelFormatter={(label, payload) => {

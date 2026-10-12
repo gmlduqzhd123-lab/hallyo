@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Swords, Search, Loader2, Trophy, X, User } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, type TooltipContentProps } from 'recharts'
 import { PageHeader } from '@/components/ui/page-header'
 
 // --- Types ---
@@ -47,19 +47,20 @@ const formatSecondsToRecord = (seconds: number): string => {
 }
 
 // --- Custom Tooltip ---
-function CustomTooltip({ active, payload, label }: any) {
+// recharts 가 <Tooltip content={<CustomTooltip />} /> 에 값을 채워 넣습니다
+function CustomTooltip({ active, payload, label }: Partial<TooltipContentProps>) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 p-4 min-w-[180px]">
       <p className="font-black text-slate-800 text-sm mb-2 border-b border-slate-100 pb-2">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center justify-between gap-4 py-1">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-xs font-bold text-slate-600">{entry.name}</span>
           </div>
           <span className="font-mono font-black text-sm" style={{ color: entry.color }}>
-            {entry.name.includes('🔵') ? entry.payload.athleteARecord : entry.payload.athleteBRecord}
+            {String(entry.name).includes('🔵') ? entry.payload.athleteARecord : entry.payload.athleteBRecord}
           </span>
         </div>
       ))}
@@ -167,7 +168,7 @@ export default function RivalComparisonPage() {
         .select('name')
         .eq('is_deleted', false)
       if (error) throw error
-      const unique = [...new Set((data || []).map((r: any) => r.name as string))].sort()
+      const unique = [...new Set(((data || []) as { name: string }[]).map((r) => r.name))].sort()
       return unique
     }
   })
@@ -181,7 +182,7 @@ export default function RivalComparisonPage() {
         .select('athlete_name')
         .eq('is_deleted', false)
       if (error) throw error
-      const unique = [...new Set((data || []).map((r: any) => r.athlete_name as string))].sort()
+      const unique = [...new Set(((data || []) as { athlete_name: string }[]).map((r) => r.athlete_name))].sort()
       return unique
     }
   })

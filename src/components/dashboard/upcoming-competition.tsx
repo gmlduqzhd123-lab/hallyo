@@ -1,17 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { CheckSquare, X, ChevronRight, Edit2, Plus, Trash2, Save } from 'lucide-react'
 import { differenceInDays } from 'date-fns'
 import { updateCompetitionChecklist } from '@/app/actions/settings'
 import { toast } from 'sonner'
+import type { ChecklistItem } from '@/types/database'
 
-interface ChecklistItem {
-  id: string;
-  label: string;
-}
 
 const DEFAULT_CHECKLIST: ChecklistItem[] = [
   { id: 'swimsuit', label: '수영복 일체(수영복, 수모, 수경, 수영가방 등등)' },
@@ -114,14 +111,16 @@ export function UpcomingCompetition() {
     setIsEditing(true)
   }
 
-  useEffect(() => {
-    if (upcomingCompetition && isModalOpen) {
+  // 창을 열 때 이 대회의 체크 상태를 브라우저 저장소에서 불러옵니다
+  const openModal = () => {
+    if (upcomingCompetition) {
       const saved = localStorage.getItem(`checklist_${upcomingCompetition.id}`)
       if (saved) {
         setCheckedItems(JSON.parse(saved))
       }
     }
-  }, [upcomingCompetition, isModalOpen])
+    setIsModalOpen(true)
+  }
 
   const toggleCheck = (id: string) => {
     const newChecked = { ...checkedItems, [id]: !checkedItems[id] }
@@ -148,7 +147,7 @@ export function UpcomingCompetition() {
   return (
     <>
       <div 
-        onClick={() => setIsModalOpen(true)}
+        onClick={openModal}
         className="bg-gradient-to-r from-rose-500 to-pink-600 rounded-[32px] p-[3px] shadow-lg shadow-rose-500/20 cursor-pointer transform transition-all hover:-translate-y-1 hover:shadow-rose-500/40 group relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>

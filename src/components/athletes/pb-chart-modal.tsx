@@ -57,7 +57,7 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
         .eq('is_deleted', false)
         .order('date', { ascending: false })
       if (error) throw new Error(error.message)
-      return data
+      return data as { id: string; title: string; date: string }[]
     },
     enabled: isOpen
   })
@@ -222,7 +222,7 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
                   reversed={true}
                 />
                 <Tooltip 
-                  formatter={(value: any) => [formatTimeSeconds(value), '기록']}
+                  formatter={(value) => [formatTimeSeconds(Number(value)), '기록']}
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                   labelStyle={{ fontWeight: 'bold', color: '#0047AB', marginBottom: '4px' }}
                 />
@@ -313,7 +313,7 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
                       className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-white"
                     >
                       <option value="">대회를 선택해주세요</option>
-                      {schedules?.map((s: any) => (
+                      {schedules?.map((s) => (
                         <option key={s.id} value={s.id}>{s.title}</option>
                       ))}
                     </select>
@@ -353,7 +353,7 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
                         </div>
                         {record.schedule_id && (
                           <div className="text-xs text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg w-fit font-semibold border border-indigo-100">
-                            🏆 {schedules?.find((s: any) => s.id === record.schedule_id)?.title || '대회 기록'}
+                            🏆 {schedules?.find((s) => s.id === record.schedule_id)?.title || '대회 기록'}
                           </div>
                         )}
                       </div>

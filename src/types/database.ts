@@ -111,3 +111,34 @@ export interface Photo {
   created_by: string
   created_at: string
 }
+
+export interface AthleteRow extends AthleteSummary {
+  gender: 'M' | 'F'
+  is_deleted: boolean
+  created_at: string
+}
+
+export interface NationwideRanking {
+  id: string
+  gender: string
+  event: string
+  rank: number | null
+  athlete_name: string
+  school: string | null
+  record: string
+  year: number | null
+  grade: number | null
+  created_at: string
+}
+
+export interface TrainingVideo {
+  id: string
+  url: string
+  title: string
+  description: string | null
+  category: string
+  sub_category: string | null
+  status: 'pending' | 'approved'
+  created_by: string | null
+  created_at: string
+}

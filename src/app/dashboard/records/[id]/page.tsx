@@ -4,6 +4,7 @@ import { ArrowLeft, Timer, Trophy } from 'lucide-react'
 import EventRecordChart from './EventRecordChart'
 import EventRecordTable from './EventRecordTable'
 import AddAthleteRecord from './AddAthleteRecord'
+import type { SwimRecord } from '@/types/database'
 
 export default async function AthleteRecordsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -24,12 +25,13 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
     .single()
   const userRole = profile?.role || ''
 
-  const { data: records } = await supabase
+  const { data: recordRows } = await supabase
     .from('records')
     .select('*, schedules(title, location)')
     .eq('athlete_id', id)
     .eq('is_deleted', false)
     .order('record_date', { ascending: false })
+  const records = recordRows as SwimRecord[] | null
 
   const { data: schedules } = await supabase
     .from('schedules')
@@ -38,15 +40,15 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
     .order('date', { ascending: false })
 
   // Group records by event_name to show best times or progression
-  const recordsByEvent = records?.reduce((acc: any, record: any) => {
+  const recordsByEvent = records?.reduce<Record<string, SwimRecord[]>>((acc, record) => {
     if (!acc[record.event_name]) acc[record.event_name] = []
     acc[record.event_name].push(record)
     return acc
-  }, {})
+  }, {}) ?? {}
 
   // Sort within each group
-  Object.keys(recordsByEvent || {}).forEach(event => {
-    recordsByEvent[event].sort((a: any, b: any) => {
+  Object.keys(recordsByEvent).forEach(event => {
+    recordsByEvent[event].sort((a, b) => {
       const dateA = new Date(a.record_date).getTime();
       const dateB = new Date(b.record_date).getTime();
       if (dateB !== dateA) return dateB - dateA; // Descending by date
@@ -57,7 +59,7 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
       if (a.match_type !== '결승' && b.match_type === '결승') return 1;
 
       // If both or neither are '결승', sort by record_time (faster time first)
-      return parseFloat(a.record_time) - parseFloat(b.record_time);
+      return Number(a.record_time) - Number(b.record_time);
     });
   });
 
@@ -93,13 +95,13 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
       </div>
 
       <div className="space-y-8">
-        {Object.keys(recordsByEvent || {}).length === 0 ? (
+        {Object.keys(recordsByEvent).length === 0 ? (
           <div className="bg-white p-12 rounded-3xl border border-slate-100 shadow-sm text-center">
             <Trophy className="w-12 h-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-500 font-medium">등록된 대회 기록이 없습니다.</p>
           </div>
         ) : (
-          Object.entries(recordsByEvent).map(([event, eventRecords]: [string, any]) => (
+          Object.entries(recordsByEvent).map(([event, eventRecords]) => (
             <div key={event} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
               <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-indigo-500" />
