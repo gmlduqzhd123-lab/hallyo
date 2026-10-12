@@ -132,4 +132,4 @@ for (const line of lines) {
 
 const fileContent = "export type Quiz = { id: number; type: string; question: string; options?: string[]; answer: string; }; export const quizzes: Quiz[] = " + JSON.stringify(quizzes, null, 2) + ";";
 
-fs.writeFileSync('c:\\\\Users\\\\user\\\\Desktop\\\\swimapp\\\\src\\\\data\\\\quizzes.ts', fileContent, 'utf-8');
+fs.writeFileSync(require('path').join(__dirname, '..', '..', 'src', 'data', 'quizzes.ts'), fileContent, 'utf-8');

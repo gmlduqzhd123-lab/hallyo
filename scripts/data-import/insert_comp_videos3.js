@@ -99,4 +99,4 @@ const values = lines.map(line => {
 
 sql += values.join(',\n') + ';';
 
-fs.writeFileSync('scratch/insert_comp_videos3.sql', sql);
+fs.writeFileSync(require('path').join(__dirname, 'insert_comp_videos3.sql'), sql);
