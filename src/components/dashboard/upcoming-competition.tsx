@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { CalendarDays, MapPin, CheckSquare, X, ChevronRight, Edit2, Plus, Trash2, Save } from 'lucide-react'
+import { CheckSquare, X, ChevronRight, Edit2, Plus, Trash2, Save } from 'lucide-react'
 import { differenceInDays } from 'date-fns'
 import { updateCompetitionChecklist } from '@/app/actions/settings'
 import { toast } from 'sonner'

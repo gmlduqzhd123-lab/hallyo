@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Code2, Plus, Trash2, Edit2, Upload, Loader2, Video, Globe, Camera, Code, Mail, User, Briefcase, X, ExternalLink, Link as LinkIcon, Users, PenTool } from 'lucide-react'
+import { Code2, Plus, Trash2, Edit2, Upload, Loader2, Video, Globe, Camera, Code, Mail, User, Briefcase, X, Users, PenTool } from 'lucide-react'
 import { toast } from 'sonner'
 import { addDeveloper, updateDeveloper, deleteDeveloper } from '@/app/actions/developers'
 import DeveloperNotes from './developer-notes'
@@ -382,7 +382,7 @@ export default function DevelopersPage() {
                     </div>
 
                     {dev.bio && (
-                      <p className="text-base font-bold text-slate-500 text-center mb-5 break-keep px-2">"{dev.bio}"</p>
+                      <p className="text-base font-bold text-slate-500 text-center mb-5 break-keep px-2">&quot;{dev.bio}&quot;</p>
                     )}
 
                     {dev.introduction && (

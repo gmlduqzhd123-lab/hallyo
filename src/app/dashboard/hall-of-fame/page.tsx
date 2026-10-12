@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Trophy, Plus, Trash2, Edit2, Medal, Star, Upload, Loader2, X, Download, ZoomIn, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
@@ -408,7 +408,7 @@ export default function HallOfFamePage() {
                 
                 {record.story && (
                   <div className="mt-2 bg-slate-50 p-5 rounded-2xl text-slate-600 text-sm leading-relaxed relative italic flex-1 border border-slate-100">
-                    <span className="text-amber-200 text-4xl absolute top-2 left-2 font-serif leading-none">"</span>
+                    <span className="text-amber-200 text-4xl absolute top-2 left-2 font-serif leading-none">&quot;</span>
                     <p className="relative z-10 px-4">{record.story}</p>
                   </div>
                 )}
@@ -509,7 +509,7 @@ export default function HallOfFamePage() {
             <p className="text-amber-400 font-bold text-lg md:text-xl mb-6 break-keep">{viewingRecord.achievement}</p>
             
             {viewingRecord.story && (
-              <p className="text-white/80 text-sm md:text-base leading-relaxed italic mb-6">"{viewingRecord.story}"</p>
+              <p className="text-white/80 text-sm md:text-base leading-relaxed italic mb-6">&quot;{viewingRecord.story}&quot;</p>
             )}
 
             {/* People Involved */}
