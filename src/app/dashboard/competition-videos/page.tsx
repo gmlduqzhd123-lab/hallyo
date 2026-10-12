@@ -115,7 +115,7 @@ function VideoItem({ video, userRole, userId, approveMutation, handleDelete, han
             <h3 className="font-bold text-lg md:text-xl text-slate-900 line-clamp-2 break-keep">{video.title}</h3>
           </div>
           {video.description && (
-            <p className="text-slate-500 mt-2 text-sm whitespace-pre-wrap line-clamp-3">
+            <p className="text-slate-500 mt-2 text-sm whitespace-pre-wrap wrap-anywhere line-clamp-3">
               {video.description}
             </p>
           )}

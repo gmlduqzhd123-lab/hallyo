@@ -126,7 +126,7 @@ export default function CounselingPage() {
                   </div>
                   <span className="text-sm text-slate-400 font-medium">{log.date}</span>
                 </div>
-                <p className="text-slate-600 font-medium whitespace-pre-wrap">{log.summary}</p>
+                <p className="text-slate-600 font-medium whitespace-pre-wrap wrap-anywhere">{log.summary}</p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
                 <span className="text-xs text-slate-400">작성자: {log.users?.name}</span>

@@ -202,7 +202,7 @@ export default function DeveloperNotes({ userRole }: { userRole: string }) {
                   </div>
                 )}
               </div>
-              <div className="prose prose-purple max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+              <div className="prose prose-purple max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap wrap-anywhere font-medium">
                 {note.content}
               </div>
             </div>

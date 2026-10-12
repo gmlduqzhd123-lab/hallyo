@@ -119,7 +119,7 @@ export default function NoticesPage() {
           notices?.map((notice) => (
             <div key={notice.id} id={notice.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 scroll-mt-24">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-lg font-bold text-accent-navy">{notice.title}</h2>
+                <h2 className="text-lg font-bold text-accent-navy min-w-0 wrap-anywhere">{notice.title}</h2>
                 {(['developer'].includes(profile?.role as string) || notice.created_by === profile?.id) && (
                   <button 
                     onClick={() => { if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(notice.id) }}
@@ -129,7 +129,7 @@ export default function NoticesPage() {
                   </button>
                 )}
               </div>
-              <p className="text-slate-600 whitespace-pre-wrap leading-relaxed">{notice.content}</p>
+              <p className="text-slate-600 whitespace-pre-wrap wrap-anywhere leading-relaxed">{notice.content}</p>
               <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-4 text-xs text-slate-400 font-medium">
                 <span>작성일: {format(new Date(notice.created_at), 'yyyy-MM-dd')}</span>
                 <span>작성자: {notice.users?.name}</span>
