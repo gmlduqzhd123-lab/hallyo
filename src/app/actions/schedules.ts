@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { logAudit } from './audit'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
+import type { Place } from '@/types/database'
 
 const scheduleSchema = z.object({
   type: z.enum(['training', 'competition']),
@@ -24,7 +25,7 @@ export async function addSchedule(formData: FormData) {
   if (participantsStr && typeof participantsStr === 'string') {
     try {
       participants = JSON.parse(participantsStr)
-    } catch(e) {
+    } catch {
       // In case it's comma separated or just single id
     }
   }
@@ -231,7 +232,7 @@ export async function updateScheduleLocation(id: string, location: string) {
   return { success: true }
 }
 
-export async function updateSchedulePlaces(id: string, type: 'accommodations' | 'restaurants', places: any[]) {
+export async function updateSchedulePlaces(id: string, type: 'accommodations' | 'restaurants', places: Place[]) {
   const supabase = await createClient()
   
   const { data: authData, error: userError } = await supabase.auth.getUser()

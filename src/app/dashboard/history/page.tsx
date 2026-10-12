@@ -12,6 +12,7 @@ interface HistoryRecord {
   date: string
   title: string
   description?: string
+  created_by?: string | null
 }
 
 // Add/Edit Form
@@ -185,7 +186,7 @@ export default function HistoryPage() {
                       <p className="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">{history.description}</p>
                     )}
                     
-                    {(['admin', 'developer'].includes(userRole as string) || (history as any).created_by === userId) && (
+                    {(['admin', 'developer'].includes(userRole as string) || history.created_by === userId) && (
                       <div className="absolute top-4 right-4 flex opacity-0 group-hover:opacity-100 transition-opacity gap-1">
                         <button 
                           onClick={() => setEditingItem(history)}

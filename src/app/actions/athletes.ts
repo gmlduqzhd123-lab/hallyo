@@ -118,7 +118,7 @@ export async function softDeleteAthlete(id: string) {
   return { success: true }
 }
 
-export async function updateAthlete(id: string, data: Record<string, any>) {
+export async function updateAthlete(id: string, data: Record<string, unknown>) {
   const supabase = await createClient()
 
   const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -129,9 +129,9 @@ export async function updateAthlete(id: string, data: Record<string, any>) {
     return { error: '관리자 또는 개발자만 선수 정보를 수정할 수 있습니다.' }
   }
 
-  const toNullStr  = (v: any) => { const s = String(v ?? '').trim(); return s === '' || s === 'undefined' || s === 'null' ? null : s }
-  const toNullDate = (v: any) => { const s = String(v ?? '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null }
-  const toNullInt  = (v: any) => { const n = Number(v); return isNaN(n) || n === 0 ? null : n }
+  const toNullStr  = (v: unknown) => { const s = String(v ?? '').trim(); return s === '' || s === 'undefined' || s === 'null' ? null : s }
+  const toNullDate = (v: unknown) => { const s = String(v ?? '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null }
+  const toNullInt  = (v: unknown) => { const n = Number(v); return isNaN(n) || n === 0 ? null : n }
 
   const cleaned = {
     name: String(data.name || '').trim(),
@@ -167,7 +167,7 @@ export async function updateAthlete(id: string, data: Record<string, any>) {
   return { success: true }
 }
 
-export async function bulkAddAthletes(athletes: Record<string, any>[]) {
+export async function bulkAddAthletes(athletes: Record<string, unknown>[]) {
   const supabase = await createClient()
 
   const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -187,9 +187,9 @@ export async function bulkAddAthletes(athletes: Record<string, any>[]) {
     if (!name || name.length < 1) continue
     if (gender !== 'M' && gender !== 'F') continue
 
-    const toNullStr  = (v: any) => { const s = String(v ?? '').trim(); return s === '' || s === 'undefined' || s === 'null' ? null : s }
-    const toNullDate = (v: any) => { const s = String(v ?? '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null }
-    const toNullInt  = (v: any) => { const n = Number(v); return isNaN(n) || n === 0 ? null : n }
+    const toNullStr  = (v: unknown) => { const s = String(v ?? '').trim(); return s === '' || s === 'undefined' || s === 'null' ? null : s }
+    const toNullDate = (v: unknown) => { const s = String(v ?? '').trim(); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null }
+    const toNullInt  = (v: unknown) => { const n = Number(v); return isNaN(n) || n === 0 ? null : n }
 
     cleanedRows.push({
       name,
@@ -252,6 +252,7 @@ export async function bulkAddAthletes(athletes: Record<string, any>[]) {
 
   // Update existing athletes
   for (const item of toUpdate) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- is_deleted 는 업데이트 대상에서 빼기 위해 분리
     const { is_deleted, ...updateData } = item.data
     const { error } = await supabase
       .from('athletes')

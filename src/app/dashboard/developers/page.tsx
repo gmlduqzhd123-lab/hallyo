@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Code2, Plus, Trash2, Edit2, Upload, Loader2, Video, Globe, Camera, Code, Mail, User, Briefcase, X, Users, PenTool } from 'lucide-react'
 import { toast } from 'sonner'
+import { errorMessage } from '@/utils/error'
 import { addDeveloper, updateDeveloper, deleteDeveloper } from '@/app/actions/developers'
 import DeveloperNotes from './developer-notes'
 
@@ -118,8 +119,8 @@ export default function DevelopersPage() {
       setEditingDev(null)
       setPreviewUrl(null)
       queryClient.invalidateQueries({ queryKey: ['developers'] })
-    } catch (err: any) {
-      toast.error(err.message || '오류가 발생했습니다.')
+    } catch (err) {
+      toast.error(errorMessage(err, '오류가 발생했습니다.'))
     } finally {
       setIsSubmitting(false)
     }

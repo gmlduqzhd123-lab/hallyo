@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { logAudit } from './audit'
+import type { ChecklistItem } from '@/types/database'
 
 
 
@@ -32,7 +33,7 @@ export async function updateSystemSetting(key: string, value: string) {
   return { success: true }
 }
 
-export async function updateCompetitionChecklist(checklistItems: any[]) {
+export async function updateCompetitionChecklist(checklistItems: ChecklistItem[]) {
   const supabase = await createClient()
   
   const { data: authData } = await supabase.auth.getUser()

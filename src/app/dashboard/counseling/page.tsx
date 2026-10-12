@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { addCounselingLog, softDeleteCounselingLog } from '@/app/actions/counseling'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import type { CounselingLog } from '@/types/database'
 
 const schema = z.object({
   athlete_id: z.string().min(1, '선수를 선택해주세요.'),
@@ -29,7 +30,7 @@ export default function CounselingPage() {
     queryKey: ['athletes', 'counseling_selection'],
     queryFn: async () => {
       const { data } = await supabase.from('athletes').select('id, name').eq('is_deleted', false)
-      return data || []
+      return (data || []) as { id: string; name: string }[]
     }
   })
 
@@ -42,7 +43,7 @@ export default function CounselingPage() {
         .eq('is_deleted', false)
         .order('date', { ascending: false })
       if (error) throw error
-      return data
+      return data as CounselingLog[]
     }
   })
 
@@ -116,7 +117,7 @@ export default function CounselingPage() {
         ) : logs?.length === 0 ? (
           <div className="col-span-full py-12 text-center text-slate-400 font-medium">등록된 상담 일지가 없습니다.</div>
         ) : (
-          logs?.map((log: any) => (
+          logs?.map((log) => (
             <div key={log.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
               <div>
                 <div className="flex justify-between items-start mb-4">
@@ -147,7 +148,7 @@ export default function CounselingPage() {
             <label className="block text-sm font-bold text-accent-navy mb-1">상담 대상 선수</label>
             <select {...register('athlete_id')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50">
               <option value="">선수를 선택하세요</option>
-              {athletes?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {athletes?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
             {errors.athlete_id && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.athlete_id.message}</p>}
           </div>

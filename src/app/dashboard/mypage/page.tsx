@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { User, Activity, LogOut, Shield, CheckCircle, Clock } from 'lucide-react'
 import { logout } from '@/app/actions/auth'
+import type { AuditLog } from '@/types/database'
 
 export default function MyPage() {
   const supabase = createClient()
@@ -39,7 +40,7 @@ export default function MyPage() {
         .limit(20)
         
       if (error) throw error
-      return data
+      return data as AuditLog[]
     }
   })
 
@@ -147,7 +148,7 @@ export default function MyPage() {
             </div>
           ) : auditLogs && auditLogs.length > 0 ? (
             <div className="space-y-3">
-              {auditLogs.map((log: any) => (
+              {auditLogs.map((log) => (
                 <div key={log.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-lg font-bold text-xs ${

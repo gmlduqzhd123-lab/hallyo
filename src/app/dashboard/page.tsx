@@ -9,7 +9,7 @@ import { quotes } from '@/lib/quotes'
 import { poems } from '@/data/poems'
 import { essays } from '@/data/essays'
 import { letters } from '@/data/letters'
-import { quizzes } from '@/data/quizzes'
+import { quizzes, type Quiz } from '@/data/quizzes'
 import { UpcomingCompetition } from '@/components/dashboard/upcoming-competition'
 
 // Fetch athletes (is_deleted = false)
@@ -26,27 +26,15 @@ async function fetchActiveAthletes() {
   return data
 }
 
+// 크롬·엣지 등에서 오는 PWA 설치 이벤트 (표준 lib.dom 에는 아직 없음)
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
+
 export default function DashboardPage() {
-  const supabase = createClient()
   
-  const { data: userRole } = useQuery({
-    queryKey: ['user_role'],
-    queryFn: async () => {
-      const { data: authData } = await supabase.auth.getUser()
-      if (!authData.user) return null
-      
-      const { data, error } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', authData.user.id)
-        .single()
-        
-      if (error) return null
-      return data.role
-    }
-  })
   
-  const isAuthorized = ['admin', 'developer'].includes(userRole as string) || userRole === 'coach'
 
   const { data: athletes, isPending, isError, error } = useQuery({
     queryKey: ['athletes', 'active'],
@@ -59,13 +47,12 @@ export default function DashboardPage() {
   const [poem, setPoem] = useState<{title: string, page: string, content: string} | null>(null)
   const [essay, setEssay] = useState<{title: string, content: string} | null>(null)
   const [letter, setLetter] = useState<{title: string, content: string} | null>(null)
-  const [quiz, setQuiz] = useState<any>(null)
-  const [showQuizAnswer, setShowQuizAnswer] = useState(false)
+  const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [quizUserAnswer, setQuizUserAnswer] = useState('')
   const [quizResult, setQuizResult] = useState<'correct' | 'wrong' | 'revealed' | null>(null)
   const [wrongCount, setWrongCount] = useState(0)
   const [activeReadingTab, setActiveReadingTab] = useState<'poem' | 'essay' | 'letter' | 'quiz'>('essay')
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   const [showInstallGuide, setShowInstallGuide] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
@@ -78,9 +65,12 @@ export default function DashboardPage() {
       setIsIOS(/iphone|ipad|ipod/.test(userAgent))
       setIsInAppBrowser(/kakaotalk|instagram|naver|line/.test(userAgent))
     }
+    // 무작위 콘텐츠와 기기 확인은 브라우저에서만 할 수 있어 마운트 후 effect 에서 설정합니다
+    // (서버 렌더링 결과와 달라져 hydration 오류가 나지 않도록).
     checkEnvironment()
 
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuote(randomQuote)
     
     const randomPoem = poems[Math.floor(Math.random() * poems.length)]
@@ -95,9 +85,9 @@ export default function DashboardPage() {
     const randomQuiz = quizzes[Math.floor(Math.random() * quizzes.length)]
     setQuiz(randomQuiz)
     
-    const handleBeforeInstallPrompt = (e: any) => {
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e)
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
     }
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -128,7 +118,6 @@ export default function DashboardPage() {
   const girls = athletes?.filter(a => a.gender === 'F').length || 0
   const resetQuiz = () => {
     setQuiz(quizzes[Math.floor(Math.random() * quizzes.length)])
-    setShowQuizAnswer(false)
     setQuizUserAnswer('')
     setQuizResult(null)
     setWrongCount(0)
@@ -150,13 +139,11 @@ export default function DashboardPage() {
     
     if (isCorrect) {
       setQuizResult('correct')
-      setShowQuizAnswer(true)
     } else {
       const newWrongCount = wrongCount + 1
       setWrongCount(newWrongCount)
       if (newWrongCount >= 2) {
         setQuizResult('revealed')
-        setShowQuizAnswer(true)
       } else {
         setQuizResult('wrong')
       }

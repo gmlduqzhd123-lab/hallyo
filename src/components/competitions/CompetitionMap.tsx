@@ -2,9 +2,10 @@
 
 import React, { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { Schedule } from '@/types/database'
 
 interface Props {
-  competitions: any[]
+  competitions: Pick<Schedule, 'id' | 'title' | 'location'>[]
 }
 
 // VictorCazanave/svg-maps South Korea Data (524 x 631)

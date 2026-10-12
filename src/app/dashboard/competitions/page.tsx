@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
+import type { AthleteSummary, Schedule } from '@/types/database'
 
 const schema = z.object({
   type: z.literal('competition'),
@@ -43,7 +44,7 @@ export default function CompetitionsPage() {
         .eq('is_deleted', false)
         .order('date', { ascending: false })
       if (error) throw error
-      return data
+      return data as Schedule[]
     }
   })
 
@@ -57,7 +58,7 @@ export default function CompetitionsPage() {
         .order('grade', { ascending: false })
         .order('name')
       if (error) throw error
-      return data
+      return data as AthleteSummary[]
     }
   })
 
@@ -203,21 +204,21 @@ export default function CompetitionsPage() {
         ) : competitions?.length === 0 ? (
           <div className="py-12 text-center text-slate-400 font-medium bg-white rounded-3xl border border-slate-100">등록된 대회 일정이 없습니다.</div>
         ) : (
-          competitions?.map((comp: any) => {
+          competitions?.map((comp) => {
             const endDate = new Date(comp.end_date || comp.date)
             endDate.setHours(23, 59, 59, 999)
             const isExpired = endDate.getTime() < new Date().getTime()
             
             const participantNames = comp.participants
-              ?.map((id: string) => athletes?.find((a: any) => a.id === id))
-              .filter(Boolean)
-              .sort((a: any, b: any) => {
+              ?.map((id) => athletes?.find((a) => a.id === id))
+              .filter((a): a is AthleteSummary => Boolean(a))
+              .sort((a, b) => {
                 const gradeA = a.grade || 0
                 const gradeB = b.grade || 0
                 if (gradeB !== gradeA) return gradeB - gradeA
                 return a.name.localeCompare(b.name)
               })
-              .map((a: any) => a.grade ? `${a.name}(${a.grade}학년)` : a.name)
+              .map((a) => a.grade ? `${a.name}(${a.grade}학년)` : a.name)
               .join(', ')
             
             return (
@@ -233,7 +234,7 @@ export default function CompetitionsPage() {
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        window.open(`https://map.naver.com/p/search/${encodeURIComponent(comp.location)}`, '_blank')
+                        window.open(`https://map.naver.com/p/search/${encodeURIComponent(comp.location ?? '')}`, '_blank')
                       }}
                       className="flex items-center gap-1 hover:text-blue-500 transition-colors"
                       title="네이버 지도로 보기"
@@ -246,7 +247,7 @@ export default function CompetitionsPage() {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          const newLocation = window.prompt('새로운 대회 장소를 입력하세요:', comp.location)
+                          const newLocation = window.prompt('새로운 대회 장소를 입력하세요:', comp.location ?? '')
                           if (newLocation && newLocation !== comp.location) {
                             updateLocationMutation.mutate({ id: comp.id, location: newLocation })
                           }
@@ -320,7 +321,7 @@ export default function CompetitionsPage() {
           <div>
             <label className="block text-sm font-bold text-accent-navy mb-2">참여 선수</label>
             <div className="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border">
-              {athletes?.map((athlete: any) => (
+              {athletes?.map((athlete) => (
                 <label key={athlete.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 rounded-lg transition-colors">
                   <input 
                     type="checkbox" 

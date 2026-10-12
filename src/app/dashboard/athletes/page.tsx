@@ -55,12 +55,12 @@ export default function AthletesPage() {
 
   const bulkMutation = useMutation({
     mutationFn: async (parsedData: unknown[]) => {
-      const res = await bulkAddAthletes(parsedData as Record<string, any>[])
+      const res = await bulkAddAthletes(parsedData as Record<string, unknown>[])
       if (res?.error) throw new Error(res.error)
       return res
     },
-    onSuccess: (res: any) => {
-      const msg = res?.inserted != null && res?.updated != null
+    onSuccess: (res) => {
+      const msg = res && 'inserted' in res && res.inserted != null && res.updated != null
         ? `신규 ${res.inserted}명 등록, 기존 ${res.updated}명 업데이트 완료!`
         : '엑셀 일괄 등록이 완료되었습니다.'
       toast.success(msg, {
@@ -111,7 +111,7 @@ export default function AthletesPage() {
           return ''
         }
 
-        const cleanVal = (val: any) => {
+        const cleanVal = (val: unknown) => {
           if (val === '-' || val === 'undefined' || val === 'null' || val === undefined || val === null) return ''
           return val
         }
