@@ -183,7 +183,7 @@ export default function HistoryPage() {
                   <div className="flex-1 bg-slate-50/50 group-hover:bg-orange-50/30 p-5 rounded-2xl border border-slate-100 group-hover:border-orange-200 transition-colors ml-10 md:ml-0 relative">
                     <h3 className="text-lg font-bold text-slate-800 mb-1">{history.title}</h3>
                     {history.description && (
-                      <p className="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">{history.description}</p>
+                      <p className="text-slate-600 text-sm whitespace-pre-wrap wrap-anywhere leading-relaxed">{history.description}</p>
                     )}
                     
                     {(['admin', 'developer'].includes(userRole as string) || history.created_by === userId) && (

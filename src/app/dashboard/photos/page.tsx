@@ -326,7 +326,7 @@ export default function PhotosPage() {
           />
           {selectedPhoto.description && (
             <div className="absolute bottom-6 left-6 right-6 text-center pointer-events-none">
-              <p className="text-white text-base md:text-lg font-bold bg-black/50 inline-block px-6 py-3 rounded-2xl backdrop-blur-sm pointer-events-auto max-w-3xl whitespace-pre-wrap text-left md:text-center">
+              <p className="text-white text-base md:text-lg font-bold bg-black/50 inline-block wrap-anywhere px-6 py-3 rounded-2xl backdrop-blur-sm pointer-events-auto max-w-3xl whitespace-pre-wrap text-left md:text-center">
                 {selectedPhoto.description}
               </p>
             </div>

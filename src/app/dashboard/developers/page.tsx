@@ -186,27 +186,27 @@ export default function DevelopersPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 md:gap-4 justify-start bg-white p-2 rounded-2xl shadow-sm border border-slate-100 max-w-fit mx-auto md:mx-0">
+      <div className="grid grid-cols-2 gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 w-full">
         <button
           onClick={() => setActiveTab('intro')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-all ${
+          className={`flex items-center justify-center gap-2 w-full px-3 md:px-6 py-3 rounded-xl font-bold text-sm md:text-base whitespace-nowrap transition-all ${
             activeTab === 'intro'
               ? 'bg-purple-100 text-purple-700 shadow-sm'
               : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
           }`}
         >
-          <Users className="w-5 h-5" />
-          개발 일지
+          <Users className="w-5 h-5 shrink-0" />
+          개발자 소개
         </button>
         <button
           onClick={() => setActiveTab('notes')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-all ${
+          className={`flex items-center justify-center gap-2 w-full px-3 md:px-6 py-3 rounded-xl font-bold text-sm md:text-base whitespace-nowrap transition-all ${
             activeTab === 'notes'
               ? 'bg-purple-100 text-purple-700 shadow-sm'
               : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
           }`}
         >
-          <PenTool className="w-5 h-5" />
+          <PenTool className="w-5 h-5 shrink-0" />
           개발자 노트
         </button>
       </div>
@@ -392,7 +392,7 @@ export default function DevelopersPage() {
                         <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none">
                           <Code2 className="w-12 h-12" />
                         </div>
-                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap relative z-10">{dev.introduction}</p>
+                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap wrap-anywhere relative z-10">{dev.introduction}</p>
                       </div>
                     )}
 

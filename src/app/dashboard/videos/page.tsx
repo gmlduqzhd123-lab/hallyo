@@ -108,7 +108,7 @@ function VideoItem({ video, userRole, userId, approveMutation, handleDelete }: V
             <span className="align-middle">{video.title}</span>
           </h3>
           {video.description && (
-            <p className="text-slate-600 mt-3 leading-relaxed text-[15px] whitespace-pre-wrap">
+            <p className="text-slate-600 mt-3 leading-relaxed text-[15px] whitespace-pre-wrap wrap-anywhere">
               {video.description}
             </p>
           )}
