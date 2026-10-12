@@ -4,8 +4,8 @@ import { useState, useMemo, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Activity, TrendingUp, Medal, AlertCircle, Target, Users, Zap, CheckCircle, PlayCircle } from 'lucide-react'
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { Activity, TrendingUp, Medal, AlertCircle, Target, Zap, CheckCircle, PlayCircle } from 'lucide-react'
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { PageHeader } from '@/components/ui/page-header'
 
 // Helpers for time formatting

@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/modal'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { AlertCircle, Plus, Trash2, Check, X } from 'lucide-react'
+import { AlertCircle, Plus, Trash2 } from 'lucide-react'
 import { addRecord, deleteRecord } from '@/app/actions/records'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -53,9 +53,9 @@ export function PbChartModal({ isOpen, onClose, athleteId, athleteName }: Props)
       const supabase = createClient()
       const { data, error } = await supabase
         .from('schedules')
-        .select('id, title, start_date')
+        .select('id, title, date')
         .eq('is_deleted', false)
-        .order('start_date', { ascending: false })
+        .order('date', { ascending: false })
       if (error) throw new Error(error.message)
       return data
     },

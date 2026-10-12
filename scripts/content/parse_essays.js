@@ -15,5 +15,5 @@ while ((match = regex.exec(raw)) !== null) {
 
 const fileContent = `export const essays = ${JSON.stringify(essays, null, 2)};\n`;
 
-fs.writeFileSync(path.join(__dirname, '..', 'src', 'data', 'essays.ts'), fileContent, 'utf-8');
+fs.writeFileSync(path.join(__dirname, '..', '..', 'src', 'data', 'essays.ts'), fileContent, 'utf-8');
 console.log('Successfully created src/data/essays.ts with ' + essays.length + ' essays.');

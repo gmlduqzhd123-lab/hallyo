@@ -1,8 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
-import { ArrowLeft, Timer, Trophy, Calendar } from 'lucide-react'
-import { formatTimeSeconds } from '@/utils/time'
-import { format } from 'date-fns'
+import { ArrowLeft, Timer, Trophy } from 'lucide-react'
 import EventRecordChart from './EventRecordChart'
 import EventRecordTable from './EventRecordTable'
 import AddAthleteRecord from './AddAthleteRecord'
@@ -37,7 +35,7 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
     .from('schedules')
     .select('id, title')
     .eq('type', 'competition')
-    .order('start_date', { ascending: false })
+    .order('date', { ascending: false })
 
   // Group records by event_name to show best times or progression
   const recordsByEvent = records?.reduce((acc: any, record: any) => {

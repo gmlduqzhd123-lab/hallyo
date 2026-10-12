@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hallyoswim · 여수한려초 수영부 관리
 
-## Getting Started
+여수한려초등학교 수영부의 선수, 기록, 일정, 활동 자료를 한곳에서 관리하는 웹앱(PWA)입니다.
 
-First, run the development server:
+- 운영 주소: https://hallyo.vercel.app
+- 배포: `main` 브랜치에 병합되면 Vercel이 자동으로 운영 배포합니다. PR마다 미리보기 배포가 만들어집니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 주요 기능
+
+| 분류 | 메뉴 |
+|---|---|
+| 선수·기록 | 선수 명단, 선수 기록(지역·전국), 기록 분석, 라이벌 비교, 순위 시뮬레이터 |
+| 일정 | 대회 일정(지도·숙소·식당·참가자), 훈련 일정 |
+| 자료 | 수영 관련 영상, 대회 영상, 활동 사진, 수영부 연혁, 보도 기사, 명예의 전당 |
+| 운영 | 공지사항, 상담 일지(관리 권한), 개발 일지, 마이 페이지, 환경 설정(개발자) |
+
+## 기술 스택
+
+- **Next.js 16** (App Router, Server Actions) · React 19 · TypeScript
+- **Supabase**: 로그인(Auth), Postgres DB, Storage(`photos` 버킷)
+- Tailwind CSS v4, TanStack Query, react-hook-form + zod, recharts, Leaflet
+- Sentry (오류 수집), Vercel (배포)
+
+> ⚠️ 이 프로젝트의 Next.js는 예전 버전과 다른 부분이 있습니다. 예를 들어 미들웨어 대신 `src/proxy.ts`를 씁니다.
+> 코드를 고치기 전에 `node_modules/next/dist/docs/`의 문서를 확인하세요. (`AGENTS.md` 참고)
+
+## 로컬에서 실행하기
+
+1. Node.js 20 이상을 준비합니다.
+2. 의존성을 설치합니다.
+   ```bash
+   npm ci
+   ```
+3. `.env.example`을 복사해 `.env.local`을 만들고 값을 채웁니다.
+   값은 Supabase 대시보드 → Project Settings → API 에서 확인할 수 있습니다.
+   ```bash
+   cp .env.example .env.local
+   ```
+4. 개발 서버를 실행하고 http://localhost:3000 에 접속합니다.
+   ```bash
+   npm run dev
+   ```
+
+### 환경변수
+
+| 이름 | 필수 | 설명 |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase 프로젝트 URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase 공개(anon) 키 |
+| `NEXT_PUBLIC_SENTRY_DSN` | | Sentry 오류 수집 주소 (비워 두면 수집하지 않음) |
+
+운영 환경의 값은 Vercel 프로젝트 설정 → Environment Variables 에 들어 있습니다.
+
+## 자주 쓰는 명령
+
+| 명령 | 설명 |
+|---|---|
+| `npm run dev` | 개발 서버 |
+| `npm run build` | 운영용 빌드 |
+| `npm run start` | 빌드한 앱 실행 |
+| `npm run lint` | 코드 검사 (ESLint) |
+| `npx tsc --noEmit` | 타입 검사 |
+
+## 로그인과 권한
+
+- **이름 + 비밀번호**로 가입·로그인합니다. 내부적으로는 이름을 hex로 바꾼 `…@hallyoswim.com` 주소로 Supabase Auth에 등록합니다.
+- 가입하면 `pending`(승인 대기) 상태가 되고, 관리자가 승인해야 대시보드에 들어갈 수 있습니다. 이 흐름은 `src/proxy.ts`에서 처리합니다.
+- 역할: `admin`(관리자), `developer`(개발자), `coach`(지도자), `athlete`(선수), `parents`(학부모), `guest`(일반인)
+  - 선수 정보 추가·수정, 회원 관리: 관리자·개발자
+  - 일정·공지 등록: 관리자·개발자·코치
+  - 사진·영상: 누구나 올릴 수 있고, 일반 회원이 올린 것은 승인 후 공개됩니다.
+
+## 폴더 구조
+
+```
+src/
+  app/
+    actions/      Server Actions (DB 쓰기와 권한 확인)
+    dashboard/    로그인 후 화면 (메뉴별 폴더)
+    login/ signup/ pending/
+  components/     공용 컴포넌트
+  data/           퀴즈·에세이·편지·시 등 고정 콘텐츠
+  utils/supabase/ Supabase 클라이언트 (서버용 / 브라우저용)
+  proxy.ts        로그인·승인 여부에 따른 페이지 이동
+supabase/
+  schema.sql          DB 스키마 (코드 기준 참고용)
+  inspect_schema.sql  운영 DB 실제 구조 확인용 쿼리
+scripts/              데이터 일괄 등록 등 일회성 스크립트 (앱 빌드와 무관)
+public/               로고, 글꼴, 공유 이미지, 서비스워커
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 데이터베이스
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `supabase/schema.sql`은 앱 코드가 쓰는 테이블 17개를 정리한 **참고용·새 프로젝트 구축용** 스키마입니다. 운영 DB에 그대로 실행하지 마세요.
+- 운영 DB의 실제 구조는 Supabase SQL Editor에서 `supabase/inspect_schema.sql`을 실행해 확인할 수 있습니다.
+- 대부분의 테이블은 실제로 지우지 않고 `is_deleted = true`로 표시만 합니다(soft delete).
+- 변경 이력은 `audit_logs` 테이블에 남습니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 만든 사람
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+© 2026 엽쌤 · 달디단

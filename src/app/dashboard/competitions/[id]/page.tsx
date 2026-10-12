@@ -3,7 +3,7 @@
 import { useState, use } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { ArrowLeft, Trophy, Plus, Trash2, MapPin, Calendar as CalendarIcon, Users, UserPlus, Check, Building, Utensils, ExternalLink, Edit2 } from 'lucide-react'
+import { ArrowLeft, Trophy, Plus, Trash2, MapPin, Users, UserPlus, Check, Building, Utensils, ExternalLink, Edit2 } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'

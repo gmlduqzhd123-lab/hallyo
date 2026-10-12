@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import React, { useState, useEffect } from 'react'
-import { CalendarDays, ChevronRight, Bell, AlertCircle, Quote, BookOpen, Download, Share, PlusSquare, MoreVertical, X, HelpCircle, CheckCircle } from 'lucide-react'
+import { AlertCircle, Quote, BookOpen, Download, Share, PlusSquare, MoreVertical, X, HelpCircle, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { quotes } from '@/lib/quotes'
 import { poems } from '@/data/poems'
@@ -282,7 +282,7 @@ export default function DashboardPage() {
                 <Quote className="w-12 h-12" fill="currentColor" />
               </div>
               <p className="relative z-10 text-base md:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 leading-relaxed px-4 md:px-12 py-2 drop-shadow-sm">
-                "{quote}"
+                &quot;{quote}&quot;
               </p>
               <div className="relative z-10 flex items-center gap-3 mt-1">
                 <p className="text-xs font-bold text-orange-400/80 tracking-widest uppercase">
@@ -617,7 +617,7 @@ export default function DashboardPage() {
                 <div className="text-slate-500 text-sm mb-6 leading-relaxed break-keep">
                   <p className="text-rose-500 font-bold mb-2">🚨 카카오톡 등에서는 앱 설치가 불가능합니다.</p>
                   화면 우측 하단(또는 상단)의 메뉴 버튼 <MoreVertical className="w-4 h-4 inline" /> 을 눌러<br/>
-                  <b>'다른 브라우저로 열기(Safari/Chrome)'</b>를 선택하신 후 다시 시도해주세요!
+                  <b>&apos;다른 브라우저로 열기(Safari/Chrome)&apos;</b>를 선택하신 후 다시 시도해주세요!
                 </div>
               ) : (
                 <p className="text-slate-500 text-sm mb-6 leading-relaxed break-keep">

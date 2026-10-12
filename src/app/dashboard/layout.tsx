@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Waves, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp, Download, QrCode } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp, Download, QrCode } from 'lucide-react'
 import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { GlobalSearch } from '@/components/global-search'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

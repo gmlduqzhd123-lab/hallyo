@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Film, Plus, Trash2, Loader2, Upload, Link2, Edit2, Check } from 'lucide-react'
+import { Film, Plus, Trash2, Loader2, Link2, Edit2, Check } from 'lucide-react'
 import { addCompetitionVideo, softDeleteCompetitionVideo, updateCompetitionVideo, approveCompetitionVideo } from '@/app/actions/competition-videos'
 import { toast } from 'sonner'
 

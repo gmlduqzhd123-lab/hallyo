@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
-@font-face { font-family: 'BMDOHYEON'; src: url('/fonts/BMDOHYEON.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'BMJUA'; src: url('/fonts/BMJUA.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'GangwonEduAllB'; src: url('/fonts/GangwonEduAllB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Jalnan'; src: url('/fonts/Jalnan.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'KyoboHandwriting2019'; src: url('/fonts/KyoboHandwriting2019.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'MaplestoryB'; src: url('/fonts/MaplestoryB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'MaplestoryL'; src: url('/fonts/MaplestoryL.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'SchoolSafeNadeuriB'; src: url('/fonts/SchoolSafeNadeuriB.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'SchoolSafeNadeuriL'; src: url('/fonts/SchoolSafeNadeuriL.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'SweetMuffin'; src: url('/fonts/SweetMuffin.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'aBabo'; src: url('/fonts/aBabo.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'BMDOHYEON'; src: url('/fonts/BMDOHYEON.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'BMJUA'; src: url('/fonts/BMJUA.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'GangwonEduAllB'; src: url('/fonts/GangwonEduAllB.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Jalnan'; src: url('/fonts/Jalnan.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'KyoboHandwriting2019'; src: url('/fonts/KyoboHandwriting2019.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'MaplestoryB'; src: url('/fonts/MaplestoryB.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'MaplestoryL'; src: url('/fonts/MaplestoryL.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'SchoolSafeNadeuriB'; src: url('/fonts/SchoolSafeNadeuriB.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'SchoolSafeNadeuriL'; src: url('/fonts/SchoolSafeNadeuriL.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'SweetMuffin'; src: url('/fonts/SweetMuffin.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'aBabo'; src: url('/fonts/aBabo.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
 @theme {
   --color-primary: #0047AB; /* Cobalt Blue */
   --color-primary-hover: #003685;
@@ -27,16 +27,13 @@
  * @layer 바깥에 배치하여 Tailwind의 어떤 규칙보다도 높은 우선순위를 가집니다.
  * 모든 요소(*, ::before, ::after)에 !important로 적용하므로
  * React inline style이나 컴포넌트 로컬 스타일이 절대 이를 override할 수 없습니다.
- * 
- * CSS 변수 --global-font는 layout.tsx의 <style> 태그와
- * GlobalFontProvider에 의해 관리됩니다.
  */
 :root {
-  --global-font: 'MaplestoryL';
+  --global-font: 'MaplestoryB';
 }
 
 *, *::before, *::after {
-  font-family: var(--global-font), sans-serif !important;
+  font-family: 'MaplestoryB', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
 }
 
 @layer base {

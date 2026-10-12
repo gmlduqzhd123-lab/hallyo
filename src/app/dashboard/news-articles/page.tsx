@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Newspaper, Plus, Trash2, Edit2, ExternalLink, Calendar, Loader2, Upload, Star } from 'lucide-react'
 import { toast } from 'sonner'
