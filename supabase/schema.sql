@@ -330,15 +330,53 @@ begin
 end;
 $function$;
 
--- delete_user_account 는 supabase/manual/delete_user_account_developer.sql 참고
--- (⚠️ 운영 DB 에는 아직 옛 버전이 남아 있음 — 위 파일을 SQL Editor 에서 실행해야 반영)
+-- 공지·일정·상담 일지의 작성자는 비울 수 없어 삭제를 실행한 개발자에게 넘기고, 나머지 작성자 칸은 비웁니다
+create or replace function public.delete_user_account(target_user_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, auth
+as $function$
+begin
+  if not public.is_developer() then
+    raise exception 'Only developers can delete users.';
+  end if;
+
+  if target_user_id = auth.uid() then
+    raise exception 'You cannot delete your own account.';
+  end if;
+
+  -- 비울 수 없는 작성자 칸: 삭제를 실행한 개발자에게 넘김
+  update public.notices         set created_by = auth.uid() where created_by = target_user_id;
+  update public.schedules       set created_by = auth.uid() where created_by = target_user_id;
+  update public.counseling_logs set created_by = auth.uid() where created_by = target_user_id;
+
+  -- 비워도 되는 작성자 칸
+  update public.photos             set created_by = null where created_by = target_user_id;
+  update public.training_videos    set created_by = null where created_by = target_user_id;
+  update public.competition_videos set created_by = null where created_by = target_user_id;
+  update public.history            set created_by = null where created_by = target_user_id;
+  update public.news_articles      set created_by = null where created_by = target_user_id;
+  update public.hall_of_fame       set created_by = null where created_by = target_user_id;
+  update public.developer_notes    set created_by = null where created_by = target_user_id;
+
+  delete from public.audit_logs where user_id = target_user_id;
+  delete from public.users where id = target_user_id;
+  delete from auth.users where id = target_user_id;
+
+  return true;
+end;
+$function$;
+
 
 revoke all on function public.is_developer() from public, anon;
 revoke all on function public.get_athlete_contacts() from public, anon;
 revoke execute on function public.reset_user_password(uuid, text) from public, anon;
+revoke execute on function public.delete_user_account(uuid) from public, anon;
 grant execute on function public.is_developer() to authenticated;
 grant execute on function public.get_athlete_contacts() to authenticated;
 grant execute on function public.reset_user_password(uuid, text) to authenticated;
+grant execute on function public.delete_user_account(uuid) to authenticated;
 
 
 -- ---------------------------------------------------------------------
