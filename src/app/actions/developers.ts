@@ -1,5 +1,6 @@
 'use server'
 
+import { removePhotoFileIfUnused } from '@/lib/photo-files'
 import { createClient } from '@/utils/supabase/server'
 import { logAudit } from './audit'
 import { revalidatePath } from 'next/cache'
@@ -62,6 +63,7 @@ export async function updateDeveloper(id: string, data: {
 
 export async function deleteDeveloper(id: string) {
   const supabase = await createClient()
+  const { data: dev } = await supabase.from('developers').select('photo_url').eq('id', id).single()
 
   const { error } = await supabase
     .from('developers')
@@ -71,6 +73,8 @@ export async function deleteDeveloper(id: string) {
   if (error) {
     return { error: '개발자 삭제에 실패했습니다: ' + error.message }
   }
+
+  await removePhotoFileIfUnused(supabase, dev?.photo_url)
 
   await logAudit('DELETE', 'developers', { id })
   revalidatePath('/dashboard/developers')

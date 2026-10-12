@@ -131,6 +131,15 @@ export interface NationwideRanking {
   created_at: string
 }
 
+// 기록 분석 화면의 선수별 문구 (관리자·개발자가 고침, 비어 있으면 자동 문구)
+export interface AthleteAdvice {
+  athlete_id: string
+  focus_area: string
+  advice: string
+  updated_by: string | null
+  updated_at: string
+}
+
 export interface TrainingVideo {
   id: string
   url: string

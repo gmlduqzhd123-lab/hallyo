@@ -20,7 +20,7 @@
 - **Next.js 16** (App Router, Server Actions) · React 19 · TypeScript
 - **Supabase**: 로그인(Auth), Postgres DB, Storage(`photos` 버킷)
 - Tailwind CSS v4, TanStack Query, react-hook-form + zod, recharts, Leaflet
-- Sentry (오류 수집), Vercel (배포)
+- Vercel (배포)
 
 > ⚠️ 이 프로젝트의 Next.js는 예전 버전과 다른 부분이 있습니다. 예를 들어 미들웨어 대신 `src/proxy.ts`를 씁니다.
 > 코드를 고치기 전에 `node_modules/next/dist/docs/`의 문서를 확인하세요. (`AGENTS.md` 참고)
@@ -48,7 +48,6 @@
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase 프로젝트 URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase 공개(anon) 키 |
-| `NEXT_PUBLIC_SENTRY_DSN` | | Sentry 오류 수집 주소 (비워 두면 수집하지 않음) |
 
 운영 환경의 값은 Vercel 프로젝트 설정 → Environment Variables 에 들어 있습니다.
 
@@ -72,6 +71,7 @@
   - 상담 일지: 관리자·개발자·코치
   - 일정·공지 등록: 관리자·개발자·코치
   - 사진·영상: 누구나 올릴 수 있고, 일반 회원이 올린 것은 승인 후 공개됩니다.
+  - 기록 분석 문구(집중 훈련 영역·코칭 어드바이스): 관리자·개발자가 화면에서 수정 (비워 두면 기록으로 만든 자동 문구)
 - 모든 자료(글·목록·사진)는 승인된 로그인 사용자만 볼 수 있습니다. 사진 저장소는 비공개이고, 화면에는 `/storage/photos/...` 경로(로그인 확인 후 전달)로 보여 줍니다.
 
 ## 폴더 구조
@@ -96,10 +96,10 @@ public/               로고, 글꼴, 공유 이미지, 서비스워커
 
 ## 데이터베이스
 
-- `supabase/schema.sql`은 운영 DB에서 직접 뽑아 정리한 실제 구조입니다(테이블 17개, 권한 규칙, 함수). 운영 DB에 그대로 실행하지 마세요. DB를 바꾸면 이 파일도 함께 고쳐 주세요.
+- `supabase/schema.sql`은 운영 DB에서 직접 뽑아 정리한 실제 구조입니다(테이블 18개, 권한 규칙, 함수). 운영 DB에 그대로 실행하지 마세요. DB를 바꾸면 이 파일도 함께 고쳐 주세요.
 - 선수 연락처 3개 컬럼은 컬럼 권한으로 일반 조회에서 막혀 있습니다. `athletes`에 컬럼을 추가하면 `schema.sql` 7번의 `grant`와 `src/lib/athletes.ts`의 `ATHLETE_COLUMNS`에도 넣어야 합니다.
 - 운영 DB의 실제 구조는 Supabase SQL Editor에서 `supabase/inspect_schema.sql`을 실행해 확인할 수 있습니다.
-- 대부분의 테이블은 실제로 지우지 않고 `is_deleted = true`로 표시만 합니다(soft delete).
+- 대부분의 테이블은 실제로 지우지 않고 `is_deleted = true`로 표시만 합니다(soft delete). 단, 글에 붙은 사진 파일은 글을 지울 때 저장소에서도 지웁니다. 남은 파일은 **환경 설정 → 사진 저장소 정리**로 지울 수 있습니다.
 - 변경 이력은 `audit_logs` 테이블에 남습니다.
 
 ## 만든 사람

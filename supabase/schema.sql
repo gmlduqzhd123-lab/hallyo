@@ -736,3 +736,24 @@ create index if not exists records_athlete_id_idx on public.records (athlete_id)
 create index if not exists records_schedule_id_idx on public.records (schedule_id);
 create index if not exists schedules_created_by_idx on public.schedules (created_by);
 create index if not exists training_videos_created_by_idx on public.training_videos (created_by);
+
+-- =====================================================================
+-- 9. 기록 분석 문구 (2026-10-13 운영 DB 적용, supabase/manual/2026-10-13_athlete_advice.sql)
+-- =====================================================================
+create table if not exists public.athlete_advice (
+  athlete_id uuid primary key references public.athletes (id),
+  focus_area text not null default '',
+  advice text not null default '',
+  updated_by uuid,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.athlete_advice enable row level security;
+
+create policy "Approved users can read advice" on public.athlete_advice
+  for select using ((select public.is_approved_user()));
+create policy "Admins and developers manage advice" on public.athlete_advice
+  for all using ((select public.is_admin_or_developer()))
+  with check ((select public.is_admin_or_developer()));
+
+grant select, insert, update on public.athlete_advice to authenticated;

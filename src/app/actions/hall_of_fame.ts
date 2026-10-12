@@ -1,5 +1,6 @@
 'use server'
 
+import { removePhotoFileIfUnused } from '@/lib/photo-files'
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
@@ -105,7 +106,7 @@ export async function deleteHallOfFameRecord(id: string) {
   if (!authData.user) return { error: '로그인이 필요합니다.' }
 
   const { data: roleData } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
-  const { data: record } = await supabase.from('hall_of_fame').select('created_by').eq('id', id).single()
+  const { data: record } = await supabase.from('hall_of_fame').select('created_by, photo_url').eq('id', id).single()
 
   if (!['admin', 'developer'].includes(roleData?.role as string) && record?.created_by !== authData.user.id) {
     return { error: '관리자, 개발자 또는 작성자 본인만 명예의 전당을 삭제할 수 있습니다.' }
@@ -118,6 +119,7 @@ export async function deleteHallOfFameRecord(id: string) {
 
   if (error) return { error: error.message }
 
+  await removePhotoFileIfUnused(supabase, record?.photo_url)
   revalidatePath('/dashboard/hall-of-fame')
   return { success: true }
 }
