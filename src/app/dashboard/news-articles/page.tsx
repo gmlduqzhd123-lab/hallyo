@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Newspaper, Plus, Trash2, Edit2, ExternalLink, Calendar, Loader2, Upload, Star } from 'lucide-react'
 import { toast } from 'sonner'
+import { errorMessage } from '@/utils/error'
 import { addNewsArticle, updateNewsArticle, deleteNewsArticle } from '@/app/actions/news_articles'
 import { format } from 'date-fns'
 
@@ -17,6 +18,7 @@ type NewsArticle = {
   publish_date: string | null
   photo_url: string | null
   created_at: string
+  created_by?: string | null
 }
 
 export default function NewsArticlesPage() {
@@ -74,7 +76,7 @@ export default function NewsArticlesPage() {
 
       const { data } = supabase.storage.from('photos').getPublicUrl(fileName)
       setPreviewUrl(data.publicUrl)
-    } catch (err: any) {
+    } catch {
       toast.error('사진 업로드에 실패했습니다.')
     } finally {
       setUploadingImage(false)
@@ -112,8 +114,8 @@ export default function NewsArticlesPage() {
       setEditingRecord(null)
       setPreviewUrl(null)
       queryClient.invalidateQueries({ queryKey: ['news_articles'] })
-    } catch (err: any) {
-      toast.error(err.message || '오류가 발생했습니다.')
+    } catch (err) {
+      toast.error(errorMessage(err, '오류가 발생했습니다.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -368,7 +370,7 @@ export default function NewsArticlesPage() {
                     기사 원문 보기 <ExternalLink className="w-4 h-4" />
                   </a>
 
-                  {(['admin', 'developer'].includes(userRole as string) || (article as any).created_by === userId) && (
+                  {(['admin', 'developer'].includes(userRole as string) || article.created_by === userId) && (
                     <div className="flex gap-2">
                       <button 
                         onClick={(e) => { e.preventDefault(); handleEditClick(article); }}

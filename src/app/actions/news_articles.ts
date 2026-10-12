@@ -2,8 +2,9 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { NewsArticleInput } from '@/types/database'
 
-export async function addNewsArticle(data: any) {
+export async function addNewsArticle(data: NewsArticleInput) {
   const supabase = await createClient()
   
   const { data: userData } = await supabase.auth.getUser()
@@ -32,7 +33,7 @@ export async function addNewsArticle(data: any) {
   return { success: true }
 }
 
-export async function updateNewsArticle(id: string, data: any) {
+export async function updateNewsArticle(id: string, data: NewsArticleInput) {
   const supabase = await createClient()
   
   const { data: userData } = await supabase.auth.getUser()

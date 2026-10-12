@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Calendar, dateFnsLocalizer, Event } from 'react-big-calendar'
+import { Calendar, dateFnsLocalizer, type Event, type Messages, type ViewsProps } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay, startOfYear, endOfYear, addYears, getYear, getMonth } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
@@ -12,6 +12,10 @@ import { Plus, Calendar as CalendarIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { PageHeader } from '@/components/ui/page-header'
+import type { Schedule } from '@/types/database'
+
+// 달력에 올리는 일정 (원본 일정은 resource 에 담음)
+type ScheduleEvent = Event & { id: string; start: Date; end: Date; resource: Schedule }
 
 const locales = {
   'ko': ko,
@@ -25,13 +29,13 @@ const localizer = dateFnsLocalizer({
   locales,
 })
 
-const YearView = ({ date, events }: any) => {
+const YearView = ({ date, events }: { date: Date; events: ScheduleEvent[] }) => {
   const currentYear = getYear(date)
   
   const months = Array.from({ length: 12 }, (_, i) => {
     return {
       month: i,
-      events: events.filter((e: any) => getYear(e.start) === currentYear && getMonth(e.start) === i)
+      events: events.filter((e) => getYear(e.start) === currentYear && getMonth(e.start) === i)
     }
   })
 
@@ -47,7 +51,7 @@ const YearView = ({ date, events }: any) => {
             {events.length === 0 ? (
               <p className="text-slate-400 text-sm font-medium text-center mt-8">일정이 없습니다</p>
             ) : (
-              events.sort((a:any, b:any) => a.start.getTime() - b.start.getTime()).map((e: any) => {
+              events.sort((a, b) => a.start.getTime() - b.start.getTime()).map((e) => {
                 const isCompetition = e.resource?.type === 'competition'
                 const displayEndDate = e.allDay && e.end ? new Date(e.end.getTime() - 86400000) : e.end
                 
@@ -88,7 +92,7 @@ YearView.title = (date: Date) => {
 export default function SchedulePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [selectedEventData, setSelectedEventData] = useState<any>(null)
+  const [selectedEventData, setSelectedEventData] = useState<Schedule | null>(null)
   const supabase = createClient()
   const router = useRouter()
 
@@ -100,7 +104,7 @@ export default function SchedulePage() {
         .select('*')
         .eq('is_deleted', false)
       if (error) throw error
-      return data
+      return data as Schedule[]
     }
   })
 
@@ -123,7 +127,7 @@ export default function SchedulePage() {
 
   const isAuthorized = ['admin', 'developer'].includes(userRole as string) || userRole === 'coach'
 
-  const events: Event[] = schedules?.map((s: any) => {
+  const events: ScheduleEvent[] = schedules?.map((s) => {
     const startDate = new Date(s.date)
     const endDate = s.end_date ? new Date(s.end_date) : new Date(s.date)
     
@@ -153,8 +157,8 @@ export default function SchedulePage() {
     setIsModalOpen(true)
   }
 
-  const handleSelectEvent = (event: Event) => {
-    const resource = event.resource as any
+  const handleSelectEvent = (event: ScheduleEvent) => {
+    const resource = event.resource
     if (resource.type === 'competition') {
       router.push(`/dashboard/competitions/${resource.id}`)
       return
@@ -169,8 +173,8 @@ export default function SchedulePage() {
   }
 
   // Custom Event Component
-  const EventComponent = ({ event }: any) => {
-    const resource = event.resource as any
+  const EventComponent = ({ event }: { event: ScheduleEvent }) => {
+    const resource = event.resource
     const isCompetition = resource.type === 'competition'
     return (
       <div className="flex items-center gap-1.5 truncate font-bold text-xs tracking-tight">
@@ -181,8 +185,8 @@ export default function SchedulePage() {
   }
 
   // Custom Event Wrapper for styling based on type
-  const eventPropGetter = (event: Event) => {
-    const resource = event.resource as any
+  const eventPropGetter = (event: ScheduleEvent) => {
+    const resource = event.resource
     const isCompetition = resource.type === 'competition'
     return {
       className: isCompetition ? 'custom-event-competition' : 'custom-event-training'
@@ -377,13 +381,14 @@ export default function SchedulePage() {
             <p className="text-slate-400 font-bold animate-pulse">일정을 불러오고 있어요...</p>
           </div>
         ) : (
-          <Calendar
+          <Calendar<ScheduleEvent>
             localizer={localizer}
             events={events}
             startAccessor="start"
             endAccessor="end"
             culture="ko"
-            views={{ month: true, week: true, day: true, agenda: false, year: YearView } as any}
+            // 연간 보기(year)는 라이브러리 타입에 없는 사용자 정의 보기라 타입을 지정해 넘깁니다
+            views={{ month: true, week: true, day: true, agenda: false, year: YearView } as ViewsProps<ScheduleEvent>}
             onSelectSlot={handleSelectSlot}
             onSelectEvent={handleSelectEvent}
             selectable={isAuthorized}
@@ -400,7 +405,7 @@ export default function SchedulePage() {
               day: "일간",
               year: "연간",
               noEventsInRange: "이 기간에는 일정이 없어요! 🏖️"
-            }) as any}
+            }) as Messages<ScheduleEvent>}
           />
         )}
       </div>

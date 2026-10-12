@@ -211,7 +211,7 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
 
   const columns = allColumns.filter(col => {
     // Hide contact details if not admin, developer, or coach
-    if (!['admin', 'developer', 'coach'].includes(userRole as string) && ['student_phone', 'parent_name', 'parent_phone'].includes((col as any).accessorKey)) {
+    if (!['admin', 'developer', 'coach'].includes(userRole as string) && 'accessorKey' in col && ['student_phone', 'parent_name', 'parent_phone'].includes(String(col.accessorKey))) {
       return false
     }
     return true

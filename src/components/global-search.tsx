@@ -7,6 +7,14 @@ import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
 import { useDebounce } from '@/hooks/use-debounce'
 
+type SearchResult = {
+  id: string
+  type: 'LOCAL' | 'NATIONWIDE'
+  name: string
+  subtitle: string
+  route: string
+}
+
 export function GlobalSearch() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [query, setQuery] = useState('')
@@ -53,11 +61,11 @@ export function GlobalSearch() {
 
       const [localRes, nationRes] = await Promise.all([localPromise, nationPromise]);
       
-      const combined: any[] = [];
+      const combined: SearchResult[] = [];
 
       // Combine local team first
       if (localRes.data) {
-        localRes.data.forEach((item: any) => {
+        (localRes.data as { id: string; name: string; grade: number | null }[]).forEach((item) => {
           combined.push({
             id: `local_${item.id}`,
             type: 'LOCAL',
@@ -71,7 +79,7 @@ export function GlobalSearch() {
       // Add nationwide results
       if (nationRes.data) {
         // Filter out duplicates if the local athlete is also in nationwide
-        nationRes.data.forEach((item: any) => {
+        (nationRes.data as { id: string; athlete_name: string; school: string | null; event: string; year: number | null }[]).forEach((item) => {
           combined.push({
             id: `nation_${item.id}`,
             type: 'NATIONWIDE',
@@ -87,7 +95,7 @@ export function GlobalSearch() {
     enabled: debouncedQuery.trim().length > 0
   })
 
-  const handleResultClick = (result: any) => {
+  const handleResultClick = (result: SearchResult) => {
     setIsExpanded(false)
     setQuery('')
     router.push(result.route)
@@ -135,7 +143,7 @@ export function GlobalSearch() {
             </div>
           ) : results && results.length > 0 ? (
             <ul className="max-h-80 overflow-y-auto py-2">
-              {results.map((result: any, idx: number) => (
+              {results.map((result, idx) => (
                 <li key={idx}>
                   <button 
                     onClick={() => handleResultClick(result)}

@@ -8,6 +8,7 @@ import { addSchedule, updateSchedule } from '@/app/actions/schedules'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
+import type { Schedule } from '@/types/database'
 
 const scheduleSchema = z.object({
   type: z.enum(['training', 'competition'], { message: '일정 구분을 선택해주세요.' }),
@@ -23,7 +24,7 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   initialDate?: Date
-  initialData?: any
+  initialData?: Schedule | null
 }
 
 export function AddScheduleModal({ isOpen, onClose, initialDate, initialData }: Props) {

@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { Trophy, Plus, Trash2, Edit2, Medal, Star, Upload, Loader2, X, Download, ZoomIn, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
+import { errorMessage } from '@/utils/error'
 import { addHallOfFameRecord, updateHallOfFameRecord, deleteHallOfFameRecord } from '@/app/actions/hall_of_fame'
 
 type HallOfFameData = {
@@ -23,6 +24,7 @@ type HallOfFameData = {
   captain?: string | null
   vice_captain?: string | null
   created_at: string
+  created_by?: string | null
 }
 
 export default function HallOfFamePage() {
@@ -81,7 +83,7 @@ export default function HallOfFamePage() {
 
       const { data } = supabase.storage.from('photos').getPublicUrl(fileName)
       setPreviewUrl(data.publicUrl)
-    } catch (err: any) {
+    } catch {
       toast.error('사진 업로드에 실패했습니다.')
     } finally {
       setUploadingImage(false)
@@ -128,8 +130,8 @@ export default function HallOfFamePage() {
       setEditingRecord(null)
       setPreviewUrl(null)
       queryClient.invalidateQueries({ queryKey: ['hall_of_fame'] })
-    } catch (err: any) {
-      toast.error(err.message || '오류가 발생했습니다.')
+    } catch (err) {
+      toast.error(errorMessage(err, '오류가 발생했습니다.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -440,7 +442,7 @@ export default function HallOfFamePage() {
                   </div>
                 )}
 
-                {(['admin', 'developer'].includes(userRole as string) || (record as any).created_by === userId) && (
+                {(['admin', 'developer'].includes(userRole as string) || record.created_by === userId) && (
                   <div className="mt-6 flex justify-end gap-2 border-t border-slate-100 pt-6">
                     <button 
                       onClick={() => handleEditClick(record)}

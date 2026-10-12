@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client'
 import { Film, Plus, Trash2, Loader2, Link2, Edit2, Check } from 'lucide-react'
 import { addCompetitionVideo, softDeleteCompetitionVideo, updateCompetitionVideo, approveCompetitionVideo } from '@/app/actions/competition-videos'
 import { toast } from 'sonner'
+import { errorMessage } from '@/utils/error'
 
 type VideoData = {
   id: string
@@ -13,7 +14,18 @@ type VideoData = {
   title: string
   description: string | null
   category: string
+  status: 'pending' | 'approved'
+  created_by: string | null
   created_at: string
+}
+
+type VideoItemProps = {
+  video: VideoData
+  userRole: string
+  userId: string | undefined
+  approveMutation: { mutate: (id: string) => void }
+  handleDelete: (id: string) => void
+  handleEditClick: (video: VideoData) => void
 }
 
 const CATEGORIES = ['전체', '자유형', '배영', '접영', '평영', '개인혼영', '기타'] as const
@@ -24,7 +36,7 @@ const getYoutubeVideoId = (url: string) => {
   return (match && match[2].length === 11) ? match[2] : null;
 };
 
-function VideoItem({ video, userRole, userId, approveMutation, handleDelete, handleEditClick }: any) {
+function VideoItem({ video, userRole, userId, approveMutation, handleDelete, handleEditClick }: VideoItemProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoId = getYoutubeVideoId(video.url);
   const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
@@ -153,7 +165,7 @@ export default function CompetitionVideosPage() {
       try {
         const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
         userData = data;
-      } catch (e) {}
+      } catch {}
       
       return { ...userData, auth_id: authData.user.id }
     }
@@ -212,8 +224,8 @@ export default function CompetitionVideosPage() {
           queryClient.invalidateQueries({ queryKey: ['competition_videos'] })
         }
       }
-    } catch (err: any) {
-      toast.error(err.message || '오류가 발생했습니다.')
+    } catch (err) {
+      toast.error(errorMessage(err, '오류가 발생했습니다.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -258,10 +270,10 @@ export default function CompetitionVideosPage() {
   })
 
   const visibleVideos = videos?.filter(v => {
-    const isVisible = ['admin', 'developer', 'coach'].includes(userRole as string) || (v as any).status === 'approved'
+    const isVisible = ['admin', 'developer', 'coach'].includes(userRole as string) || v.status === 'approved'
     if (!isVisible) return false
     if (selectedCategory === '전체') return true
-    return (v as any).category === selectedCategory
+    return v.category === selectedCategory
   }) || []
 
   return (
@@ -434,7 +446,7 @@ export default function CompetitionVideosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {visibleVideos.map((video: any) => (
+          {visibleVideos.map((video) => (
             <VideoItem 
               key={video.id} 
               video={video} 

@@ -28,8 +28,8 @@ interface Competition {
   id: string
   title: string
   date: string
-  end_date?: string
-  location?: string
+  end_date?: string | null
+  location?: string | null
 }
 
 interface DynamicMapProps {

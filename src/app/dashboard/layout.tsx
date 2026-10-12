@@ -56,7 +56,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '환경 설정', icon: Settings, href: '/dashboard/settings', restrictedTo: ['developer'] },
   ]
 
-  const handleNavClick = (e: React.MouseEvent, item: any) => {
+  const handleNavClick = () => {
     setIsMobileMenuOpen(false)
   }
 
@@ -101,7 +101,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               href={item.href}
               prefetch={true}
               key={idx}
-              onClick={(e) => handleNavClick(e, item)}
+              onClick={handleNavClick}
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-semibold ${isActive ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-slate-500 hover:bg-secondary/15 hover:text-primary'}`}
             >
               <item.icon className="w-5 h-5" />
@@ -166,7 +166,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link 
                 href={item.href}
                 key={idx}
-                onClick={(e) => handleNavClick(e, item)}
+                onClick={handleNavClick}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold ${isActive ? 'bg-primary text-white' : 'text-slate-600 hover:bg-secondary/10'}`}
               >
                 <item.icon className="w-5 h-5" />

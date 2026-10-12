@@ -1,7 +1,7 @@
 'use client'
 
 import { Modal } from '@/components/ui/modal'
-import { useForm } from 'react-hook-form'
+import { useForm, type FieldValues } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { addAthlete } from '@/app/actions/athletes'
@@ -81,7 +81,7 @@ export function AddAthleteModal({ isOpen, onClose }: Props) {
     }
   })
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: FieldValues) => {
     mutation.mutate(data as AthleteFormValues)
   }
 

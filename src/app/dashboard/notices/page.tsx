@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { addNotice, softDeleteNotice } from '@/app/actions/notices'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import type { Notice } from '@/types/database'
 
 const schema = z.object({
   title: z.string().min(2, '제목을 입력해주세요.'),
@@ -43,7 +44,7 @@ export default function NoticesPage() {
         .eq('is_deleted', false)
         .order('created_at', { ascending: false })
       if (error) throw error
-      return data
+      return data as Notice[]
     }
   })
 
@@ -115,7 +116,7 @@ export default function NoticesPage() {
         ) : notices?.length === 0 ? (
           <div className="py-12 text-center text-slate-400 font-medium bg-white rounded-3xl border border-slate-100">등록된 공지사항이 없습니다.</div>
         ) : (
-          notices?.map((notice: any) => (
+          notices?.map((notice) => (
             <div key={notice.id} id={notice.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 scroll-mt-24">
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-lg font-bold text-accent-navy">{notice.title}</h2>

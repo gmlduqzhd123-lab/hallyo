@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { ArrowLeft, Trophy, Plus, Trash2, MapPin, Users, UserPlus, Check, Building, Utensils, ExternalLink, Edit2 } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { addRecord, deleteRecord, updateRecord } from '@/app/actions/records'
@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { formatTimeSeconds, parseTimeInput } from '@/utils/time'
+import type { AthleteSummary, Place, Schedule, SwimRecord } from '@/types/database'
 
 const editSchema = z.object({
   title: z.string().min(2, '대회명을 입력해주세요.'),
@@ -36,20 +37,15 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-interface Place {
-  id: string
-  name: string
-  address: string
-  contact?: string
-  link?: string
-}
-
 const placeSchema = z.object({
   name: z.string().min(1, '명칭을 입력해주세요.'),
   address: z.string().min(1, '주소를 입력해주세요.'),
   contact: z.string().optional(),
   link: z.string().url('유효한 링크(URL)를 입력해주세요.').or(z.literal('')).optional(),
 })
+
+// 숙소·식당 항목의 임시 ID (버튼을 눌렀을 때만 호출)
+const newPlaceId = () => Math.random().toString(36).substring(7)
 
 export default function CompetitionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -62,7 +58,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false)
   const [isEditCompModalOpen, setIsEditCompModalOpen] = useState(false)
   const [editingPlace, setEditingPlace] = useState<Place | null>(null)
-  const [editingRecord, setEditingRecord] = useState<any>(null)
+  const [editingRecord, setEditingRecord] = useState<SwimRecord | null>(null)
   const [isEditRecordModalOpen, setIsEditRecordModalOpen] = useState(false)
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -76,7 +72,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         .eq('id', id)
         .single()
       if (error) throw error
-      return data
+      return data as Schedule
     }
   })
 
@@ -90,7 +86,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         .eq('is_deleted', false)
         .order('record_date', { ascending: false })
       if (error) throw error
-      return data
+      return data as SwimRecord[]
     }
   })
 
@@ -104,7 +100,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         .order('grade', { ascending: false })
         .order('name', { ascending: true })
       if (error) throw error
-      return data
+      return data as AthleteSummary[]
     }
   })
 
@@ -127,7 +123,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   
   const canEdit = ['admin', 'developer'].includes(userRole as string) || userRole === 'coach'
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, control } = useForm<FormValues>({
     resolver: zodResolver(schema),
   })
 
@@ -135,11 +131,11 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     resolver: zodResolver(placeSchema),
   })
 
-  const { register: registerEditComp, handleSubmit: handleSubmitEditComp, formState: { errors: editCompErrors }, reset: resetEditComp, setValue: setEditCompValue } = useForm<EditFormValues>({
+  const { register: registerEditComp, handleSubmit: handleSubmitEditComp, formState: { errors: editCompErrors }, setValue: setEditCompValue } = useForm<EditFormValues>({
     resolver: zodResolver(editSchema),
   })
 
-  const selectedEventName = watch('event_name')
+  const selectedEventName = useWatch({ control, name: 'event_name' })
 
   const EVENT_OPTIONS = [
     { key: '자유형50M', label: '자유형 50M' },
@@ -251,7 +247,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   })
 
   const updatePlacesMutation = useMutation({
-    mutationFn: async ({ type, places }: { type: 'accommodations' | 'restaurants', places: any[] }) => {
+    mutationFn: async ({ type, places }: { type: 'accommodations' | 'restaurants', places: Place[] }) => {
       const result = await updateSchedulePlaces(id, type, places)
       if (result?.error) throw new Error(result.error)
       return result
@@ -281,7 +277,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     addMutation.mutate(parsedData)
   }
 
-  const handleOpenEditRecordModal = (record: any) => {
+  const handleOpenEditRecordModal = (record: SwimRecord) => {
     setEditingRecord(record)
     setValue('athlete_id', record.athlete_id)
     setValue('event_name', record.event_name)
@@ -326,16 +322,16 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     setIsPlaceModalOpen(true)
   }
 
-  const onSubmitPlace = (data: any) => {
+  const onSubmitPlace = (data: z.infer<typeof placeSchema>) => {
     const currentPlaces = infoTab === 'accommodations' 
       ? (competition?.accommodations || []) 
       : (competition?.restaurants || [])
       
     let newPlaces
     if (editingPlace) {
-      newPlaces = currentPlaces.map((p: any) => p.id === editingPlace.id ? { ...data, id: editingPlace.id } : p)
+      newPlaces = currentPlaces.map((p) => p.id === editingPlace.id ? { ...data, id: editingPlace.id } : p)
     } else {
-      newPlaces = [...currentPlaces, { ...data, id: Math.random().toString(36).substring(7) }]
+      newPlaces = [...currentPlaces, { ...data, id: newPlaceId() }]
     }
     
     updatePlacesMutation.mutate({ type: infoTab, places: newPlaces })
@@ -347,7 +343,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
       ? (competition?.accommodations || []) 
       : (competition?.restaurants || [])
     
-    const newPlaces = currentPlaces.filter((p: any) => p.id !== placeId)
+    const newPlaces = currentPlaces.filter((p) => p.id !== placeId)
     updatePlacesMutation.mutate({ type: infoTab, places: newPlaces })
   }
 
@@ -428,7 +424,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
       <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-8">
          {(competition.participants && competition.participants.length > 0) ? (
            <div className="flex flex-wrap gap-2">
-             {athletes?.filter((a: any) => competition.participants.includes(a.id)).map((a: any) => (
+             {athletes?.filter((a) => competition.participants?.includes(a.id)).map((a) => (
                <Link 
                  key={a.id} 
                  href={`/dashboard/record-analysis?athleteId=${a.id}`}
@@ -483,7 +479,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                 <td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-medium">등록된 결과가 없습니다.</td>
               </tr>
             ) : (
-              records?.map((record: any) => (
+              records?.map((record) => (
                 <tr key={record.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 font-bold text-accent-navy">{record.athletes?.name}</td>
                   <td className="px-6 py-4 text-slate-700 font-medium">{record.event_name}</td>
@@ -667,7 +663,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             <label className="block text-sm font-bold text-accent-navy mb-1">선수 선택</label>
             <select {...register('athlete_id')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50 text-slate-700">
               <option value="">선수를 선택하세요</option>
-              {athletes?.map((athlete: any) => (
+              {athletes?.map((athlete) => (
                 <option key={athlete.id} value={athlete.id}>{athlete.name} ({athlete.grade}학년)</option>
               ))}
             </select>
@@ -742,7 +738,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             <label className="block text-sm font-bold text-accent-navy mb-1">선수 선택</label>
             <select {...register('athlete_id')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50 text-slate-700" disabled>
               <option value="">선수를 선택하세요</option>
-              {athletes?.map((athlete: any) => (
+              {athletes?.map((athlete) => (
                 <option key={athlete.id} value={athlete.id}>{athlete.name} ({athlete.grade}학년)</option>
               ))}
             </select>
@@ -814,7 +810,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         <div className="space-y-4">
           <p className="text-sm font-bold text-accent-navy mb-4">대회에 참여할 선수를 선택해주세요.</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto pr-2">
-            {athletes?.map((athlete: any) => {
+            {athletes?.map((athlete) => {
               const isSelected = selectedParticipants.includes(athlete.id)
               return (
                 <button

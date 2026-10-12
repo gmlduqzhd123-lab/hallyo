@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { Calendar, Trash2, Edit2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { formatTimeSeconds, parseTimeInput } from '@/utils/time'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { deleteRecord, updateRecord } from '@/app/actions/records'
 import { toast } from 'sonner'
 import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import type { SwimRecord } from '@/types/database'
 
 const editRecordSchema = z.object({
   record_time: z.string().min(1, '기록을 입력해주세요.'),
@@ -21,12 +22,11 @@ const editRecordSchema = z.object({
 
 type EditFormValues = z.infer<typeof editRecordSchema>
 
-export default function EventRecordTable({ eventRecords, userRole, athleteId }: { eventRecords: any[], userRole: string, athleteId: string }) {
-  const queryClient = useQueryClient()
+export default function EventRecordTable({ eventRecords, userRole, athleteId }: { eventRecords: SwimRecord[], userRole: string, athleteId: string }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingRecord, setEditingRecord] = useState<any>(null)
+  const [editingRecord, setEditingRecord] = useState<SwimRecord | null>(null)
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<EditFormValues>({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<EditFormValues>({
     resolver: zodResolver(editRecordSchema),
   })
 
@@ -69,7 +69,7 @@ export default function EventRecordTable({ eventRecords, userRole, athleteId }: 
     onError: (err: Error) => toast.error(err.message)
   })
 
-  const handleEditClick = (record: any) => {
+  const handleEditClick = (record: SwimRecord) => {
     setEditingRecord(record)
     setValue('record_time', formatTimeSeconds(record.record_time))
     setValue('record_date', record.record_date)
@@ -92,7 +92,7 @@ export default function EventRecordTable({ eventRecords, userRole, athleteId }: 
     <>
       {/* Mobile Card View */}
       <div className="md:hidden divide-y divide-slate-100">
-        {eventRecords.map((record: any) => (
+        {eventRecords.map((record) => (
           <div key={record.id} className="px-5 py-4 flex items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="font-bold text-slate-800 text-sm truncate">{record.schedules?.title || '기타 기록'}</div>
@@ -159,7 +159,7 @@ export default function EventRecordTable({ eventRecords, userRole, athleteId }: 
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 text-sm">
-          {eventRecords.map((record: any) => (
+          {eventRecords.map((record) => (
             <tr key={record.id} className="hover:bg-slate-50 transition-colors">
               <td className="px-6 py-4">
                 <div className="font-bold text-slate-800">{record.schedules?.title || '기타 기록'}</div>

@@ -34,7 +34,5 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
 
-      # 기존 코드에 남은 린트 지적(주로 any 타입)이 정리될 때까지는 결과만 보여주고 실패로 치지 않습니다.
-      - name: 린트 (참고용)
+      - name: 린트
         run: npm run lint
-        continue-on-error: true

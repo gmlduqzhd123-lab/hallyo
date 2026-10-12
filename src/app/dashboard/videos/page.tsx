@@ -15,7 +15,17 @@ type VideoData = {
   description: string | null
   category: string
   sub_category?: string | null
+  status: 'pending' | 'approved'
+  created_by: string | null
   created_at: string
+}
+
+type VideoItemProps = {
+  video: VideoData
+  userRole: string
+  userId: string | undefined
+  approveMutation: { mutate: (id: string) => void }
+  handleDelete: (id: string) => void
 }
 
 const CATEGORIES = ['훈련 영상', '동기 유발', '수영 상식', '기타 수영 관련']
@@ -27,7 +37,7 @@ const getYoutubeVideoId = (url: string) => {
   return (match && match[2].length === 11) ? match[2] : null;
 };
 
-function VideoItem({ video, userRole, userId, approveMutation, handleDelete }: any) {
+function VideoItem({ video, userRole, userId, approveMutation, handleDelete }: VideoItemProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoId = getYoutubeVideoId(video.url);
   const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
@@ -145,7 +155,7 @@ export default function TrainingVideosPage() {
       try {
         const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
         userData = data;
-      } catch (e) {}
+      } catch {}
       
       return { ...userData, auth_id: authData.user.id }
     }
@@ -204,7 +214,7 @@ export default function TrainingVideosPage() {
   const visibleVideos = videos
     ?.filter(v => v.category === activeCategory)
     ?.filter(v => activeCategory === '훈련 영상' && activeSubCategory !== '전체' ? v.sub_category === activeSubCategory : true)
-    ?.filter(v => ['admin', 'developer', 'coach'].includes(userRole as string) || (v as any).status === 'approved') || []
+    ?.filter(v => ['admin', 'developer', 'coach'].includes(userRole as string) || v.status === 'approved') || []
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말 이 영상을 삭제하시겠습니까?')) return
@@ -384,7 +394,7 @@ export default function TrainingVideosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-8">
-          {visibleVideos.map((video: any) => (
+          {visibleVideos.map((video) => (
             <VideoItem 
               key={video.id} 
               video={video} 

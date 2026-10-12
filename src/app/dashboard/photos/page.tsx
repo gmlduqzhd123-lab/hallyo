@@ -6,15 +6,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
 import { addPhotos, softDeletePhoto, approvePhoto, updatePhotoDescription } from '@/app/actions/photos'
+import type { Photo } from '@/types/database'
+
+// 내려받을 사진 파일 이름 (버튼을 눌렀을 때만 호출)
+const downloadFileName = () => `photo-${Date.now()}.jpg`
 
 export default function PhotosPage() {
   const [isUploading, setIsUploading] = useState(false)
-  const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null)
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
   const [photoDescription, setPhotoDescription] = useState('')
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingPhoto, setEditingPhoto] = useState<any | null>(null)
+  const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null)
   const [editDescription, setEditDescription] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
@@ -28,13 +32,13 @@ export default function PhotosPage() {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `photo-${Date.now()}.jpg`;
+      link.download = downloadFileName();
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
       toast.success('사진이 성공적으로 다운로드되었습니다.');
-    } catch (error) {
+    } catch {
       toast.error('사진 다운로드에 실패했습니다.');
     }
   };
@@ -51,7 +55,7 @@ export default function PhotosPage() {
       try {
         const { data } = await supabase.from('users').select('*').eq('id', authData.user.id).single()
         userData = data;
-      } catch (e) {}
+      } catch {}
       
       return { ...userData, auth_id: authData.user.id }
     }
@@ -69,7 +73,7 @@ export default function PhotosPage() {
         .eq('is_deleted', false)
         .order('created_at', { ascending: false })
       if (error) throw error
-      return data
+      return data as Photo[]
     }
   })
 
@@ -219,7 +223,7 @@ export default function PhotosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {visiblePhotos.map((photo: any) => (
+          {visiblePhotos.map((photo) => (
             <div key={photo.id} className="group relative aspect-square rounded-3xl overflow-hidden bg-slate-100 shadow-sm border border-slate-100">
               {photo.status === 'pending' && (
                 <div className="absolute top-3 left-3 bg-rose-500 text-white px-2 py-1 text-xs font-bold rounded-lg z-10">
