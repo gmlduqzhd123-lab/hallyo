@@ -9,3 +9,10 @@ export function photoSrc(url: string | null | undefined): string {
   const i = url.indexOf(PUBLIC_PHOTOS_PATH)
   return i === -1 ? url : `/storage/photos/${url.slice(i + PUBLIC_PHOTOS_PATH.length)}`
 }
+
+// 저장된 주소에서 'photos' 버킷 안의 파일 경로만 꺼냅니다 (다른 곳의 주소면 null)
+export function photoPath(url: string | null | undefined): string | null {
+  if (!url) return null
+  const i = url.indexOf(PUBLIC_PHOTOS_PATH)
+  return i === -1 ? null : decodeURIComponent(url.slice(i + PUBLIC_PHOTOS_PATH.length))
+}

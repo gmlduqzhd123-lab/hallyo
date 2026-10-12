@@ -1,5 +1,6 @@
 'use server'
 
+import { removePhotoFileIfUnused } from '@/lib/photo-files'
 import { createClient } from '@/utils/supabase/server'
 import { logAudit } from './audit'
 import { revalidatePath } from 'next/cache'
@@ -42,7 +43,7 @@ export async function softDeletePhoto(id: string) {
   if (!userData?.user) return { error: '인증에 실패했습니다.' }
 
   const { data: roleData } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
-  const { data: photo } = await supabase.from('photos').select('created_by').eq('id', id).single()
+  const { data: photo } = await supabase.from('photos').select('created_by, url').eq('id', id).single()
 
   if (!['admin', 'developer'].includes(roleData?.role as string) && photo?.created_by !== userData.user.id) {
     return { error: '관리자, 개발자 또는 작성자 본인만 사진을 삭제할 수 있습니다.' }
@@ -56,6 +57,8 @@ export async function softDeletePhoto(id: string) {
   if (error) {
     return { error: '사진 삭제에 실패했습니다: ' + error.message }
   }
+
+  await removePhotoFileIfUnused(supabase, photo?.url)
 
   await logAudit('DELETE', 'photos', { id })
 

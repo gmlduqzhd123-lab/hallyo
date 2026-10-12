@@ -2,12 +2,13 @@
 
 import { useState, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { createClient } from '@/utils/supabase/client'
-import { Activity, TrendingUp, Medal, AlertCircle, Target, Zap, CheckCircle, PlayCircle } from 'lucide-react'
+import { Activity, TrendingUp, Medal, AlertCircle, Target, Zap, CheckCircle, PlayCircle, Pencil } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, type TooltipContentProps } from 'recharts'
 import { PageHeader } from '@/components/ui/page-header'
-import type { AthleteRow, NationwideRanking, SwimRecord, TrainingVideo } from '@/types/database'
+import type { AthleteAdvice, AthleteRow, NationwideRanking, SwimRecord, TrainingVideo } from '@/types/database'
 import { ATHLETE_COLUMNS } from '@/lib/athletes'
 
 // 종목별 내 최고 기록과 전국 기준 비교
@@ -133,6 +134,52 @@ function RecordAnalysisContent() {
     }
   });
 
+  const queryClient = useQueryClient()
+
+  // 관리자·개발자가 고친 선수별 분석 문구 (없으면 자동 문구)
+  const { data: savedAdvice } = useQuery({
+    queryKey: ['athlete_advice'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('athlete_advice').select('*');
+      if (error) throw error;
+      return data as AthleteAdvice[];
+    }
+  });
+
+  const { data: userRole } = useQuery({
+    queryKey: ['user_role'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return null
+      const { data, error } = await supabase.from('users').select('role').eq('id', authData.user.id).single()
+      if (error) return null
+      return data.role
+    }
+  })
+  const canEditAdvice = ['admin', 'developer'].includes(userRole as string)
+
+  const [editingAdvice, setEditingAdvice] = useState<{ athleteId: string; focusArea: string; advice: string } | null>(null)
+
+  const saveAdviceMutation = useMutation({
+    mutationFn: async (input: { athleteId: string; focusArea: string; advice: string }) => {
+      const { data: authData } = await supabase.auth.getUser()
+      const { error } = await supabase.from('athlete_advice').upsert({
+        athlete_id: input.athleteId,
+        focus_area: input.focusArea.trim(),
+        advice: input.advice.trim(),
+        updated_by: authData.user?.id ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      toast.success('분석 문구를 저장했습니다.')
+      queryClient.invalidateQueries({ queryKey: ['athlete_advice'] })
+      setEditingAdvice(null)
+    },
+    onError: () => toast.error('저장하지 못했습니다. 관리자·개발자만 고칠 수 있습니다.'),
+  })
+
   const isLoading = athletesLoading || localLoading || nationwideLoading || trainingLoading;
 
   const analysisData = useMemo(() => {
@@ -223,45 +270,27 @@ function RecordAnalysisContent() {
         }
       }
 
-      // Generate Advice
+      // 자동 문구: 전국 기록 대비 주 종목 수준으로 만듭니다 (관리자가 저장한 문구가 있으면 화면에서 그것을 씁니다)
       let advice = '';
       let focusArea = '';
       if (eventDetails.length === 0) {
         advice = '등록된 공식 기록이 없습니다. 다음 대회에서 공식 기록을 확보하는 것이 최우선 목표입니다.';
         focusArea = '기초 체력 및 기본기 훈련';
-      } else if (athlete.name === '하수빈') {
-        advice = '올해 제55회 전국소년체육대회에는 참가하지 않습니다. 다음 시즌을 대비하여 장기적인 관점에서 수영에 대한 흥미를 유지하고 기초 체력을 탄탄히 다지는 데 집중하세요.';
-        focusArea = '기초 체력 강화 및 수영 흥미 유지';
-      } else if (athlete.name === '서은률') {
-        advice = '제55회 전국소년체육대회에서 메달권 진입은 현실적으로 어렵지만, 본선(결선) 진출이라는 뚜렷한 목표를 향해 나아가야 합니다. 턴과 브레이크아웃 구간에서의 디테일을 다듬고 지속적인 페이스 유지 훈련에 집중하세요.';
-        focusArea = '결선 진출을 위한 레이스 페이스 유지 및 턴 디테일 강화';
-      } else if (athlete.name === '임소은') {
-        advice = '제55회 전국소년체육대회 개인전 메달권 진입은 쉽지 않으나, 결선 진출을 목표로 페이스를 끌어올려야 합니다. 특히 혼계영의 평영 영자로서 팀의 성적에 기여할 수 있는 중요한 역할을 맡고 있으므로, 평영 영법의 효율성과 파워를 극대화하는 훈련에 승부를 거세요.';
-        focusArea = '혼계영 평영 집중 훈련 및 결선 진출을 위한 기록 단축';
-      } else if (athlete.name === '임지율') {
-        advice = '현재 기량은 제55회 전국소년체육대회에서 충분히 금메달을 노려볼 수 있는 압도적인 수준입니다! 자유형 100M와 200M 종목에 집중하여, 스타트 반응속도를 미세하게 단축하고 후반 스퍼트에서의 폭발력을 극대화하여 금메달 획득의 쐐기를 박으세요.';
-        focusArea = '전국소년체전 금메달 획득을 위한 미세 기술 교정 및 후반 스퍼트 극대화';
-      } else if (athlete.name === '김루아') {
-        advice = '현재 기량 발전 속도라면 제55회 전국소년체육대회에서 충분히 동메달을 노려볼 수 있는 수준입니다. 메달권 진입을 위해 경쟁자들을 따돌릴 수 있는 스타트와 초반 50M 구간의 스피드를 끌어올리고, 실전과 같은 멘탈 훈련을 병행하세요.';
-        focusArea = '전국소년체전 동메달 획득을 위한 초반 스피드 강화 및 실전 멘탈 훈련';
-      } else if (athlete.name === '신지유') {
-        advice = '제55회 전국소년체육대회에서는 주 종목인 자유형 50M에 출전하지 않습니다. 대신 자유형 200M 종목에 집중하여 결선 진출을 목표로 삼아야 합니다. 단거리 스피드 위주의 훈련에서 벗어나, 200M 레이스 운영을 위한 지구력과 철저한 페이스 배분 훈련으로 전환하세요.';
-        focusArea = '자유형 200M 결선 진출을 위한 지구력 및 페이스 배분 훈련';
       } else if (bestEvent) {
         if (bestEvent.ratio >= 1.10) {
-          advice = `현재 ${bestEvent.event} 종목에서 전국 최상위권의 압도적인 기량을 보여주고 있습니다! 제55회 전국소년체육대회 금메달 획득을 위해 스타트 반응속도를 0.1초 단축하고, 피니시 터치 집중력을 극대화하는 미세 기술 교정에 집중하세요.`;
+          advice = `현재 ${bestEvent.event} 종목에서 전국 최상위권의 압도적인 기량을 보여주고 있습니다! 전국소년체육대회 금메달 획득을 위해 스타트 반응속도를 0.1초 단축하고, 피니시 터치 집중력을 극대화하는 미세 기술 교정에 집중하세요.`;
           focusArea = `${bestEvent.event} 금메달을 위한 스타트/턴 미세 교정`;
         } else if (bestEvent.ratio >= 1.02) {
-          advice = `전국 평균을 상회하는 뛰어난 기량입니다. 제55회 전국소년체육대회 메달권 진입을 목표로, ${bestEvent.event} 종목의 레이스 중반부 페이스 유지 능력을 끌어올려야 합니다. 고강도 인터벌 훈련을 통해 젖산 내성을 키우세요.`;
+          advice = `전국 평균을 상회하는 뛰어난 기량입니다. 전국소년체육대회 메달권 진입을 목표로, ${bestEvent.event} 종목의 레이스 중반부 페이스 유지 능력을 끌어올려야 합니다. 고강도 인터벌 훈련을 통해 젖산 내성을 키우세요.`;
           focusArea = `${bestEvent.event} 메달권 진입을 위한 젖산 내성 및 인터벌 훈련`;
         } else if (bestEvent.ratio >= 0.98) {
-          advice = `전국 평균 수준의 기록을 보유하고 있습니다. 제55회 전국소년체육대회 본선 진출을 위해서는 ${bestEvent.event} 종목에서의 스트로크 효율(DPS)을 높이는 것이 핵심입니다. 불필요한 저항을 줄이는 유선형 자세 교정을 최우선으로 하세요.`;
+          advice = `전국 평균 수준의 기록을 보유하고 있습니다. 전국소년체육대회 본선 진출을 위해서는 ${bestEvent.event} 종목에서의 스트로크 효율(DPS)을 높이는 것이 핵심입니다. 불필요한 저항을 줄이는 유선형 자세 교정을 최우선으로 하세요.`;
           focusArea = `${bestEvent.event} 스트로크 효율(DPS) 개선 및 유선형 자세 교정`;
         } else if (bestEvent.ratio >= 0.90) {
-          advice = `제55회 전국소년체육대회를 앞두고 전반적인 기록 단축이 필요한 시점입니다. 주 종목인 ${bestEvent.event}의 기초 지구력을 다지고, 팔 꺾기와 물잡기(캐치) 동작의 정확도를 높여 추진력을 극대화하는 훈련에 집중하세요.`;
+          advice = `다음 전국소년체육대회를 앞두고 전반적인 기록 단축이 필요한 시점입니다. 주 종목인 ${bestEvent.event}의 기초 지구력을 다지고, 팔 꺾기와 물잡기(캐치) 동작의 정확도를 높여 추진력을 극대화하는 훈련에 집중하세요.`;
           focusArea = `${bestEvent.event} 정확한 물잡기(캐치) 동작 및 기초 지구력 강화`;
         } else {
-          advice = `제55회 전국소년체육대회를 대비하여 장기적인 관점에서 기초를 탄탄히 다지는 것이 중요합니다. ${bestEvent.event} 종목을 중심으로 코어 근력을 강화하고, 수중에서의 밸런스 유지 훈련을 통해 점진적인 기록 단축을 이뤄내세요.`;
+          advice = `다음 전국소년체육대회를 대비하여 장기적인 관점에서 기초를 탄탄히 다지는 것이 중요합니다. ${bestEvent.event} 종목을 중심으로 코어 근력을 강화하고, 수중에서의 밸런스 유지 훈련을 통해 점진적인 기록 단축을 이뤄내세요.`;
           focusArea = `${bestEvent.event} 코어 근력 강화 및 수중 밸런스 기초 훈련`;
         }
       }
@@ -292,12 +321,18 @@ function RecordAnalysisContent() {
       });
       const historyChartData = Object.values(formattedHistory).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+      // 저장된 문구가 있으면 칸마다 자동 문구 대신 사용 (비워 둔 칸은 자동 문구)
+      const saved = savedAdvice?.find(a => a.athlete_id === athlete.id);
+      if (saved?.advice) advice = saved.advice;
+      if (saved?.focus_area) focusArea = saved.focus_area;
+
       return {
         ...athlete,
         eventDetails,
         bestEvent,
         advice,
         focusArea,
+        hasSavedAdvice: Boolean(saved?.advice || saved?.focus_area),
         historyChartData
       };
     }).filter(a => a.eventDetails.length > 0 || selectedAthleteId === a.id); // Filter out athletes with no records unless specifically selected
@@ -306,7 +341,7 @@ function RecordAnalysisContent() {
       athleteAnalysis,
       nwBenchmarks
     };
-  }, [athletes, localRecords, nationwide, selectedAthleteId]);
+  }, [athletes, localRecords, nationwide, savedAdvice, selectedAthleteId]);
 
 
   const selectedAthleteData = analysisData?.athleteAnalysis.find(a => a.id === selectedAthleteId);
@@ -438,12 +473,71 @@ function RecordAnalysisContent() {
                 <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
                   <Zap className="w-6 h-6 text-yellow-300" />
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <h2 className="text-2xl font-black">{selectedAthleteData.name} 선수 맞춤형 분석 리포트</h2>
-                  <p className="text-indigo-100">데이터 기반 훈련 어드바이스</p>
+                  <p className="text-indigo-100">{selectedAthleteData.hasSavedAdvice ? '지도자 코멘트' : '데이터 기반 훈련 어드바이스'}</p>
                 </div>
+                {canEditAdvice && editingAdvice?.athleteId !== selectedAthleteData.id && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingAdvice({
+                      athleteId: selectedAthleteData.id,
+                      focusArea: selectedAthleteData.focusArea,
+                      advice: selectedAthleteData.advice,
+                    })}
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-sm font-bold"
+                  >
+                    <Pencil className="w-4 h-4" /> 문구 수정
+                  </button>
+                )}
               </div>
 
+              {editingAdvice?.athleteId === selectedAthleteData.id ? (
+                <div className="space-y-4 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                  <label className="block">
+                    <span className="font-bold text-indigo-50 text-sm">집중 훈련 영역</span>
+                    <input
+                      value={editingAdvice.focusArea}
+                      onChange={(e) => setEditingAdvice({ ...editingAdvice, focusArea: e.target.value })}
+                      className="mt-1 w-full rounded-xl px-3 py-2 text-slate-800 bg-white"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="font-bold text-indigo-50 text-sm">코칭 어드바이스</span>
+                    <textarea
+                      value={editingAdvice.advice}
+                      onChange={(e) => setEditingAdvice({ ...editingAdvice, advice: e.target.value })}
+                      rows={5}
+                      className="mt-1 w-full rounded-xl px-3 py-2 text-slate-800 bg-white"
+                    />
+                  </label>
+                  <p className="text-xs text-indigo-100">칸을 비우고 저장하면 그 칸은 기록에 따라 자동으로 만든 문구가 보입니다.</p>
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setEditingAdvice({ ...editingAdvice, focusArea: '', advice: '' })}
+                      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-bold"
+                    >
+                      자동 문구로 되돌리기
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingAdvice(null)}
+                      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-bold"
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      disabled={saveAdviceMutation.isPending}
+                      onClick={() => saveAdviceMutation.mutate(editingAdvice)}
+                      className="px-4 py-2 rounded-xl bg-white text-primary text-sm font-black disabled:opacity-50"
+                    >
+                      {saveAdviceMutation.isPending ? '저장 중…' : '저장'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                   <h3 className="font-bold flex items-center gap-2 mb-3 text-indigo-50"><Target className="w-5 h-5 text-amber-300" /> 집중 훈련 영역</h3>
@@ -451,9 +545,10 @@ function RecordAnalysisContent() {
                 </div>
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                   <h3 className="font-bold flex items-center gap-2 mb-3 text-indigo-50"><TrendingUp className="w-5 h-5 text-emerald-300" /> 코칭 어드바이스</h3>
-                  <p className="text-sm text-indigo-50 leading-relaxed">{selectedAthleteData.advice}</p>
+                  <p className="text-sm text-indigo-50 leading-relaxed whitespace-pre-line wrap-anywhere">{selectedAthleteData.advice}</p>
                 </div>
               </div>
+              )}
             </div>
           </div>
 

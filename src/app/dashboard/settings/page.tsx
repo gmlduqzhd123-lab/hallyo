@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Settings, UserCheck, Users, CheckCircle, Trash2, Edit2, Key } from 'lucide-react'
+import { Settings, UserCheck, Users, CheckCircle, Trash2, Edit2, Key, ImageOff } from 'lucide-react'
 import { approveUser, deleteUser, updateUserRole, resetUserPassword, updateUserName } from '@/app/actions/admin'
+import { cleanupUnusedPhotoFiles } from '@/app/actions/photo-files'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
@@ -135,6 +136,26 @@ export default function SettingsPage() {
       toast.success('사용자 이름이 변경되었습니다.')
       queryClient.invalidateQueries({ queryKey: ['all_users'] })
       queryClient.invalidateQueries({ queryKey: ['pending_users'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    }
+  })
+
+  // 지운 글의 사진처럼 아무 곳에서도 쓰지 않는 파일을 저장소에서 지웁니다
+  const cleanupPhotosMutation = useMutation({
+    mutationFn: async () => {
+      const result = await cleanupUnusedPhotoFiles()
+      if (result.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: (result) => {
+      if (!result.count) {
+        toast.success('정리할 사진 파일이 없습니다.')
+      } else {
+        const mb = ((result.bytes ?? 0) / 1024 / 1024).toFixed(1)
+        toast.success(`쓰지 않는 사진 파일 ${result.count}개(${mb}MB)를 정리했습니다.`)
+      }
     },
     onError: (err: Error) => {
       toast.error(err.message)
@@ -305,6 +326,26 @@ export default function SettingsPage() {
           )}
 
         </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="p-3 bg-slate-100 text-slate-600 rounded-xl shrink-0">
+            <ImageOff className="w-6 h-6" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="font-black text-accent-navy">사진 저장소 정리</h2>
+            <p className="text-sm text-slate-500 font-medium">삭제한 사진·기사·명예의 전당·개발자 소개에 남아 있던 파일처럼, 어디에서도 쓰지 않는 사진 파일을 지웁니다. (올린 지 하루가 안 된 파일은 그대로 둡니다)</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          disabled={cleanupPhotosMutation.isPending}
+          onClick={() => { if (confirm('쓰지 않는 사진 파일을 저장소에서 지울까요? 지운 파일은 되살릴 수 없습니다.')) cleanupPhotosMutation.mutate() }}
+          className="shrink-0 px-5 py-3 rounded-xl bg-primary text-white font-bold disabled:opacity-50"
+        >
+          {cleanupPhotosMutation.isPending ? '정리 중…' : '사진 파일 정리'}
+        </button>
       </div>
     </div>
   )
