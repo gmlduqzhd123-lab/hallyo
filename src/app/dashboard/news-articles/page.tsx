@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { errorMessage } from '@/utils/error'
 import { addNewsArticle, updateNewsArticle, deleteNewsArticle } from '@/app/actions/news_articles'
 import { format } from 'date-fns'
+import { photoSrc } from '@/lib/storage'
 
 type NewsArticle = {
   id: string
@@ -252,9 +253,9 @@ export default function NewsArticlesPage() {
                     <>
                       <div 
                         className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110" 
-                        style={{ backgroundImage: `url(${previewUrl})` }}
+                        style={{ backgroundImage: `url(${photoSrc(previewUrl)})` }}
                       ></div>
-                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover relative z-10 drop-shadow-md" />
+                      <img src={photoSrc(previewUrl)} alt="Preview" className="w-full h-full object-cover relative z-10 drop-shadow-md" />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <span className="text-white font-bold text-sm bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">사진 변경</span>
                       </div>
@@ -331,7 +332,7 @@ export default function NewsArticlesPage() {
             <div key={article.id} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col h-full hover:-translate-y-1">
               <a href={article.article_url} target="_blank" rel="noopener noreferrer" className="block relative h-48 bg-slate-100 overflow-hidden shrink-0">
                 {article.photo_url ? (
-                  <img src={article.photo_url} alt={article.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src={photoSrc(article.photo_url)} alt={article.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-indigo-50/50">
                     <Newspaper className="w-16 h-16 text-indigo-200" />

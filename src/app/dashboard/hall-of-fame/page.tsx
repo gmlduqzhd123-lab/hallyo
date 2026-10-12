@@ -7,6 +7,7 @@ import { Trophy, Plus, Trash2, Edit2, Medal, Star, Upload, Loader2, X, Download,
 import { toast } from 'sonner'
 import { errorMessage } from '@/utils/error'
 import { addHallOfFameRecord, updateHallOfFameRecord, deleteHallOfFameRecord } from '@/app/actions/hall_of_fame'
+import { photoSrc } from '@/lib/storage'
 
 type HallOfFameData = {
   id: string
@@ -235,9 +236,9 @@ export default function HallOfFamePage() {
                     <>
                       <div 
                         className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110" 
-                        style={{ backgroundImage: `url(${previewUrl})` }}
+                        style={{ backgroundImage: `url(${photoSrc(previewUrl)})` }}
                       ></div>
-                      <img src={previewUrl} alt="Preview" className="w-full h-full object-contain relative z-10" />
+                      <img src={photoSrc(previewUrl)} alt="Preview" className="w-full h-full object-contain relative z-10" />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <span className="text-white font-bold text-sm bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">사진 변경</span>
                       </div>
@@ -379,9 +380,9 @@ export default function HallOfFamePage() {
                 >
                   <div 
                     className="hidden md:block absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-125" 
-                    style={{ backgroundImage: `url(${record.photo_url})` }}
+                    style={{ backgroundImage: `url(${photoSrc(record.photo_url)})` }}
                   ></div>
-                  <img src={record.photo_url} alt={record.athlete_name} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105 relative z-10" />
+                  <img src={photoSrc(record.photo_url)} alt={record.athlete_name} className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105 relative z-10" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20 pointer-events-none"></div>
                   <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1 z-30">
                     <Medal className="w-3 h-3" /> 영광의 얼굴
@@ -480,7 +481,7 @@ export default function HallOfFamePage() {
           {/* Download Button */}
           {viewingRecord.photo_url && (
             <a
-              href={viewingRecord.photo_url}
+              href={photoSrc(viewingRecord.photo_url)}
               download
               target="_blank"
               rel="noopener noreferrer"
@@ -495,7 +496,7 @@ export default function HallOfFamePage() {
           <div className="max-w-[90vw] max-h-[70vh] relative" onClick={(e) => e.stopPropagation()}>
             {viewingRecord.photo_url && (
               <img 
-                src={viewingRecord.photo_url} 
+                src={photoSrc(viewingRecord.photo_url)} 
                 alt={viewingRecord.athlete_name}
                 className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl"
               />
