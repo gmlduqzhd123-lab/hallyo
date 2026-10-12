@@ -242,7 +242,8 @@ CREATE TABLE public.developer_notes (
 );
 
 -- 시스템 설정 (key-value)
--- 사용 중인 key: 'global_font', 'competition_checklist'(JSON 문자열), 페이지 머리말 문구들
+-- 사용 중인 key: 'competition_checklist'(JSON 문자열), 페이지 머리말 문구들
+-- ('global_font' 는 예전 글꼴 선택 기능용. 지금은 글꼴이 메이플스토리 B 로 고정되어 쓰지 않음)
 CREATE TABLE public.system_settings (
   key TEXT PRIMARY KEY,
   value TEXT,
@@ -426,7 +427,7 @@ CREATE POLICY "developers_write"  ON public.developers FOR ALL USING (public.is_
 CREATE POLICY "dev_notes_select" ON public.developer_notes FOR SELECT USING (public.is_approved_user());
 CREATE POLICY "dev_notes_write"  ON public.developer_notes FOR ALL USING (public.is_admin_or_developer());
 
-CREATE POLICY "settings_select" ON public.system_settings FOR SELECT USING (true);  -- 로그인 전 글꼴 적용용
+CREATE POLICY "settings_select" ON public.system_settings FOR SELECT USING (true);  -- 로그인 전 화면에서도 읽음
 CREATE POLICY "settings_write"  ON public.system_settings FOR ALL USING (public.is_admin_or_developer());
 
 -- audit_logs: 기록은 승인된 사용자 본인 명의로만, 조회는 관리 권한자
