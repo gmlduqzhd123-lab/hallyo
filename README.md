@@ -4,6 +4,7 @@
 
 - 운영 주소: https://hallyo.vercel.app
 - 배포: `main` 브랜치에 병합되면 Vercel이 자동으로 운영 배포합니다. PR마다 미리보기 배포가 만들어집니다.
+  - 자동 배포가 안 되면 Vercel 프로젝트 **Settings → Git** 에서 저장소 연결 상태(오류 표시)를 먼저 확인하고, 오류가 있으면 **Reconnect** 합니다.
 
 ## 주요 기능
 
