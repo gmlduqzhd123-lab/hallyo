@@ -430,9 +430,9 @@ create policy "Approved users can view records" on public.records for select
 create policy "Admins and coaches can update/soft-delete records" on public.records for update
   using (is_admin_or_coach());
 
--- nationwide_rankings: 로그인 없이도 조회
+-- nationwide_rankings (정책 이름은 예전 그대로지만, 승인된 로그인 사용자만 조회)
 create policy "누구나 전국 랭킹을 조회할 수 있음" on public.nationwide_rankings for select
-  using (true);
+  using (is_approved_user());
 
 -- counseling_logs: 관리자·개발자·코치만
 create policy "Admins and coaches can insert counseling logs" on public.counseling_logs for insert
@@ -458,8 +458,8 @@ create policy "System can insert audit logs" on public.audit_logs for insert
 create policy "Admins and coaches can view audit logs" on public.audit_logs for select
   using (is_admin_or_coach());
 
--- photos / competition_videos: 로그인 없이도 조회, 로그인한 누구나 등록
-create policy "Enable read access for all users" on public.photos for select using (true);
+-- photos / competition_videos: 승인된 사용자 조회, 로그인한 누구나 등록
+create policy "Enable read access for all users" on public.photos for select using (is_approved_user());
 create policy "Enable insert for all authenticated users" on public.photos for insert
   with check (auth.role() = 'authenticated'::text);
 create policy "Enable update for authorized users" on public.photos for update
@@ -467,7 +467,7 @@ create policy "Enable update for authorized users" on public.photos for update
 create policy "Enable delete for authorized users" on public.photos for delete
   using ((exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role, 'coach'::user_role]))) or (created_by = auth.uid()));
 
-create policy "Enable read access for all users" on public.competition_videos for select using (true);
+create policy "Enable read access for all users" on public.competition_videos for select using (is_approved_user());
 create policy "Enable insert for all authenticated users" on public.competition_videos for insert
   with check (auth.role() = 'authenticated'::text);
 create policy "Enable update for authorized users" on public.competition_videos for update
@@ -486,7 +486,7 @@ create policy "Enable delete for authorized users" on public.training_videos for
   using ((exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role, 'coach'::user_role]))) or (created_by = auth.uid()));
 
 -- history / news_articles / hall_of_fame: 관리자·개발자 등록, 본인 수정
-create policy "Enable read access for all users" on public.history for select using (true);
+create policy "Enable read access for all users" on public.history for select using (is_approved_user());
 create policy "Enable insert for authorized users" on public.history for insert
   with check (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role])));
 create policy "Enable update for authorized users" on public.history for update
@@ -495,7 +495,7 @@ create policy "Enable delete for authorized users" on public.history for delete
   using ((exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role]))) or (created_by = auth.uid()));
 
 create policy "Enable read access for all users" on public.news_articles for select
-  using ((is_deleted = false) or (created_by = auth.uid()) or (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role]))));
+  using (is_approved_user() and ((is_deleted = false) or (created_by = auth.uid()) or (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role])))));
 create policy "Enable insert for authorized users" on public.news_articles for insert
   with check (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role])));
 create policy "Enable update for authorized users" on public.news_articles for update
@@ -504,7 +504,7 @@ create policy "Enable delete for authorized users" on public.news_articles for d
   using ((exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role]))) or (created_by = auth.uid()));
 
 create policy "Enable read access for all users" on public.hall_of_fame for select
-  using ((is_deleted = false) or (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role]))));
+  using (is_approved_user() and ((is_deleted = false) or (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role])))));
 create policy "Enable insert for authorized users" on public.hall_of_fame for insert
   with check (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role])));
 create policy "Enable update for authorized users" on public.hall_of_fame for update
@@ -521,7 +521,7 @@ create policy "Admins can update developers" on public.developers for update
   using (is_admin_or_coach());
 
 create policy "Anyone can view developer notes" on public.developer_notes for select
-  using (is_deleted = false);
+  using (is_approved_user() and is_deleted = false);
 create policy "Admins and developers can view all notes" on public.developer_notes for select
   using (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role])));
 create policy "Only developers and admins can insert notes" on public.developer_notes for insert
@@ -529,21 +529,22 @@ create policy "Only developers and admins can insert notes" on public.developer_
 create policy "Only developers and admins can update notes" on public.developer_notes for update
   using (exists (select 1 from users where users.id = auth.uid() and users.role = any (array['admin'::user_role, 'developer'::user_role])));
 
--- system_settings: 누구나 조회, 개발자만 수정
-create policy "Enable read access for all users" on public.system_settings for select using (true);
+-- system_settings: 승인된 사용자 조회, 개발자만 수정
+create policy "Enable read access for all users" on public.system_settings for select using (is_approved_user());
 create policy "Enable all access for developer" on public.system_settings for all
   using (exists (select 1 from users where users.id = auth.uid() and users.role = 'developer'::user_role));
 
 
 -- ---------------------------------------------------------------------
--- 6. Storage (공개 버킷 photos, videos)
+-- 6. Storage (비공개 버킷 photos, videos)
 -- ---------------------------------------------------------------------
--- 버킷은 대시보드에서 만들어져 있음: photos(public), videos(public, 현재 코드에서는 미사용)
-create policy "Public Access" on storage.objects for select to public using (bucket_id = 'photos');
+-- 버킷은 대시보드에서 만들어져 있음: photos, videos(현재 코드에서는 미사용) — 둘 다 public = false
+-- 화면에는 src/app/storage/photos/[...path]/route.ts 가 승인된 사용자에게만 사진을 전달합니다.
+create policy "Public Access" on storage.objects for select to authenticated using (bucket_id = 'photos' and public.is_approved_user());
 create policy "Auth Insert" on storage.objects for insert to authenticated with check (bucket_id = 'photos');
 create policy "Auth Update" on storage.objects for update to authenticated using (bucket_id = 'photos');
 create policy "Auth Delete" on storage.objects for delete to authenticated using (bucket_id = 'photos');
-create policy "Public Access Videos" on storage.objects for select to public using (bucket_id = 'videos');
+create policy "Public Access Videos" on storage.objects for select to authenticated using (bucket_id = 'videos' and public.is_approved_user());
 create policy "Auth Insert Videos" on storage.objects for insert to authenticated with check (bucket_id = 'videos');
 create policy "Auth Update Videos" on storage.objects for update to authenticated using (bucket_id = 'videos');
 create policy "Auth Delete Videos" on storage.objects for delete to authenticated using (bucket_id = 'videos');
