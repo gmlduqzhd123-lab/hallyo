@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: '수영부 연혁', icon: History, href: '/dashboard/history' },
     { name: '보도 기사', icon: Newspaper, href: '/dashboard/news-articles' },
     { name: '명예의 전당', icon: Trophy, href: '/dashboard/hall-of-fame' },
-    { name: '상담 일지', icon: BookOpen, href: '/dashboard/counseling', adminOnly: true },
+    { name: '상담 일지', icon: BookOpen, href: '/dashboard/counseling', restrictedTo: ['admin', 'developer', 'coach'] },
     { name: '공지사항', icon: Bell, href: '/dashboard/notices' },
     { name: '개발 일지', icon: Code2, href: '/dashboard/developers' },
     { name: '마이 페이지', icon: User, href: '/dashboard/mypage' },
@@ -76,7 +76,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const visibleNavItems = navItems.filter(item => {
     // If role is still loading (undefined), we don't know yet, but we'll wait for the query to resolve. 
     // To prevent flicker, we could assume unauthorized until proven otherwise.
-    if (item.adminOnly && !['admin', 'developer'].includes(userRole as string)) return false
     if (item.restrictedTo && userRole && !item.restrictedTo.includes(userRole as string)) return false
     return true
   })
