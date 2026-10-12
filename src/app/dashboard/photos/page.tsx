@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
 import { addPhotos, softDeletePhoto, approvePhoto, updatePhotoDescription } from '@/app/actions/photos'
 import type { Photo } from '@/types/database'
+import { photoSrc } from '@/lib/storage'
 
 // 내려받을 사진 파일 이름 (버튼을 눌렀을 때만 호출)
 const downloadFileName = () => `photo-${Date.now()}.jpg`
@@ -231,7 +232,7 @@ export default function PhotosPage() {
                 </div>
               )}
               <img 
-                src={photo.url} 
+                src={photoSrc(photo.url)} 
                 alt="활동 사진" 
                 className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${photo.status === 'pending' ? 'opacity-50 grayscale' : ''}`}
               />
@@ -245,7 +246,7 @@ export default function PhotosPage() {
                     <Maximize2 className="w-5 h-5" />
                   </button>
                   <button 
-                    onClick={(e) => handleDownload(photo.url, e)}
+                    onClick={(e) => handleDownload(photoSrc(photo.url), e)}
                     className="p-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full transition-transform transform hover:scale-110 shadow-lg"
                     title="사진 다운로드"
                   >
@@ -304,7 +305,7 @@ export default function PhotosPage() {
           <div className="absolute top-6 right-6 flex items-center gap-3">
             <button 
               className="p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/30 rounded-full transition-all"
-              onClick={(e) => handleDownload(selectedPhoto.url, e)}
+              onClick={(e) => handleDownload(photoSrc(selectedPhoto.url), e)}
               title="다운로드"
             >
               <Download className="w-6 h-6" />
@@ -318,7 +319,7 @@ export default function PhotosPage() {
             </button>
           </div>
           <img 
-            src={selectedPhoto.url} 
+            src={photoSrc(selectedPhoto.url)} 
             alt="확대된 사진" 
             className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}

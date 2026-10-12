@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { errorMessage } from '@/utils/error'
 import { addDeveloper, updateDeveloper, deleteDeveloper } from '@/app/actions/developers'
 import DeveloperNotes from './developer-notes'
+import { photoSrc } from '@/lib/storage'
 
 type DeveloperData = {
   id: string
@@ -245,8 +246,8 @@ export default function DevelopersPage() {
                         </div>
                       ) : previewUrl ? (
                         <>
-                          <div className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110" style={{ backgroundImage: `url(${previewUrl})` }}></div>
-                          <img src={previewUrl} alt="Preview" className="w-full h-full object-contain relative z-10" />
+                          <div className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110" style={{ backgroundImage: `url(${photoSrc(previewUrl)})` }}></div>
+                          <img src={photoSrc(previewUrl)} alt="Preview" className="w-full h-full object-contain relative z-10" />
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                             <span className="text-white font-bold text-sm bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">사진 변경</span>
                           </div>
@@ -354,8 +355,8 @@ export default function DevelopersPage() {
                   <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-violet-100 to-fuchsia-100 shrink-0">
                     {dev.photo_url ? (
                       <div className="w-full h-full relative flex items-center justify-center bg-slate-900">
-                        <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-xl scale-125 transition-transform duration-700 group-hover:scale-150" style={{ backgroundImage: `url(${dev.photo_url})` }}></div>
-                        <img src={dev.photo_url} alt={dev.name} className="w-full h-full object-cover object-top relative z-10 transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-xl scale-125 transition-transform duration-700 group-hover:scale-150" style={{ backgroundImage: `url(${photoSrc(dev.photo_url)})` }}></div>
+                        <img src={photoSrc(dev.photo_url)} alt={dev.name} className="w-full h-full object-cover object-top relative z-10 transition-transform duration-700 group-hover:scale-105" />
                       </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
