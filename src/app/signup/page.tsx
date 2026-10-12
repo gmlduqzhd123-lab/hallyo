@@ -13,7 +13,8 @@ import Image from 'next/image'
 const signupSchema = z.object({
   name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다.'),
   password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다.'),
-  role: z.enum(['admin', 'developer', 'athlete', 'coach', 'parents', 'guest']),
+  // 관리자·개발자 역할은 가입 후 개발자가 회원 관리에서 부여합니다
+  role: z.enum(['athlete', 'coach', 'parents', 'guest']),
 })
 
 type SignupFormValues = z.infer<typeof signupSchema>
@@ -92,8 +93,6 @@ export default function SignupPage() {
               <option value="parents">학부모 (Parents)</option>
               <option value="coach">지도자 (Coach)</option>
               <option value="guest">일반인 (Guest)</option>
-              <option value="developer">개발자 (Developer)</option>
-              <option value="admin">관리자 (Admin)</option>
             </select>
             {errors.role && <p className="text-rose-500 text-xs font-bold mt-2 ml-1">{errors.role.message}</p>}
           </div>

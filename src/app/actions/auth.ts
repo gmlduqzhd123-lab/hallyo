@@ -21,7 +21,14 @@ export async function login(data: { name: string; password: string }) {
   return { success: true }
 }
 
+// 가입 때 고를 수 있는 역할. 관리자·개발자는 가입 후 개발자가 부여합니다 (DB 가입 규칙도 같은 기준)
+const SIGNUP_ROLES = ['athlete', 'coach', 'parents', 'guest']
+
 export async function signup(data: { password: string; name: string; role: string }) {
+  if (!SIGNUP_ROLES.includes(data.role)) {
+    return { error: '가입할 때 선택할 수 없는 역할입니다.' }
+  }
+
   const supabase = await createClient()
   const email = Buffer.from(data.name).toString('hex') + '@hallyoswim.com'
 
