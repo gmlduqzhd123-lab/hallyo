@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx'
 import { bulkAddAthletes, bulkDeleteAllAthletes } from '@/app/actions/athletes'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/ui/page-header'
+import { ATHLETE_COLUMNS, CONTACT_VIEWER_ROLES, type AthleteContact } from '@/lib/athletes'
 
 export default function AthletesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -38,18 +39,32 @@ export default function AthletesPage() {
     }
   })
 
+  const canSeeContacts = CONTACT_VIEWER_ROLES.includes(userRole as string)
+
   const { data: athletes, isPending, isError, error } = useQuery({
-    queryKey: ['athletes'],
+    queryKey: ['athletes', canSeeContacts],
     queryFn: async () => {
       const supabase = createClient()
       const { data, error } = await supabase
         .from('athletes')
-        .select('*')
+        .select(ATHLETE_COLUMNS)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false })
 
       if (error) throw new Error(error.message)
-      return data as Athlete[]
+      const rows = data as unknown as Athlete[]
+      if (!canSeeContacts) return rows
+
+      // 연락처는 관리자·개발자만 따로 받아서 합칩니다
+      const { data: contacts, error: contactError } = await supabase.rpc('get_athlete_contacts')
+      if (contactError) throw new Error(contactError.message)
+      const byId = new Map((contacts as AthleteContact[]).map((c) => [c.id, c]))
+      return rows.map((a) => {
+        const c = byId.get(a.id)
+        return c
+          ? { ...a, student_phone: c.student_phone ?? undefined, parent_name: c.parent_name ?? undefined, parent_phone: c.parent_phone ?? undefined }
+          : a
+      })
     }
   })
 

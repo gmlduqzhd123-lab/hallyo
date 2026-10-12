@@ -14,6 +14,7 @@ import { ChevronDown, ChevronUp, Trash2, LineChart, Search, Edit2 } from 'lucide
 import { softDeleteAthlete } from '@/app/actions/athletes'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { CONTACT_VIEWER_ROLES } from '@/lib/athletes'
 
 export type Athlete = {
   id: string
@@ -210,8 +211,8 @@ export function DataTable({ data, onRowClick, onEdit, userRole }: DataTableProps
   ]
 
   const columns = allColumns.filter(col => {
-    // Hide contact details if not admin, developer, or coach
-    if (!['admin', 'developer', 'coach'].includes(userRole as string) && 'accessorKey' in col && ['student_phone', 'parent_name', 'parent_phone'].includes(String(col.accessorKey))) {
+    // 연락처(학생 전화, 학부모 이름·전화)는 관리자·개발자에게만 보입니다
+    if (!CONTACT_VIEWER_ROLES.includes(userRole as string) && 'accessorKey' in col && ['student_phone', 'parent_name', 'parent_phone'].includes(String(col.accessorKey))) {
       return false
     }
     return true

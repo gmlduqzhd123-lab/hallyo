@@ -5,6 +5,7 @@ import EventRecordChart from './EventRecordChart'
 import EventRecordTable from './EventRecordTable'
 import AddAthleteRecord from './AddAthleteRecord'
 import type { SwimRecord } from '@/types/database'
+import { ATHLETE_COLUMNS } from '@/lib/athletes'
 
 export default async function AthleteRecordsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -13,7 +14,7 @@ export default async function AthleteRecordsPage({ params }: { params: Promise<{
 
   const { data: athlete } = await supabase
     .from('athletes')
-    .select('*')
+    .select(ATHLETE_COLUMNS)
     .eq('id', id)
     .single()
 
