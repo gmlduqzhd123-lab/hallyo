@@ -75,8 +75,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - public/ 의 정적 파일 (이미지, 글꼴, 스크립트, 앱 manifest)
+     *   → 로그인 전에도 로그인 화면의 글꼴·앱 설치·QR 버튼이 동작하도록 제외
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|ttf|otf|woff|woff2|js|webmanifest)$).*)',
   ],
 }
