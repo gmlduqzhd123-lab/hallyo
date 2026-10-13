@@ -294,6 +294,7 @@ export async function bulkDeleteAllAthletes() {
     .from('athletes')
     .select('id')
     .eq('is_deleted', false)
+    .is('graduated_year', null)
 
   if (!athletes || athletes.length === 0) {
     return { error: '삭제할 선수가 없습니다.' }
@@ -314,4 +315,40 @@ export async function bulkDeleteAllAthletes() {
 
   revalidatePath('/dashboard/athletes')
   return { success: true, count: ids.length }
+}
+
+async function requireAdminOrDeveloper() {
+  const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData?.user) return { supabase, error: '인증에 실패했습니다.' }
+  const { data: profile } = await supabase.from('users').select('role').eq('id', userData.user.id).single()
+  if (!['admin', 'developer'].includes(profile?.role as string)) {
+    return { supabase, error: '관리자 또는 개발자만 할 수 있습니다.' }
+  }
+  return { supabase, error: null }
+}
+
+// 새 학년도 진급: 6학년은 졸업생으로, 1~5학년은 한 학년씩 올림 (DB 함수 promote_school_year)
+export async function promoteSchoolYear(targetYear: number) {
+  const { supabase, error: denied } = await requireAdminOrDeveloper()
+  if (denied) return { error: denied }
+
+  const { data, error } = await supabase.rpc('promote_school_year', { target_year: targetYear })
+  if (error) return { error: '진급 처리에 실패했습니다: ' + error.message }
+
+  revalidatePath('/dashboard/athletes')
+  return { success: true, ...(data as { promoted: number; graduated: number }) }
+}
+
+// 졸업생을 재학생으로 되돌림 (진급을 잘못 눌렀거나 졸업 처리가 잘못된 선수)
+export async function restoreGraduate(id: string) {
+  const { supabase, error: denied } = await requireAdminOrDeveloper()
+  if (denied) return { error: denied }
+
+  const { error } = await supabase.from('athletes').update({ graduated_year: null }).eq('id', id)
+  if (error) return { error: '되돌리기에 실패했습니다: ' + error.message }
+
+  await logAudit('UPDATE', 'athletes', { id, restore_graduate: true })
+  revalidatePath('/dashboard/athletes')
+  return { success: true }
 }

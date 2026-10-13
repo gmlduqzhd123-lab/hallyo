@@ -34,6 +34,7 @@ export type Athlete = {
   student_phone?: string
   parent_name?: string
   parent_phone?: string
+  graduated_year?: number | null
   created_at: string
 }
 

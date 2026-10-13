@@ -7,9 +7,10 @@ import { AddAthleteModal } from '@/components/athletes/add-athlete-modal'
 import { EditAthleteModal } from '@/components/athletes/edit-athlete-modal'
 import { DataTable, Athlete } from '@/components/athletes/data-table'
 import { PbChartModal } from '@/components/athletes/pb-chart-modal'
-import { UserPlus, Download, Upload, AlertCircle, Trash2 } from 'lucide-react'
+import { UserPlus, Download, Upload, AlertCircle, Trash2, GraduationCap, Undo2, LineChart } from 'lucide-react'
 import * as XLSX from 'xlsx'
-import { bulkAddAthletes, bulkDeleteAllAthletes } from '@/app/actions/athletes'
+import { bulkAddAthletes, bulkDeleteAllAthletes, promoteSchoolYear, restoreGraduate } from '@/app/actions/athletes'
+import { promotionTargetYear } from '@/lib/school-year'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/ui/page-header'
 import { ATHLETE_COLUMNS, CONTACT_VIEWER_ROLES, type AthleteContact } from '@/lib/athletes'
@@ -18,6 +19,7 @@ export default function AthletesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null)
   const [editingAthlete, setEditingAthlete] = useState<Athlete | null>(null)
+  const [view, setView] = useState<'current' | 'graduates'>('current')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const supabase = createClient()
@@ -41,7 +43,7 @@ export default function AthletesPage() {
 
   const canSeeContacts = CONTACT_VIEWER_ROLES.includes(userRole as string)
 
-  const { data: athletes, isPending, isError, error } = useQuery({
+  const { data: allAthletes, isPending, isError, error } = useQuery({
     queryKey: ['athletes', canSeeContacts],
     queryFn: async () => {
       const supabase = createClient()
@@ -67,6 +69,53 @@ export default function AthletesPage() {
       })
     }
   })
+
+  // 재학생과 졸업생(graduated_year 있음)을 나눠서 보여 줍니다
+  const athletes = allAthletes?.filter((a) => a.graduated_year == null)
+  const graduates = (allAthletes ?? [])
+    .filter((a) => a.graduated_year != null)
+    .sort((a, b) => (b.graduated_year ?? 0) - (a.graduated_year ?? 0) || a.name.localeCompare(b.name, 'ko'))
+  const canManage = ['admin', 'developer'].includes(userRole as string)
+
+  const promoteMutation = useMutation({
+    mutationFn: async (targetYear: number) => {
+      const res = await promoteSchoolYear(targetYear)
+      if ('error' in res && res.error) throw new Error(res.error)
+      return res as { promoted: number; graduated: number }
+    },
+    onSuccess: (res) => {
+      toast.success(`진급 완료: ${res.promoted}명 진급, ${res.graduated}명 졸업`)
+      queryClient.invalidateQueries({ queryKey: ['athletes'] })
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const restoreMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await restoreGraduate(id)
+      if (res.error) throw new Error(res.error)
+      return res
+    },
+    onSuccess: () => {
+      toast.success('재학생으로 되돌렸습니다. 학년이 맞는지 확인해 주세요.')
+      queryClient.invalidateQueries({ queryKey: ['athletes'] })
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
+  const handlePromote = () => {
+    const targetYear = promotionTargetYear()
+    const current = athletes ?? []
+    const sixth = current.filter((a) => a.grade === 6).length
+    const others = current.filter((a) => a.grade >= 1 && a.grade <= 5).length
+    if (!confirm(
+      `${targetYear}학년도로 진급할까요?\n\n` +
+      `· 6학년 ${sixth}명 → 졸업생 (기록은 그대로 남습니다)\n` +
+      `· 1~5학년 ${others}명 → 한 학년씩 올라갑니다\n\n` +
+      `학년도마다 한 번만 할 수 있습니다. 반·번호·담임은 바뀌지 않으니 진급 후 고쳐 주세요.`
+    )) return
+    promoteMutation.mutate(targetYear)
+  }
 
   const bulkMutation = useMutation({
     mutationFn: async (parsedData: unknown[]) => {
@@ -251,8 +300,17 @@ export default function AthletesPage() {
           )}
 
           {/* 명단 수정 (등록, 삭제 등): 관리자, 개발자 */}
-          {(['admin', 'developer'].includes(userRole as string)) && (
+          {canManage && (
             <>
+              <button
+                onClick={handlePromote}
+                disabled={promoteMutation.isPending}
+                className="px-4 py-2.5 rounded-2xl bg-amber-50 text-amber-700 font-bold hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                <GraduationCap className="w-4 h-4" />
+                <span className="hidden sm:inline">{promoteMutation.isPending ? '진급 중...' : '새 학년도 진급'}</span>
+              </button>
+
               <input 
                 type="file" 
                 accept=".xlsx, .xls, .csv" 
@@ -297,7 +355,58 @@ export default function AthletesPage() {
         </div>
       </div>
 
-      {isPending ? (
+      <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-2xl w-full sm:w-80">
+        <button
+          onClick={() => setView('current')}
+          className={`py-2 rounded-xl font-bold text-sm transition-colors ${view === 'current' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}
+        >
+          재학생 {athletes?.length ?? 0}명
+        </button>
+        <button
+          onClick={() => setView('graduates')}
+          className={`py-2 rounded-xl font-bold text-sm transition-colors ${view === 'graduates' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}
+        >
+          졸업생 {graduates.length}명
+        </button>
+      </div>
+
+      {view === 'graduates' ? (
+        graduates.length === 0 ? (
+          <div className="bg-white p-10 rounded-3xl border border-slate-100 text-center text-slate-500 font-bold">
+            아직 졸업생이 없습니다. 새 학년도 진급을 하면 6학년 선수가 이곳으로 옮겨집니다.
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {graduates.map((g) => (
+              <div key={g.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-accent-navy truncate">{g.name} <span className="text-sm text-slate-400 font-bold">{g.gender === 'M' ? '남' : '여'}</span></p>
+                  <p className="text-sm text-slate-500 font-medium">{g.graduated_year}학년도 졸업</p>
+                </div>
+                <button
+                  onClick={() => setSelectedAthlete(g)}
+                  className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600"
+                  aria-label={`${g.name} 기록 보기`}
+                  title="기록 보기"
+                >
+                  <LineChart className="w-4 h-4" />
+                </button>
+                {canManage && (
+                  <button
+                    onClick={() => { if (confirm(`${g.name} 선수를 재학생으로 되돌릴까요?`)) restoreMutation.mutate(g.id) }}
+                    disabled={restoreMutation.isPending}
+                    className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 disabled:opacity-50"
+                    aria-label={`${g.name} 재학생으로 되돌리기`}
+                    title="재학생으로 되돌리기"
+                  >
+                    <Undo2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )
+      ) : isPending ? (
         <div className="flex justify-center py-20">
           <div className="w-10 h-10 border-4 border-t-primary border-primary/20 rounded-full animate-spin"></div>
         </div>

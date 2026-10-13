@@ -8,6 +8,7 @@ export default async function RecordsDashboardPage() {
     .from('athletes')
     .select('id, name, grade, gender')
     .eq('is_deleted', false)
+    .is('graduated_year', null)
     .order('grade', { ascending: false })
     .order('name', { ascending: true })
 

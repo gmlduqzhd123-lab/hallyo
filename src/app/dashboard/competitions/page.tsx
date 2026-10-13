@@ -53,7 +53,7 @@ export default function CompetitionsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('athletes')
-        .select('id, name, grade')
+        .select('id, name, grade, graduated_year')
         .eq('is_deleted', false)
         .order('grade', { ascending: false })
         .order('name')
@@ -321,7 +321,7 @@ export default function CompetitionsPage() {
           <div>
             <label className="block text-sm font-bold text-accent-navy mb-2">참여 선수</label>
             <div className="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border">
-              {athletes?.map((athlete) => (
+              {athletes?.filter((a) => a.graduated_year == null).map((athlete) => (
                 <label key={athlete.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-1.5 rounded-lg transition-colors">
                   <input 
                     type="checkbox" 
