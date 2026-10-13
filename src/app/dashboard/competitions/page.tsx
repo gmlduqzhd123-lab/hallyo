@@ -37,28 +37,16 @@ export default function CompetitionsPage() {
   const { data: competitions, isPending } = useQuery({
     queryKey: ['competitions'],
     queryFn: async () => {
+      // 비회원은 대회 이름·날짜·장소만 읽을 수 있습니다 (참가 선수·숙소·비고는 DB 컬럼 권한으로 막힘)
+      const { data: { session } } = await supabase.auth.getSession()
       const { data, error } = await supabase
         .from('schedules')
-        .select('*, users(name)')
+        .select(session ? '*, users(name)' : 'id, type, title, date, end_date, location, created_at')
         .eq('type', 'competition')
         .eq('is_deleted', false)
         .order('date', { ascending: false })
       if (error) throw error
-      return data as Schedule[]
-    }
-  })
-
-  const { data: athletes } = useQuery({
-    queryKey: ['athletes-list'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('athletes')
-        .select('id, name, grade, graduated_year')
-        .eq('is_deleted', false)
-        .order('grade', { ascending: false })
-        .order('name')
-      if (error) throw error
-      return data as AthleteSummary[]
+      return data as unknown as Schedule[]
     }
   })
 
@@ -76,6 +64,21 @@ export default function CompetitionsPage() {
         
       if (error) return null
       return data.role
+    }
+  })
+
+  const { data: athletes } = useQuery({
+    queryKey: ['athletes-list'],
+    enabled: Boolean(userRole),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('athletes')
+        .select('id, name, grade, graduated_year')
+        .eq('is_deleted', false)
+        .order('grade', { ascending: false })
+        .order('name')
+      if (error) throw error
+      return data as AthleteSummary[]
     }
   })
   
