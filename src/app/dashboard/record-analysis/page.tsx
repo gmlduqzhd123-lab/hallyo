@@ -72,6 +72,7 @@ function RecordAnalysisContent() {
         .from('athletes')
         .select(ATHLETE_COLUMNS)
         .eq('is_deleted', false)
+        .is('graduated_year', null)
         .order('grade', { ascending: false, nullsFirst: false })
         .order('name', { ascending: true })
       if (error) throw error

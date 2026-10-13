@@ -19,6 +19,7 @@ async function fetchActiveAthletes() {
     .from('athletes')
     .select('id, gender')
     .eq('is_deleted', false)
+    .is('graduated_year', null)
 
   if (error) {
     throw new Error(error.message)

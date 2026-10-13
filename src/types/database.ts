@@ -17,6 +17,7 @@ export interface AthleteSummary {
   name: string
   grade: number | null
   gender?: 'M' | 'F'
+  graduated_year?: number | null
 }
 
 // 대회 일정의 숙소·식당 항목 (schedules.accommodations / restaurants)

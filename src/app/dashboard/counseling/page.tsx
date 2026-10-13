@@ -29,7 +29,7 @@ export default function CounselingPage() {
   const { data: athletes } = useQuery({
     queryKey: ['athletes', 'counseling_selection'],
     queryFn: async () => {
-      const { data } = await supabase.from('athletes').select('id, name').eq('is_deleted', false)
+      const { data } = await supabase.from('athletes').select('id, name').eq('is_deleted', false).is('graduated_year', null)
       return (data || []) as { id: string; name: string }[]
     }
   })

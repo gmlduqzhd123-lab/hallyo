@@ -95,7 +95,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     queryFn: async () => {
       const { data, error } = await supabase
         .from('athletes')
-        .select('id, name, grade')
+        .select('id, name, grade, graduated_year')
         .eq('is_deleted', false)
         .order('grade', { ascending: false })
         .order('name', { ascending: true })
@@ -103,6 +103,9 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
       return data as AthleteSummary[]
     }
   })
+
+  // 졸업생은 지난 대회 참가자 표시에는 남기고, 고르는 목록에는 이 대회 참가자일 때만 보여 줍니다
+  const pickableAthletes = athletes?.filter((a) => a.graduated_year == null || competition?.participants?.includes(a.id))
 
   const { data: userRole } = useQuery({
     queryKey: ['user_role'],
@@ -663,7 +666,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             <label className="block text-sm font-bold text-accent-navy mb-1">선수 선택</label>
             <select {...register('athlete_id')} className="w-full px-4 py-3 rounded-2xl border bg-slate-50 text-slate-700">
               <option value="">선수를 선택하세요</option>
-              {athletes?.map((athlete) => (
+              {pickableAthletes?.map((athlete) => (
                 <option key={athlete.id} value={athlete.id}>{athlete.name} ({athlete.grade}학년)</option>
               ))}
             </select>
@@ -810,7 +813,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         <div className="space-y-4">
           <p className="text-sm font-bold text-accent-navy mb-4">대회에 참여할 선수를 선택해주세요.</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto pr-2">
-            {athletes?.map((athlete) => {
+            {athletes?.filter((a) => a.graduated_year == null || selectedParticipants.includes(a.id)).map((athlete) => {
               const isSelected = selectedParticipants.includes(athlete.id)
               return (
                 <button

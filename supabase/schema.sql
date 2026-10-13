@@ -51,6 +51,7 @@ create table public.athletes (
   attendance_end_date date,
   join_date date,
   student_number integer,
+  graduated_year integer,                       -- 졸업한 학년도 (비어 있으면 재학생)
   constraint athletes_pkey PRIMARY KEY (id),
   constraint athletes_grade_check CHECK (((grade > 0) AND (grade <= 6)))
 );
@@ -558,7 +559,7 @@ create policy "Auth Delete Videos" on storage.objects for delete to authenticate
 -- ⚠️ athletes 에 컬럼을 새로 추가하면 아래 grant 에도 넣어야 앱에서 읽을 수 있습니다
 --    (src/lib/athletes.ts 의 ATHLETE_COLUMNS 도 함께 수정).
 revoke select on public.athletes from anon, authenticated;
-grant select (id, category, gender, name, hanja_name, is_registered, birth_date, attendance_start_date, attendance_end_date, join_date, grade, class_number, student_number, homeroom_teacher, is_deleted, created_at)
+grant select (id, category, gender, name, hanja_name, is_registered, birth_date, attendance_start_date, attendance_end_date, join_date, grade, class_number, student_number, homeroom_teacher, graduated_year, is_deleted, created_at)
   on public.athletes to authenticated;
 
 
@@ -757,3 +758,51 @@ create policy "Admins and developers manage advice" on public.athlete_advice
   with check ((select public.is_admin_or_developer()));
 
 grant select, insert, update on public.athlete_advice to authenticated;
+
+-- =====================================================================
+-- 10. 새 학년도 진급·졸업 (2026-10-13 운영 DB 적용, supabase/manual/2026-10-13_school_year_promotion.sql)
+-- =====================================================================
+-- graduated_year 컬럼과 조회 권한은 1번 athletes 테이블과 7번 grant 에 반영돼 있습니다.
+
+create or replace function public.promote_school_year(target_year integer)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  last_year integer;
+  graduated_count integer;
+  promoted_count integer;
+begin
+  if not public.is_admin_or_developer() then
+    raise exception 'Only admins and developers can promote the school year.';
+  end if;
+
+  select value::integer into last_year from public.system_settings where key = 'last_promoted_school_year';
+  if last_year is not null and last_year >= target_year then
+    raise exception '이미 %학년도 진급을 마쳤습니다.', last_year;
+  end if;
+
+  update public.athletes set graduated_year = target_year - 1
+  where is_deleted = false and graduated_year is null and grade = 6;
+  get diagnostics graduated_count = row_count;
+
+  update public.athletes set grade = grade + 1
+  where is_deleted = false and graduated_year is null and grade between 1 and 5;
+  get diagnostics promoted_count = row_count;
+
+  insert into public.system_settings (key, value, updated_at)
+  values ('last_promoted_school_year', target_year::text, now())
+  on conflict (key) do update set value = excluded.value, updated_at = excluded.updated_at;
+
+  insert into public.audit_logs (user_id, action, target_table, details)
+  values (auth.uid(), 'UPDATE', 'athletes', json_build_object(
+    'school_year_promotion', target_year, 'promoted', promoted_count, 'graduated', graduated_count)::jsonb);
+
+  return json_build_object('promoted', promoted_count, 'graduated', graduated_count);
+end;
+$$;
+
+revoke execute on function public.promote_school_year(integer) from public, anon;
+grant execute on function public.promote_school_year(integer) to authenticated;
