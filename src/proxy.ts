@@ -1,6 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+// 승인 확인 결과를 잠깐 기억하는 쿠키 (값: 사용자 id)
+// 페이지를 옮길 때마다 DB 를 조회하지 않기 위한 것이고, 화면 이동에만 쓰입니다.
+// 자료 읽기·쓰기는 DB 권한 규칙(승인된 사용자만)이 따로 막기 때문에 쿠키를 꾸며도 자료는 볼 수 없습니다.
+const APPROVED_COOKIE = 'hallyo-approved'
+const APPROVED_MAX_AGE = 60 * 10
+
 export default async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -27,28 +33,38 @@ export default async function proxy(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // 로그인 토큰을 서명으로 확인합니다 (Auth 서버를 매번 부르지 않음)
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const userId = claimsData?.claims?.sub
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')
 
-  if (!user && !isAuthRoute) {
+  if (!userId && !isAuthRoute) {
     // No user, redirect to login
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  if (user) {
-    // User is authenticated. Fetch custom profile logic
-    const { data: profile } = await supabase
-      .from('users')
-      .select('status')
-      .eq('id', user.id)
-      .single()
-
-    const isApproved = profile?.status === 'approved'
+  if (userId) {
+    let isApproved = request.cookies.get(APPROVED_COOKIE)?.value === userId
+    if (!isApproved) {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('status')
+        .eq('id', userId)
+        .single()
+      isApproved = profile?.status === 'approved'
+      if (isApproved) {
+        supabaseResponse.cookies.set(APPROVED_COOKIE, userId, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          path: '/',
+          maxAge: APPROVED_MAX_AGE,
+        })
+      }
+    }
 
     if (!isApproved && request.nextUrl.pathname !== '/pending' && !isAuthRoute) {
       // Pending user
