@@ -849,3 +849,14 @@ grant execute on function public.is_public_photo(text) to anon, authenticated;
 
 create policy "Guests can view public photos" on storage.objects
   for select to anon using (bucket_id = 'photos' and public.is_public_photo(name));
+
+-- =====================================================================
+-- 12. 비회원 둘러보기: 우리 선수 기록 공개 (2026-10-13 운영 DB 적용, supabase/manual/2026-10-13_guest_records.sql)
+-- 비회원에게는 선수 이름·성별·학년만 (생년월일·반·담임·연락처 등은 계속 차단)
+-- =====================================================================
+grant select (id, name, gender, grade, graduated_year, is_deleted, created_at) on public.athletes to anon;
+create policy "Guests can view athlete names" on public.athletes
+  for select to anon using (is_deleted = false);
+
+create policy "Guests can view records" on public.records
+  for select to anon using (is_deleted = false);

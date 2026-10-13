@@ -42,7 +42,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   type NavItem = { name: string; icon: typeof Home; href: string; restrictedTo?: string[]; guest?: boolean }
   const guestNavItems: NavItem[] = [
     { name: '둘러보기 홈', icon: Compass, href: GUEST_HOME },
-    { name: '전국 기록', icon: Timer, href: '/dashboard/records/nationwide' },
+    { name: '선수 기록', icon: Timer, href: '/dashboard/records' },
+    { name: '기록 분석', icon: Activity, href: '/dashboard/record-analysis' },
+    { name: '라이벌 비교', icon: Swords, href: '/dashboard/rival-comparison' },
     { name: '순위 시뮬레이터', icon: Target, href: '/dashboard/rank-simulator' },
     { name: '대회 일정', icon: Calendar, href: '/dashboard/competitions' },
     { name: '수영 관련 영상', icon: Video, href: '/dashboard/videos' },
@@ -215,7 +217,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {isGuest && (
           <div className="mx-4 md:mx-8 mt-4 p-4 rounded-2xl bg-secondary/15 border border-secondary/30 flex flex-col sm:flex-row sm:items-center gap-3">
             <p className="flex-1 text-sm font-bold text-accent-navy break-keep">
-              👀 둘러보기 중이에요. 선수 명단·기록·활동 사진은 회원만 볼 수 있어요.
+              👀 둘러보기 중이에요. 선수 명단·활동 사진·대회 영상은 회원만 볼 수 있어요.
             </p>
             <div className="flex gap-2 shrink-0">
               <Link href="/login" className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold">로그인</Link>

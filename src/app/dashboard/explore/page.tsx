@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Timer, Target, Calendar, Video, History, Newspaper, Trophy, Bell, Code2, Lock } from 'lucide-react'
+import { Timer, Activity, Swords, Target, Calendar, Video, History, Newspaper, Trophy, Bell, Code2, Lock } from 'lucide-react'
 
 // 비회원 둘러보기 첫 화면. 공개 메뉴 목록은 src/lib/guest.ts 와 같게 유지합니다.
 const PUBLIC_MENUS = [
-  { name: '전국 기록', desc: '학년·종목별 전국 대회 순위', icon: Timer, href: '/dashboard/records/nationwide' },
+  { name: '선수 기록', desc: '우리 선수 기록과 전국 대회 순위', icon: Timer, href: '/dashboard/records' },
+  { name: '기록 분석', desc: '전국 기록과 비교한 선수별 분석', icon: Activity, href: '/dashboard/record-analysis' },
+  { name: '라이벌 비교', desc: '같은 학년 전국 선수와 기록 비교', icon: Swords, href: '/dashboard/rival-comparison' },
   { name: '순위 시뮬레이터', desc: '내 기록이면 전국 몇 위일까?', icon: Target, href: '/dashboard/rank-simulator' },
   { name: '대회 일정', desc: '참가하는 대회 이름·날짜·장소', icon: Calendar, href: '/dashboard/competitions' },
   { name: '수영 관련 영상', desc: '영법별 훈련 영상 모음', icon: Video, href: '/dashboard/videos' },
@@ -22,7 +24,7 @@ export default function ExplorePage() {
         <Image src="/logo.png" alt="" width={72} height={72} className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl bg-white/90 p-1.5 shrink-0" />
         <div className="min-w-0">
           <h1 className="text-2xl md:text-3xl font-black break-keep">여수한려초등학교 수영부</h1>
-          <p className="text-blue-50 font-medium mt-1 break-keep">수영부 소식과 기록을 둘러보세요. 회원이 되면 선수 기록과 활동 사진도 볼 수 있어요.</p>
+          <p className="text-blue-50 font-medium mt-1 break-keep">수영부 소식과 선수 기록을 둘러보세요. 회원이 되면 활동 사진과 대회 영상도 볼 수 있어요.</p>
         </div>
       </div>
 
@@ -47,7 +49,7 @@ export default function ExplorePage() {
       <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex items-start gap-3">
         <Lock className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
         <p className="text-sm text-slate-500 font-medium break-keep">
-          선수 명단, 우리 선수 기록·분석, 활동 사진, 대회 영상, 훈련 일정, 대회 참가 선수는 선수 개인정보 보호를 위해 승인된 회원만 볼 수 있습니다.
+          선수 명단(생년월일·연락처 등), 활동 사진, 대회 영상, 훈련 일정, 대회 참가 선수, 지도자 코멘트는 선수 개인정보 보호를 위해 승인된 회원만 볼 수 있습니다.
         </p>
       </div>
     </div>
