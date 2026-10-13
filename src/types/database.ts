@@ -99,6 +99,7 @@ export interface Notice {
   id: string
   title: string
   content: string
+  is_public: boolean
   created_by: string
   created_at: string
   users?: { name: string } | null

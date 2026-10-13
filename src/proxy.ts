@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { GUEST_HOME, isGuestPath } from '@/lib/guest'
 
 // 승인 확인 결과를 잠깐 기억하는 쿠키 (값: 사용자 id)
 // 페이지를 옮길 때마다 DB 를 조회하지 않기 위한 것이고, 화면 이동에만 쓰입니다.
 // 자료 읽기·쓰기는 DB 권한 규칙(승인된 사용자만)이 따로 막기 때문에 쿠키를 꾸며도 자료는 볼 수 없습니다.
 const APPROVED_COOKIE = 'hallyo-approved'
 const APPROVED_MAX_AGE = 60 * 10
+
 
 export default async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -40,9 +42,11 @@ export default async function proxy(request: NextRequest) {
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')
 
   if (!userId && !isAuthRoute) {
-    // No user, redirect to login
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    const pathname = request.nextUrl.pathname
+    if (isGuestPath(pathname)) return supabaseResponse
+    // 비회원이 대시보드 첫 화면으로 오면 둘러보기 첫 화면으로, 그 밖의 회원 전용 화면은 로그인으로
+    url.pathname = pathname === '/dashboard' ? GUEST_HOME : '/login'
     return NextResponse.redirect(url)
   }
 

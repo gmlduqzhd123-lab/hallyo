@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { Bell, Plus, Trash2 } from 'lucide-react'
+import { Bell, Plus, Trash2, Globe, Lock } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { addNotice, softDeleteNotice } from '@/app/actions/notices'
+import { addNotice, setNoticePublic, softDeleteNotice } from '@/app/actions/notices'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import type { Notice } from '@/types/database'
@@ -16,6 +16,7 @@ import type { Notice } from '@/types/database'
 const schema = z.object({
   title: z.string().min(2, '제목을 입력해주세요.'),
   content: z.string().min(2, '내용을 입력해주세요.'),
+  is_public: z.boolean().optional(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -33,6 +34,21 @@ export default function NoticesPage() {
       const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
       return data
     }
+  })
+
+  const isStaff = ['admin', 'coach', 'developer'].includes(profile?.role as string)
+
+  const publicMutation = useMutation({
+    mutationFn: async ({ id, isPublic }: { id: string; isPublic: boolean }) => {
+      const result = await setNoticePublic(id, isPublic)
+      if (result?.error) throw new Error(result.error)
+      return isPublic
+    },
+    onSuccess: (isPublic) => {
+      toast.success(isPublic ? '전체 공개로 바꿨습니다. 비회원도 볼 수 있습니다.' : '회원 전용으로 바꿨습니다.')
+      queryClient.invalidateQueries({ queryKey: ['notices'] })
+    },
+    onError: (err: Error) => toast.error(err.message),
   })
 
   const { data: notices, isPending } = useQuery({
@@ -57,6 +73,7 @@ export default function NoticesPage() {
       const formData = new FormData()
       formData.append('title', data.title)
       formData.append('content', data.content)
+      formData.append('is_public', data.is_public ? 'true' : 'false')
       const result = await addNotice(formData)
       if (result?.error) throw new Error(result.error)
       return result
@@ -119,7 +136,25 @@ export default function NoticesPage() {
           notices?.map((notice) => (
             <div key={notice.id} id={notice.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 scroll-mt-24">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-lg font-bold text-accent-navy min-w-0 wrap-anywhere">{notice.title}</h2>
+                <div className="min-w-0">
+                  <h2 className="text-lg font-bold text-accent-navy min-w-0 wrap-anywhere">{notice.title}</h2>
+                  {profile && (
+                    <span className={`inline-flex items-center gap-1 mt-1 text-xs font-bold ${notice.is_public ? 'text-emerald-600' : 'text-slate-400'}`}>
+                      {notice.is_public ? <><Globe className="w-3.5 h-3.5" /> 전체 공개</> : <><Lock className="w-3.5 h-3.5" /> 회원 전용</>}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                {isStaff && (
+                  <button
+                    onClick={() => publicMutation.mutate({ id: notice.id, isPublic: !notice.is_public })}
+                    disabled={publicMutation.isPending}
+                    className="text-slate-400 hover:text-primary p-2 rounded-lg hover:bg-secondary/15 transition-colors text-xs font-bold disabled:opacity-50"
+                    title={notice.is_public ? '회원 전용으로 바꾸기' : '전체 공개로 바꾸기'}
+                  >
+                    {notice.is_public ? '비공개로' : '공개로'}
+                  </button>
+                )}
                 {(['developer'].includes(profile?.role as string) || notice.created_by === profile?.id) && (
                   <button 
                     onClick={() => { if(confirm('정말 삭제하시겠습니까?')) deleteMutation.mutate(notice.id) }}
@@ -128,11 +163,12 @@ export default function NoticesPage() {
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
+                </div>
               </div>
               <p className="text-slate-600 whitespace-pre-wrap wrap-anywhere leading-relaxed">{notice.content}</p>
               <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-4 text-xs text-slate-400 font-medium">
                 <span>작성일: {format(new Date(notice.created_at), 'yyyy-MM-dd')}</span>
-                <span>작성자: {notice.users?.name}</span>
+                {notice.users?.name && <span>작성자: {notice.users.name}</span>}
               </div>
             </div>
           ))
@@ -152,6 +188,14 @@ export default function NoticesPage() {
             <textarea {...register('content')} rows={8} className="w-full px-4 py-3 rounded-2xl border bg-slate-50 resize-none" placeholder="공지 내용을 입력하세요" />
             {errors.content && <p className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.content.message}</p>}
           </div>
+
+          <label className="flex items-start gap-2 p-3 rounded-2xl bg-slate-50 border cursor-pointer">
+            <input type="checkbox" {...register('is_public')} className="mt-1" />
+            <span className="text-sm">
+              <span className="font-bold text-accent-navy">전체 공개</span>
+              <span className="block text-slate-500">로그인하지 않은 방문자도 볼 수 있습니다. 선수 이름·연락처 같은 개인정보가 있으면 체크하지 마세요.</span>
+            </span>
+          </label>
 
           <div className="pt-4 flex gap-3">
             <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200">취소</button>

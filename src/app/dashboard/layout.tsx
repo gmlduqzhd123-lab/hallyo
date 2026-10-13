@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp, Download, QrCode } from 'lucide-react'
+import { Users, Calendar, CalendarDays, BookOpen, Video, Bell, Settings, Menu, X, LogOut, Home, Image as ImageIcon, Film, History, Trophy, Code2, User, Timer, Newspaper, Activity, Swords, Target, ArrowUp, Download, QrCode, LogIn, Compass } from 'lucide-react'
 import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
 import { GlobalSearch } from '@/components/global-search'
 import { AppFooter } from '@/components/app-footer'
+import { GUEST_HOME } from '@/lib/guest'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -18,7 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const supabase = createClient()
 
-  const { data: userRole } = useQuery({
+  const { data: userRole, isPending: rolePending } = useQuery({
     queryKey: ['user_role'],
     queryFn: async () => {
       const { data: authData } = await supabase.auth.getUser()
@@ -35,7 +36,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   })
 
-  const navItems = [
+  // 로그인하지 않은 방문자 (둘러보기): 공개 메뉴만 보여 줍니다 (src/lib/guest.ts 와 같은 목록)
+  const isGuest = !rolePending && userRole === null
+
+  type NavItem = { name: string; icon: typeof Home; href: string; restrictedTo?: string[]; guest?: boolean }
+  const guestNavItems: NavItem[] = [
+    { name: '둘러보기 홈', icon: Compass, href: GUEST_HOME },
+    { name: '전국 기록', icon: Timer, href: '/dashboard/records/nationwide' },
+    { name: '순위 시뮬레이터', icon: Target, href: '/dashboard/rank-simulator' },
+    { name: '대회 일정', icon: Calendar, href: '/dashboard/competitions' },
+    { name: '수영 관련 영상', icon: Video, href: '/dashboard/videos' },
+    { name: '수영부 연혁', icon: History, href: '/dashboard/history' },
+    { name: '보도 기사', icon: Newspaper, href: '/dashboard/news-articles' },
+    { name: '명예의 전당', icon: Trophy, href: '/dashboard/hall-of-fame' },
+    { name: '공지사항', icon: Bell, href: '/dashboard/notices' },
+    { name: '개발 일지', icon: Code2, href: '/dashboard/developers' },
+  ]
+
+  const navItems: NavItem[] = [
     { name: '홈', icon: Home, href: '/dashboard' },
     { name: '선수 명단', icon: Users, href: '/dashboard/athletes' },
     { name: '선수 기록', icon: Timer, href: '/dashboard/records' },
@@ -74,7 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const visibleNavItems = navItems.filter(item => {
+  const visibleNavItems = isGuest ? guestNavItems : navItems.filter(item => {
     // If role is still loading (undefined), we don't know yet, but we'll wait for the query to resolve. 
     // To prevent flicker, we could assume unauthorized until proven otherwise.
     if (item.restrictedTo && userRole && !item.restrictedTo.includes(userRole as string)) return false
@@ -109,10 +127,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
           )})}
           
+          {isGuest ? (
+            <Link href="/login" className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-primary bg-secondary/15 hover:bg-secondary/25 transition-all font-semibold mt-2">
+              <LogIn className="w-5 h-5" />
+              <span>로그인</span>
+            </Link>
+          ) : (
           <button onClick={() => logout()} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-semibold mt-2">
             <LogOut className="w-5 h-5" />
             <span>로그아웃</span>
           </button>
+          )}
         </nav>
       </aside>
 
@@ -121,7 +146,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Desktop Header */}
         <header className="hidden md:flex bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4 items-center justify-between sticky top-0 z-40">
           <h1 className="font-bold text-slate-800 text-lg">
-            {navItems.find(item => item.href === pathname)?.name || '여수한려초 수영부'}
+            {(isGuest ? guestNavItems : navItems).find(item => item.href === pathname)?.name || '여수한려초 수영부'}
           </h1>
           <div className="flex items-center gap-3">
             <button type="button" data-ys-install="" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold shadow-sm shadow-blue-500/30 transition-colors">
@@ -130,7 +155,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button type="button" data-qr="" aria-label="QR 코드로 접속" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-bold shadow-sm transition-colors">
               <QrCode className="w-4 h-4" />QR
             </button>
-            <GlobalSearch />
+            {!isGuest && <GlobalSearch />}
           </div>
         </header>
 
@@ -147,7 +172,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button type="button" data-qr="" aria-label="QR 코드로 접속" className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold">
               <QrCode className="w-4 h-4" /><span className="hidden min-[400px]:inline">QR</span>
             </button>
-            <GlobalSearch />
+            {!isGuest && <GlobalSearch />}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 bg-slate-50 rounded-xl text-slate-600"
@@ -173,10 +198,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span>{item.name}</span>
               </Link>
             )})}
+            {isGuest ? (
+              <Link href="/login" onClick={handleNavClick} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-primary bg-secondary/15 font-semibold mt-2">
+                <LogIn className="w-5 h-5" />
+                <span>로그인</span>
+              </Link>
+            ) : (
             <button onClick={() => logout()} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-500 hover:bg-rose-50 font-semibold mt-2 border-t border-slate-50">
               <LogOut className="w-5 h-5" />
               <span>로그아웃</span>
             </button>
+            )}
+          </div>
+        )}
+
+        {isGuest && (
+          <div className="mx-4 md:mx-8 mt-4 p-4 rounded-2xl bg-secondary/15 border border-secondary/30 flex flex-col sm:flex-row sm:items-center gap-3">
+            <p className="flex-1 text-sm font-bold text-accent-navy break-keep">
+              👀 둘러보기 중이에요. 선수 명단·기록·활동 사진은 회원만 볼 수 있어요.
+            </p>
+            <div className="flex gap-2 shrink-0">
+              <Link href="/login" className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold">로그인</Link>
+              <Link href="/signup" className="px-4 py-2 rounded-xl bg-white text-primary text-sm font-bold border border-secondary/40">회원가입</Link>
+            </div>
           </div>
         )}
 

@@ -95,6 +95,12 @@ export default function LoginPage() {
             >
               회원가입
             </Link>
+            <Link
+              href="/dashboard/explore"
+              className="w-full inline-flex justify-center text-slate-500 hover:text-primary font-bold py-3 transition-colors"
+            >
+              👀 로그인 없이 둘러보기
+            </Link>
           </div>
         </form>
       </div>
