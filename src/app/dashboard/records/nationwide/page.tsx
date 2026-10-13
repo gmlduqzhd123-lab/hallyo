@@ -44,11 +44,8 @@ export default function NationwideRecordsPage() {
     queryFn: async () => {
       let query = supabase.from('nationwide_rankings').select('*').eq('is_deleted', false);
 
-      const debugFilters: Record<string, string | number> = {}
-
       if (selectedGender && selectedGender !== 'all') {
         query = query.eq('gender', selectedGender);
-        debugFilters.gender = selectedGender;
       }
 
       if (selectedGrade && selectedGrade !== 'all') {
@@ -56,7 +53,6 @@ export default function NationwideRecordsPage() {
         const gradeNumber = parseInt(selectedGrade.replace(/[^0-9]/g, ''), 10);
         if (!isNaN(gradeNumber)) {
           query = query.eq('grade', gradeNumber);
-          debugFilters.grade = gradeNumber;
         }
       }
 
@@ -64,7 +60,6 @@ export default function NationwideRecordsPage() {
         const yearNumber = parseInt(selectedYear, 10);
         if (!isNaN(yearNumber)) {
           query = query.eq('year', yearNumber);
-          debugFilters.year = yearNumber;
         }
       }
 
@@ -72,21 +67,14 @@ export default function NationwideRecordsPage() {
         // '자유형 50m'에서 모든 공백 제거 (예: '자유형 50m' -> '자유형50m')
         const formattedEvent = selectedEvent.replace(/\s+/g, '');
         query = query.eq('event', formattedEvent);
-        debugFilters.event = formattedEvent;
       }
-
-      console.log('🚀 [Supabase Request] Filters applied:', debugFilters)
 
       const { data, error } = await query
         .order('gender', { ascending: true })
         .order('rank', { ascending: true })
         .limit(5000)
       
-      console.log('📥 [Supabase Response] Data:', data?.length ? `${data.length}건 반환됨` : '데이터 없음', data)
-      if (error) {
-        console.error('❌ [Supabase Error]:', error)
-        throw error
-      }
+      if (error) throw error
       
       return data as NationwideRanking[]
     }
