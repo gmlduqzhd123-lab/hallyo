@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { AppFooter } from '@/components/app-footer'
 
 const loginSchema = z.object({
   name: z.string().min(2, '이름을 입력해주세요.'),
@@ -97,9 +98,7 @@ export default function LoginPage() {
           </div>
         </form>
       </div>
-      <div className="mt-8 text-center text-slate-400 text-sm font-medium tracking-wide">
-        © 2026 엽쌤 · 달디단
-      </div>
+      <AppFooter className="mt-8" />
     </div>
   )
 }
