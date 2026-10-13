@@ -9,7 +9,7 @@ import { Activity, TrendingUp, Medal, AlertCircle, Target, Zap, CheckCircle, Pla
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, type TooltipContentProps } from 'recharts'
 import { PageHeader } from '@/components/ui/page-header'
 import type { AthleteAdvice, AthleteRow, NationwideRanking, SwimRecord, TrainingVideo } from '@/types/database'
-import { ATHLETE_COLUMNS } from '@/lib/athletes'
+import { PUBLIC_ATHLETE_COLUMNS } from '@/lib/athletes'
 
 // 종목별 내 최고 기록과 전국 기준 비교
 type EventDetail = {
@@ -70,7 +70,7 @@ function RecordAnalysisContent() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('athletes')
-        .select(ATHLETE_COLUMNS)
+        .select(PUBLIC_ATHLETE_COLUMNS)
         .eq('is_deleted', false)
         .is('graduated_year', null)
         .order('grade', { ascending: false, nullsFirst: false })

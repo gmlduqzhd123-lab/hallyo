@@ -6,6 +6,10 @@ export const ATHLETE_COLUMNS =
 
 // 졸업생(graduated_year 가 있는 선수)은 지우지 않고 남겨 두며, 명단·대회·분석 화면에서는 재학생만 보여 줍니다.
 
+// 비회원(둘러보기)도 읽을 수 있는 선수 컬럼: 이름·성별·학년만 (기록 화면에서 사용)
+// DB 권한: supabase/manual/2026-10-13_guest_records.sql
+export const PUBLIC_ATHLETE_COLUMNS = 'id, name, gender, grade, graduated_year, is_deleted, created_at'
+
 export const CONTACT_VIEWER_ROLES = ['admin', 'developer']
 
 export type AthleteContact = {
