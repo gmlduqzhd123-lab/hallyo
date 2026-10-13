@@ -48,8 +48,7 @@ export async function addAthlete(formData: FormData) {
 
   const validatedFields = athleteSchema.safeParse(rawData)
   if (!validatedFields.success) {
-    // @ts-expect-error: zod error typing
-    return { error: validatedFields.error.errors[0].message }
+    return { error: validatedFields.error.issues[0].message }
   }
 
   const { data: userData, error: userError } = await supabase.auth.getUser()

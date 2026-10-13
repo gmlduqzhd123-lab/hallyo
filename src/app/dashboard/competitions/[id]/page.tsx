@@ -3,8 +3,9 @@
 import { useState, use } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
-import { ArrowLeft, Trophy, Plus, Trash2, MapPin, Users, UserPlus, Check, Building, Utensils, ExternalLink, Edit2 } from 'lucide-react'
+import { ArrowLeft, Trophy, Plus, ListPlus, Trash2, MapPin, Users, UserPlus, Check, Building, Utensils, ExternalLink, Edit2 } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
+import { BulkRecordModal } from '@/components/competitions/bulk-record-modal'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -51,6 +52,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const resolvedParams = use(params)
   const id = resolvedParams.id
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
   const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false)
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([])
   
@@ -448,13 +450,22 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
           대회 결과
         </h2>
         {canEdit && (
-          <button 
-            onClick={handleOpenModal}
-            className="flex items-center gap-2 bg-accent-navy hover:bg-blue-900 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg"
-          >
-            <Plus className="w-5 h-5" />
-            기록 등록
-          </button>
+          <div className="flex flex-wrap gap-2 justify-end">
+            <button
+              onClick={() => setIsBulkModalOpen(true)}
+              className="flex items-center gap-2 bg-secondary/15 hover:bg-secondary/25 text-primary px-5 py-3 rounded-2xl font-bold transition-all"
+            >
+              <ListPlus className="w-5 h-5" />
+              한꺼번에 입력
+            </button>
+            <button 
+              onClick={handleOpenModal}
+              className="flex items-center gap-2 bg-accent-navy hover:bg-blue-900 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg"
+            >
+              <Plus className="w-5 h-5" />
+              기록 등록
+            </button>
+          </div>
         )}
       </div>
 
@@ -659,6 +670,19 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
           )}
         </div>
       </div>
+
+      {isBulkModalOpen && (
+        <BulkRecordModal
+          isOpen
+          onClose={() => setIsBulkModalOpen(false)}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ['records', id] })}
+          scheduleId={id}
+          defaultDate={competition.date}
+          athletes={pickableAthletes ?? []}
+          participantIds={competition.participants ?? []}
+          eventOptions={EVENT_OPTIONS}
+        />
+      )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="대회 기록 등록">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

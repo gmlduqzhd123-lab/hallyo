@@ -25,8 +25,7 @@ export async function addVideo(formData: FormData) {
 
   const validatedFields = videoSchema.safeParse(rawData)
   if (!validatedFields.success) {
-    // @ts-expect-error: zod error typing
-    return { error: validatedFields.error.errors[0].message }
+    return { error: validatedFields.error.issues[0].message }
   }
 
   const { data: { user } } = await supabase.auth.getUser()
