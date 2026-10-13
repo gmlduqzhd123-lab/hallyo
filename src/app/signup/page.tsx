@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { AppFooter } from '@/components/app-footer'
 
 const signupSchema = z.object({
   name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다.'),
@@ -120,9 +121,7 @@ export default function SignupPage() {
           </p>
         </div>
       </div>
-      <div className="mt-8 text-center text-slate-400 text-sm font-medium tracking-wide">
-        © 2026 엽쌤 · 달디단
-      </div>
+      <AppFooter className="mt-8" />
     </div>
   )
 }

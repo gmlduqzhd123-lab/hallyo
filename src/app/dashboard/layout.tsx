@@ -9,6 +9,7 @@ import { logout } from '../actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { useQuery } from '@tanstack/react-query'
 import { GlobalSearch } from '@/components/global-search'
+import { AppFooter } from '@/components/app-footer'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -183,6 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex-1 p-4 md:p-8">
           {children}
         </div>
+        <AppFooter className="px-4 pb-8" />
 
         {/* Scroll to Top Button */}
         {showScrollTop && (
