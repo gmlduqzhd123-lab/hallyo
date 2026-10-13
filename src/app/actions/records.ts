@@ -30,8 +30,7 @@ export async function addRecord(formData: FormData) {
 
   const validatedFields = recordSchema.safeParse(rawData)
   if (!validatedFields.success) {
-    // @ts-expect-error: zod error typing
-    return { error: validatedFields.error.errors[0].message }
+    return { error: validatedFields.error.issues[0].message }
   }
 
   const { error } = await supabase.from('records').insert([
@@ -61,6 +60,49 @@ export async function addRecord(formData: FormData) {
   return { success: true }
 }
 
+export type BulkRecordRow = {
+  athlete_id: string
+  event_name: string
+  record_time: number
+  record_date: string
+  rank?: number | null
+  match_type?: string | null
+}
+
+// 대회 기록 한꺼번에 등록 (대회 화면의 '기록 한꺼번에 입력', 엑셀 업로드)
+export async function addRecordsBulk(scheduleId: string | null, rows: BulkRecordRow[]) {
+  if (rows.length === 0) return { error: '등록할 기록이 없습니다.' }
+  if (rows.length > 500) return { error: '한 번에 500건까지 등록할 수 있습니다.' }
+
+  const valid = []
+  for (const [i, row] of rows.entries()) {
+    const parsed = recordSchema.safeParse({ ...row, schedule_id: scheduleId })
+    if (!parsed.success) {
+      return { error: `${i + 1}번째 기록: ${parsed.error.issues[0].message}` }
+    }
+    valid.push({
+      schedule_id: scheduleId || null,
+      athlete_id: parsed.data.athlete_id,
+      event_name: parsed.data.event_name,
+      record_time: parsed.data.record_time,
+      record_date: parsed.data.record_date,
+      rank: parsed.data.rank ?? null,
+      match_type: parsed.data.match_type || null,
+      is_deleted: false,
+    })
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('records').insert(valid)
+  if (error) return { error: '기록 등록에 실패했습니다: ' + error.message }
+
+  await logAudit('CREATE', 'records', { bulk: true, count: valid.length, schedule_id: scheduleId })
+
+  if (scheduleId) revalidatePath(`/dashboard/competitions/${scheduleId}`)
+  revalidatePath('/dashboard/athletes')
+  return { success: true, count: valid.length }
+}
+
 export async function updateRecord(id: string, formData: FormData) {
   const supabase = await createClient()
   
@@ -76,8 +118,7 @@ export async function updateRecord(id: string, formData: FormData) {
 
   const validatedFields = recordSchema.safeParse(rawData)
   if (!validatedFields.success) {
-    // @ts-expect-error: zod error typing
-    return { error: validatedFields.error.errors[0].message }
+    return { error: validatedFields.error.issues[0].message }
   }
 
   const { error } = await supabase.from('records').update({

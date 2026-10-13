@@ -42,8 +42,7 @@ export async function addSchedule(formData: FormData) {
 
   const validatedFields = scheduleSchema.safeParse(rawData)
   if (!validatedFields.success) {
-    // @ts-expect-error: zod error typing
-    return { error: validatedFields.error.errors[0].message }
+    return { error: validatedFields.error.issues[0].message }
   }
 
   const { data: authData, error: userError } = await supabase.auth.getUser()
@@ -94,8 +93,7 @@ export async function updateSchedule(id: string, formData: FormData) {
   // Reuse scheduleSchema but omit participants if not updating them here
   const validatedFields = scheduleSchema.safeParse(rawData)
   if (!validatedFields.success) {
-    // @ts-expect-error: zod error typing
-    return { error: validatedFields.error.errors[0].message }
+    return { error: validatedFields.error.issues[0].message }
   }
 
   const { data: authData, error: userError } = await supabase.auth.getUser()
