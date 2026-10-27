@@ -36,18 +36,35 @@ export default async function proxy(request: NextRequest) {
   )
 
   // 로그인 토큰을 서명으로 확인합니다 (Auth 서버를 매번 부르지 않음)
-  const { data: claimsData } = await supabase.auth.getClaims()
-  const userId = claimsData?.claims?.sub
+  // 오래된 기기에 남은 로그인 쿠키(갱신 토큰이 이미 사라진 것)는 오류를 내므로,
+  // 로그아웃 상태로 보고 그 쿠키를 지워 로그인 화면으로 자연스럽게 보낸다.
+  let userId: string | undefined
+  let staleSession = false
+  try {
+    const { data: claimsData, error } = await supabase.auth.getClaims()
+    userId = claimsData?.claims?.sub
+    if (error && !userId) staleSession = true
+  } catch {
+    staleSession = true
+  }
+  const clearStaleSession = (response: NextResponse) => {
+    if (staleSession) {
+      request.cookies.getAll()
+        .filter((cookie: { name: string }) => cookie.name.startsWith('sb-'))
+        .forEach((cookie: { name: string }) => response.cookies.delete(cookie.name))
+    }
+    return response
+  }
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')
 
   if (!userId && !isAuthRoute) {
     const url = request.nextUrl.clone()
     const pathname = request.nextUrl.pathname
-    if (isGuestPath(pathname)) return supabaseResponse
+    if (isGuestPath(pathname)) return clearStaleSession(supabaseResponse)
     // 비회원이 대시보드 첫 화면으로 오면 둘러보기 첫 화면으로, 그 밖의 회원 전용 화면은 로그인으로
     url.pathname = pathname === '/dashboard' ? GUEST_HOME : '/login'
-    return NextResponse.redirect(url)
+    return clearStaleSession(NextResponse.redirect(url))
   }
 
   if (userId) {
@@ -85,7 +102,7 @@ export default async function proxy(request: NextRequest) {
     }
   }
 
-  return supabaseResponse
+  return clearStaleSession(supabaseResponse)
 }
 
 export const config = {
