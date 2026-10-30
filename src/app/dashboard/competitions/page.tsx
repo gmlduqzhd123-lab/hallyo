@@ -237,7 +237,7 @@ export default function CompetitionsPage() {
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        window.open(`https://map.naver.com/p/search/${encodeURIComponent(comp.location ?? '')}`, '_blank')
+                        window.open(`https://map.naver.com/p/search/${encodeURIComponent(comp.location ?? '')}`, '_blank', 'noopener,noreferrer')
                       }}
                       className="flex items-center gap-1 hover:text-blue-500 transition-colors"
                       title="네이버 지도로 보기"
